@@ -7,13 +7,39 @@
 
 import UIKit
 
+import SwiftUI
+
+class AppOrientation {
+    static let shared = AppOrientation()
+    var isLandscapeLocked = false
+}
+
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        let hostingController = UIHostingController(
+            rootView: MainTabView()
+                .environmentObject(AppProgressStore.shared)
+                .environmentObject(PoemSpeechService.shared)
+        )
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.view.frame = view.bounds
+        hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        hostingController.didMove(toParent: self)
     }
 
-
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if AppOrientation.shared.isLandscapeLocked {
+            return .landscape
+        }
+        return .portrait
+    }
+    
+    override var shouldAutorotate: Bool {
+        return true
+    }
 }
 
