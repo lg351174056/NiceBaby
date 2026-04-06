@@ -308,8 +308,11 @@ struct MatchstickContentView: View {
     private var wrongCount: Int { problemStatus.values.filter { $0 == false }.count }
 
     var body: some View {
-        let screenW = UIScreen.main.bounds.width
-        let screenH = UIScreen.main.bounds.height
+        let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        let screenBounds = windowScene?.screen.bounds ?? UIScreen.main.bounds
+        
+        let screenW = screenBounds.width
+        let screenH = screenBounds.height
         
         // 由于我们是横屏游戏，宽度必然是较长的一边，高度是较短的一边
         let landscapeWidth = max(screenW, screenH)

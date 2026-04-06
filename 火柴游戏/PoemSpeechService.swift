@@ -3,6 +3,7 @@ import Combine
 import SwiftUI
 
 /// 使用系统 `AVSpeechSynthesizer` 朗读诗词（中文语音包随系统语言设置）。
+@MainActor
 final class PoemSpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     static let shared = PoemSpeechService()
 
@@ -39,11 +40,11 @@ final class PoemSpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDe
         activePoemId = nil
     }
 
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        DispatchQueue.main.async { [weak self] in self?.activePoemId = nil }
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor in self.activePoemId = nil }
     }
 
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        DispatchQueue.main.async { [weak self] in self?.activePoemId = nil }
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        Task { @MainActor in self.activePoemId = nil }
     }
 }

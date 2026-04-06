@@ -843,8 +843,11 @@ struct LandscapeContainer<Content: View>: View {
     }
 
     var body: some View {
-        let screenW = UIScreen.main.bounds.width
-        let screenH = UIScreen.main.bounds.height
+        let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        let screenBounds = windowScene?.screen.bounds ?? UIScreen.main.bounds
+        
+        let screenW = screenBounds.width
+        let screenH = screenBounds.height
         let physicalWidth = max(screenW, screenH)
         let physicalHeight = min(screenW, screenH)
         
