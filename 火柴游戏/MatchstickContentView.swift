@@ -308,47 +308,40 @@ struct MatchstickContentView: View {
     private var wrongCount: Int { problemStatus.values.filter { $0 == false }.count }
 
     var body: some View {
-        GeometryReader { geo in
-            let w = MatchstickSafeArea.windowInsets
-            let g = geo.safeAreaInsets
-            let topSafe = max(g.top, w.top)
-            let bottomSafe = max(g.bottom, w.bottom)
+        let screenW = UIScreen.main.bounds.width
+        let screenH = UIScreen.main.bounds.height
+        
+        // 由于我们是横屏游戏，宽度必然是较长的一边，高度是较短的一边
+        let landscapeWidth = max(screenW, screenH)
+        let landscapeHeight = min(screenW, screenH)
+        
+        let insets = MatchstickSafeArea.landscapeLogicalInsets(isPortrait: screenW < screenH)
+        
+        // 15% - 70% - 15%
+        let infoAreaHeight = landscapeHeight * 0.15
+        let boardAreaHeight = landscapeHeight * 0.70
+        let actionAreaHeight = landscapeHeight * 0.15
+        
+        ZStack {
+            // 1. 信息区域 (顶部 15%)
+            topBarCompact()
+                .frame(width: landscapeWidth - insets.leading - insets.trailing, height: infoAreaHeight)
+                .position(x: landscapeWidth / 2, y: infoAreaHeight / 2)
             
-            // 三段式布局：精确计算每段实际占用空间
-            let topBarContentHeight: CGFloat = 56
-            let topBarTotalHeight = topBarContentHeight + max(2, topSafe + 2)
+            // 2. 核心火柴区域 (中间 70%)
+            boardLayer(canvasSize: CGSize(width: landscapeWidth, height: boardAreaHeight))
+                .frame(width: landscapeWidth, height: boardAreaHeight)
+                .clipped()
+                .position(x: landscapeWidth / 2, y: infoAreaHeight + boardAreaHeight / 2)
             
-            let bottomBarContentHeight: CGFloat = 60  // 按钮实际需要高度
-            let bottomBarBottomPadding = max(10, bottomSafe + 10)
-            let bottomBarTotalHeight = bottomBarContentHeight + bottomBarBottomPadding
-            
-            let boardHeight = max(120, geo.size.height - topBarTotalHeight - bottomBarTotalHeight)
-
-            VStack(spacing: 0) {
-                // 1. 顶栏
-                VStack(spacing: 0) {
-                    topBarCompact()
-                        .frame(height: topBarContentHeight)
-                        .padding(.horizontal, 12)
-                }
-                .padding(.top, max(2, topSafe + 2))
-
-                // 2. 棋盘区（占满剩余高度）
-                GeometryReader { boardGeo in
-                    boardLayer(canvasSize: boardGeo.size)
-                }
-                .frame(height: boardHeight)
-                .padding(.horizontal, 8)
-
-                // 3. 底栏
-                VStack(spacing: 0) {
-                    bottomToolbarUnified
-                        .frame(height: bottomBarContentHeight)
-                        .padding(.horizontal, 8)
-                }
-                .padding(.bottom, bottomBarBottomPadding)
-            }
+            // 3. 操作按钮区域 (底部 15%)
+            bottomToolbarUnified
+                .frame(width: landscapeWidth - insets.leading - insets.trailing, height: actionAreaHeight)
+                .position(x: landscapeWidth / 2, y: infoAreaHeight + boardAreaHeight + actionAreaHeight / 2)
         }
+        .frame(width: landscapeWidth, height: landscapeHeight)
+        .background(Color.clear)
+        .clipped()
         .onAppear {
             let total = engine.problemBank.count
             if isDailyChallenge {
@@ -445,6 +438,7 @@ struct MatchstickContentView: View {
                 }
             }
         }
+        .padding(.top, 16) // 为状态栏预留空间，让内容靠下对齐
     }
 
     private func boardLayer(canvasSize: CGSize) -> some View {
@@ -547,6 +541,7 @@ struct MatchstickContentView: View {
             barButton(icon: "shuffle", label: "随机", action: pickRandomProblem)
             barButton(icon: "chevron.right", label: "下题", action: { changeProblem(offset: 1) })
         }
+        .padding(.bottom, 24) // 为底部安全区预留空间，让内容靠上对齐
     }
 
     private func barButton(icon: String, label: String, action: @escaping () -> Void) -> some View {

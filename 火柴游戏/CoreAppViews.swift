@@ -110,6 +110,7 @@ struct HomeView: View {
                     )
                 }
             }
+            .ignoresSafeArea()
             .environmentObject(progress)
             .environmentObject(PoemSpeechService.shared)
         }
@@ -842,30 +843,21 @@ struct LandscapeContainer<Content: View>: View {
     }
 
     var body: some View {
-        GeometryReader { geo in
-            let windowInsets = MatchstickSafeArea.windowInsets
-            let topInset = max(geo.safeAreaInsets.top, windowInsets.top)
-            let leadingInset = max(geo.safeAreaInsets.leading, windowInsets.left)
-            let bottomInset = max(geo.safeAreaInsets.bottom, windowInsets.bottom)
-            let trailingInset = max(geo.safeAreaInsets.trailing, windowInsets.right)
-            let safeWidth = max(1, geo.size.width - leadingInset - trailingInset)
-            let safeHeight = max(1, geo.size.height - topInset - bottomInset)
-            let isPortrait = geo.size.width < geo.size.height
-            ZStack {
-                MatchstickBackgroundView()
-                if isPortrait {
-                    content()
-                        .frame(width: safeHeight, height: safeWidth)
-                        .rotationEffect(.degrees(90))
-                        .position(x: leadingInset + safeWidth / 2, y: topInset + safeHeight / 2)
-                } else {
-                    content()
-                        .frame(width: safeWidth, height: safeHeight)
-                        .position(x: leadingInset + safeWidth / 2, y: topInset + safeHeight / 2)
-                }
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
+        let screenW = UIScreen.main.bounds.width
+        let screenH = UIScreen.main.bounds.height
+        let physicalWidth = max(screenW, screenH)
+        let physicalHeight = min(screenW, screenH)
+        
+        ZStack {
+            MatchstickBackgroundView()
+                .frame(width: physicalWidth, height: physicalHeight)
+                .rotationEffect(.degrees(screenW < screenH ? 90 : 0))
+            
+            content()
+                .frame(width: physicalWidth, height: physicalHeight)
+                .rotationEffect(.degrees(screenW < screenH ? 90 : 0))
         }
+        .frame(width: screenW, height: screenH)
         .ignoresSafeArea()
     }
 }
