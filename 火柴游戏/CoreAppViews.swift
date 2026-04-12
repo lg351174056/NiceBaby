@@ -55,25 +55,45 @@ struct HomeView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: AppTheme.paddingScreen) {
-                    headerIntro
-
-                    SWGradientDivider(color: AppTheme.accentBlue, opacity: 0.25, height: 1)
-                        .padding(.horizontal, AppTheme.paddingScreen)
+                    HStack(alignment: .center) {
+                        Text("学习中心")
+                            .font(.largeTitle.weight(.bold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Spacer()
+                        HStack(spacing: 8) {
+                            if progress.streakDays > 0 {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "flame.fill")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.orange)
+                                    Text("\(progress.streakDays)")
+                                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                        .foregroundStyle(AppTheme.textPrimary)
+                                }
+                            }
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.accentBlue.opacity(0.15))
+                                    .frame(width: 36, height: 36)
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(AppTheme.accentBlue)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.paddingScreen)
 
                     todaySection
-
-                    SWGradientDivider(color: AppTheme.accentIndigo, opacity: 0.2, height: 1)
-                        .padding(.horizontal, AppTheme.paddingScreen)
 
                     matchstickHeroCard
 
                     poemLibraryCard
                 }
+                .padding(.top, 8)
                 .padding(.bottom, 32)
             }
             .background(AppTheme.background.ignoresSafeArea())
-            .navigationTitle("学习中心")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .fullScreenCover(isPresented: $isGamePresented) {
             ZStack {
@@ -116,43 +136,10 @@ struct HomeView: View {
         }
     }
 
-    private var timeGreeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 5..<12: return "早上好"
-        case 12..<18: return "下午好"
-        default: return "晚上好"
-        }
-    }
-
-    private var headerIntro: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(timeGreeting)
-                .font(AppTheme.captionMuted())
-                .foregroundStyle(AppTheme.textSecondary)
-            Text("动脑 · 读诗 · 轻打卡")
-                .font(AppTheme.titleHero())
-                .foregroundStyle(AppTheme.textPrimary)
-            if progress.streakDays > 0 {
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .foregroundStyle(.orange)
-                    Text("已连续打卡 \(progress.streakDays) 天")
-                        .foregroundStyle(AppTheme.textSecondary)
-                }
-                .font(.caption.weight(.medium))
-                .padding(.top, 2)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 4)
-    }
-
     private var todaySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("今日")
-                .font(AppTheme.titleSection())
+                .font(.title2.weight(.bold))
                 .foregroundStyle(AppTheme.textPrimary)
                 .padding(.horizontal, AppTheme.paddingScreen)
 
@@ -362,6 +349,7 @@ struct HomeView: View {
 struct DiscoverView: View {
     @EnvironmentObject private var progress: AppProgressStore
     @State private var poems: [Poem] = []
+    @State private var searchText = ""
 
     private var dailyPoem: Poem? {
         guard !poems.isEmpty else { return nil }
@@ -373,43 +361,97 @@ struct DiscoverView: View {
         poems.filter { $0.id != dailyPoem?.id }
     }
 
+    private var filteredPoems: [Poem] {
+        if searchText.isEmpty { return otherPoems }
+        return otherPoems.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText) ||
+            $0.author.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
     var body: some View {
         NavigationStack {
-            Group {
-                if poems.isEmpty {
-                    poemLoadingState
-                } else {
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 18) {
-                            PoemLibraryHeroCard(totalCount: poems.count, dailyPoem: dailyPoem)
-                                .padding(EdgeInsets(top: 8, leading: AppTheme.paddingScreen, bottom: 0, trailing: AppTheme.paddingScreen))
+            VStack(spacing: 0) {
+                // 固定 header：不随滚动移动
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .center) {
+                        Text("诗库")
+                            .font(.largeTitle.weight(.bold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Spacer()
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.accentTerracotta.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "text.book.closed.fill")
+                                .font(.system(size: 16))
+                                .foregroundStyle(AppTheme.accentTerracotta)
+                        }
+                    }
+                    HStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(AppTheme.textSecondary)
+                        TextField("搜索标题、作者", text: $searchText)
+                            .font(.body)
+                        if !searchText.isEmpty {
+                            Button { searchText = "" } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerMedium))
+                }
+                .padding(.horizontal, AppTheme.paddingScreen)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(AppTheme.background)
 
-                            if let p = dailyPoem {
-                                PoemOfDayCard(poem: p) {
-                                    progress.recordPoemOpened(id: p.id)
+                // 可滚动内容区
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        if poems.isEmpty {
+                            ForEach(0..<3, id: \.self) { _ in
+                                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                                    .fill(AppTheme.card)
+                                    .frame(height: 190)
+                                    .overlay {
+                                        SWShimmer(duration: 1.6, delay: 0.2) {
+                                            RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                                                .fill(.white.opacity(0.35))
+                                                .padding(1)
+                                        }
+                                    }
+                                    .padding(.horizontal, AppTheme.paddingScreen)
+                            }
+                        } else {
+                            if searchText.isEmpty {
+                                PoemLibraryHeroCard(totalCount: poems.count, dailyPoem: dailyPoem)
+                                    .padding(.horizontal, AppTheme.paddingScreen)
+
+                                if let p = dailyPoem {
+                                    PoemOfDayCard(poem: p) {
+                                        progress.recordPoemOpened(id: p.id)
+                                    }
+                                    .padding(.horizontal, AppTheme.paddingScreen)
                                 }
-                                .padding(.horizontal, AppTheme.paddingScreen)
                             }
 
-                            SWGradientDivider(color: AppTheme.accentTerracotta, opacity: 0.22, height: 1)
-                                .padding(.horizontal, AppTheme.paddingScreen)
-
-                            HStack {
-                                Text("全部篇目")
-                                    .font(.system(.headline, design: .rounded).weight(.semibold))
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(searchText.isEmpty ? "全部篇目" : "搜索结果")
+                                    .font(.title2.weight(.bold))
                                     .foregroundStyle(AppTheme.textPrimary)
                                 Spacer()
-                                Text("\(otherPoems.count) 首")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(AppTheme.accentBlue)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(AppTheme.accentBlue.opacity(0.1), in: Capsule())
+                                Text("\(filteredPoems.count) 首")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(AppTheme.textSecondary)
                             }
                             .padding(.horizontal, AppTheme.paddingScreen)
 
                             LazyVStack(alignment: .leading, spacing: 14) {
-                                ForEach(otherPoems, id: \.id) { poem in
+                                ForEach(filteredPoems, id: \.id) { poem in
                                     PoemRow(poem: poem, isRead: progress.openedPoemIds.contains(poem.id)) {
                                         progress.recordPoemOpened(id: poem.id)
                                     }
@@ -417,13 +459,13 @@ struct DiscoverView: View {
                                 }
                             }
                         }
-                        .padding(.bottom, 28)
                     }
+                    .padding(.bottom, 28)
                 }
+                .scrollDismissesKeyboard(.immediately)
             }
             .background(AppTheme.background.ignoresSafeArea())
-            .navigationTitle("诗库")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
             .swPageLoading(.discover)
             .task {
                 guard poems.isEmpty else { return }
@@ -433,40 +475,6 @@ struct DiscoverView: View {
                 poems = loaded
                 SWLoadingManager.shared.hide(page: .discover)
             }
-        }
-    }
-
-    private var poemLoadingState: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 16) {
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .fill(AppTheme.card)
-                    .frame(height: 156)
-                    .overlay {
-                        SWShimmer(duration: 1.6, delay: 0.2) {
-                            RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                                .fill(.white.opacity(0.35))
-                                .padding(1)
-                        }
-                    }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.top, 8)
-
-                ForEach(0..<3, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                        .fill(AppTheme.card)
-                        .frame(height: 190)
-                        .overlay {
-                            SWShimmer(duration: 1.6, delay: 0.2) {
-                                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                                    .fill(.white.opacity(0.35))
-                                    .padding(1)
-                            }
-                        }
-                        .padding(.horizontal, AppTheme.paddingScreen)
-                }
-            }
-            .padding(.bottom, 24)
         }
     }
 }
@@ -751,6 +759,22 @@ struct ProfileView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 22) {
+                    HStack(alignment: .center) {
+                        Text("我的")
+                            .font(.largeTitle.weight(.bold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Spacer()
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.accentBlue.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 16))
+                                .foregroundStyle(AppTheme.accentBlue)
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.paddingScreen)
+
                     avatarBlock
 
                     HStack(spacing: 12) {
@@ -779,8 +803,7 @@ struct ProfileView: View {
                 .padding(.top, 8)
             }
             .background(AppTheme.background.ignoresSafeArea())
-            .navigationTitle("我的")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
@@ -837,7 +860,7 @@ struct ProfileView: View {
     private var achievementsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("成就")
-                .font(AppTheme.titleSection())
+                .font(.title2.weight(.bold))
                 .foregroundStyle(AppTheme.textPrimary)
                 .padding(.horizontal, AppTheme.paddingScreen)
 
