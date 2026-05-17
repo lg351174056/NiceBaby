@@ -72,19 +72,28 @@ struct SWButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(backgroundColor)
             )
             .foregroundStyle(foregroundColor)
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(
                         showBorder ? borderColor : .clear,
                         lineWidth: 1.5
                     )
             )
+            .overlay(
+                // 底部投影，制造 3D 厚度感 (黏土风)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(Color.black.opacity(0.15), lineWidth: 4)
+                    .offset(y: 4)
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            )
             .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .opacity(isEnabled ? (configuration.isPressed ? 0.7 : 1) : 0.5)
+            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0), value: configuration.isPressed)
+            .opacity(isEnabled ? 1 : 0.5)
     }
 }
 
@@ -118,31 +127,21 @@ extension View {
     ///   - strokeWidth: Border width
     func swCardStyle(
         strokeColor: Color = .accentColor,
-        background: Color = .white.opacity(0.1),
-        cornerRadius: CGFloat = 16,
+        background: Color = .white,
+        cornerRadius: CGFloat = 20,
         padding: CGFloat = 16,
-        strokeWidth: CGFloat = 0.6
+        strokeWidth: CGFloat = 2.0 // 加粗边框，符合黏土风
     ) -> some View {
         self
             .padding(padding)
             .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                strokeColor,
-                                strokeColor.opacity(0.6),
-                                strokeColor.opacity(0.3),
-                                .clear
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: strokeWidth
-                    )
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(strokeColor.opacity(0.3), lineWidth: strokeWidth)
             )
+            .shadow(color: strokeColor.opacity(0.15), radius: 0, x: 0, y: 6) // 硬阴影（3D感）
+            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4) // 软阴影
     }
 }
 

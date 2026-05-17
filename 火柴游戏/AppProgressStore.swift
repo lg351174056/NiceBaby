@@ -16,7 +16,7 @@ struct Achievement: Identifiable, Hashable {
     ]
 }
 
-/// 轻量进度与成就（UserDefaults），驱动首页「今日」与个人页统计。
+/// 轻量进度与成就（UserDefaults），驱动首页“今日”与个人页统计。
 final class AppProgressStore: ObservableObject {
     static let shared = AppProgressStore()
 
@@ -118,6 +118,16 @@ final class AppProgressStore: ObservableObject {
         guard totalProblems > 0 else { return 0 }
         let n = todayOrdinal
         return abs(n) % totalProblems
+    }
+
+    // MARK: - 绘本阅读进度
+
+    func bookProgress(for filename: String) -> Int {
+        defaults.integer(forKey: "book.progress.\(filename)")
+    }
+
+    func saveBookProgress(page: Int, for filename: String) {
+        defaults.set(page, forKey: "book.progress.\(filename)")
     }
 
     /// 保存当前做到第几题（自由模式下次继续）。

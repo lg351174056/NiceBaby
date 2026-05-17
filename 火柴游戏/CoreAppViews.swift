@@ -13,7 +13,13 @@ struct MainTabView: View {
             Tab("诗库", systemImage: "book.closed.fill", value: 1) {
                 DiscoverView()
             }
-            Tab("我的", systemImage: "person.crop.circle.fill", value: 2) {
+            Tab("探索", systemImage: "sparkle.magnifyingglass", value: 2) {
+                ExploreView()
+            }
+            Tab("益智", systemImage: "gamecontroller.fill", value: 3) {
+                PlayView()
+            }
+            Tab("我的", systemImage: "person.crop.circle.fill", value: 4) {
                 ProfileView()
             }
         }
@@ -56,7 +62,7 @@ struct HomeView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: AppTheme.paddingScreen) {
                     HStack(alignment: .center) {
-                        Text("学习中心")
+                        Text("Welcome")
                             .font(.largeTitle.weight(.bold))
                             .foregroundStyle(AppTheme.textPrimary)
                         Spacer()
@@ -160,36 +166,31 @@ struct HomeView: View {
         } label: {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.accentBlue.opacity(0.12))
-                            .frame(width: 40, height: 40)
-                        Image(systemName: "puzzlepiece.extension.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(AppTheme.accentBlue)
-                    }
+                    Image(systemName: "puzzlepiece.extension.fill")
+                        .font(.title2)
+                        .foregroundStyle(AppTheme.accentBlue)
                     Spacer()
                     if done {
                         Image(systemName: "checkmark.circle.fill")
+                            .font(.title2)
                             .foregroundStyle(AppTheme.accentSage)
                     }
                 }
                 Text("火柴游戏 · 每日一题")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
                 Text(done ? "今日已完成" : "第 \(dailyMatchIndex + 1) 题")
-                    .font(.caption)
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.accentBlue.opacity(0.8))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .swCardStyle(
-                strokeColor: AppTheme.accentBlue.opacity(0.55),
+                strokeColor: AppTheme.accentBlue,
                 background: AppTheme.card,
-                cornerRadius: AppTheme.cornerMedium,
-                padding: 16,
-                strokeWidth: 0.8
+                cornerRadius: AppTheme.cornerLarge,
+                padding: 20,
+                strokeWidth: 3
             )
-            .shadow(color: .black.opacity(0.06), radius: AppTheme.cardShadowRadius, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -200,42 +201,36 @@ struct HomeView: View {
         } label: {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.accentTerracotta.opacity(0.12))
-                            .frame(width: 40, height: 40)
-                        Image(systemName: "leaf.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(AppTheme.accentTerracotta)
-                    }
+                    Image(systemName: "leaf.fill")
+                        .font(.title2)
+                        .foregroundStyle(AppTheme.accentTerracotta)
                     Spacer()
                     Image(systemName: "arrow.right.circle.fill")
-                        .font(.body)
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
+                        .font(.title2)
+                        .foregroundStyle(AppTheme.accentTerracotta.opacity(0.5))
                 }
                 Text("唐诗 · 今日一诗")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
                 if let p = dailyPoem {
                     Text(p.title)
-                        .font(.caption)
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.accentTerracotta.opacity(0.8))
                         .lineLimit(1)
                 } else {
                     Text("加载中…")
-                        .font(.caption)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .swCardStyle(
-                strokeColor: AppTheme.accentTerracotta.opacity(0.5),
+                strokeColor: AppTheme.accentTerracotta,
                 background: AppTheme.card,
-                cornerRadius: AppTheme.cornerMedium,
-                padding: 16,
-                strokeWidth: 0.8
+                cornerRadius: AppTheme.cornerLarge,
+                padding: 20,
+                strokeWidth: 3
             )
-            .shadow(color: .black.opacity(0.06), radius: AppTheme.cardShadowRadius, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -250,34 +245,34 @@ struct HomeView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("火柴游戏")
-                            .font(.system(.title2, design: .rounded).weight(.bold))
+                            .font(.system(size: 28, weight: .heavy, design: .rounded))
                             .foregroundStyle(.white)
                         Text("移动一根火柴，让等式成立")
-                            .font(.subheadline)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundStyle(.white.opacity(0.88))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
                     Image(systemName: "function")
-                        .font(.system(size: 36))
+                        .font(.system(size: 44, weight: .bold))
                         .foregroundStyle(.white.opacity(0.9))
                 }
-                .padding(22)
+                .padding(24)
 
                 SWShimmer(duration: 2.4, delay: 1.0) {
                     HStack {
                         Text(matchstickHeroSubtitle)
-                            .font(.caption.weight(.medium))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
                             .foregroundStyle(.white.opacity(0.85))
                         Spacer()
                         Text("开始")
-                            .font(.subheadline.weight(.semibold))
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
                             .foregroundStyle(AppTheme.accentBlue)
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
                             .background(.white, in: Capsule())
                     }
-                    .padding(18)
+                    .padding(20)
                     .background(.ultraThinMaterial)
                 }
             }
@@ -289,7 +284,17 @@ struct HomeView: View {
                 )
             )
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-            .shadow(color: AppTheme.accentBlue.opacity(0.28), radius: 20, x: 0, y: 10)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.3), lineWidth: 3)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .strokeBorder(Color.black.opacity(0.15), lineWidth: 4)
+                    .offset(y: 4)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
+            )
+            .shadow(color: AppTheme.accentBlue.opacity(0.3), radius: 0, x: 0, y: 8)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, AppTheme.paddingScreen)
@@ -300,7 +305,7 @@ struct HomeView: View {
             progress.selectedTab = 1
         } label: {
             HStack(spacing: 16) {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [AppTheme.accentTerracotta.opacity(0.85), AppTheme.accentTerracotta],
@@ -308,7 +313,7 @@ struct HomeView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 56, height: 56)
+                    .frame(width: 64, height: 64)
                     .overlay {
                         Image(systemName: "text.book.closed.fill")
                             .font(.title2)
@@ -317,27 +322,25 @@ struct HomeView: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("唐诗三百首")
-                        .font(.headline.weight(.semibold))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
-                    Text("按篇浏览 · 今日一诗在「诗库」置顶")
-                        .font(.caption)
+                    Text("按篇浏览 · 今日一诗在“诗库”置顶")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(AppTheme.textSecondary.opacity(0.6))
             }
-            .padding(18)
             .swCardStyle(
-                strokeColor: AppTheme.accentTerracotta.opacity(0.45),
+                strokeColor: AppTheme.accentTerracotta,
                 background: AppTheme.card,
                 cornerRadius: AppTheme.cornerLarge,
-                padding: 0,
-                strokeWidth: 0.8
+                padding: 20,
+                strokeWidth: 3
             )
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, AppTheme.paddingScreen)
@@ -579,26 +582,26 @@ private struct PoemOfDayCard: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("今日一诗")
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(AppTheme.accentTerracotta.opacity(0.15), in: Capsule())
                         .foregroundStyle(AppTheme.accentTerracotta)
 
                     Text(poem.title)
-                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .font(.system(size: 26, weight: .heavy, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
 
                     HStack(spacing: 8) {
                         Text(poem.author)
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.textSecondary)
                         Text(poem.type)
-                            .font(.caption.weight(.semibold))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(AppTheme.accentBlue.opacity(0.1), in: Capsule())
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.accentBlue.opacity(0.15), in: Capsule())
                             .foregroundStyle(AppTheme.accentBlue)
                     }
                 }
@@ -608,18 +611,17 @@ private struct PoemOfDayCard: View {
                 PoemPlayButton(poem: poem, emphasized: true)
             }
 
-            PoemBodyBlock(contents: poem.contents, font: .body, lineSpacing: 8)
+            PoemBodyBlock(contents: poem.contents, font: .system(size: 20, weight: .medium, design: .rounded), lineSpacing: 14)
         }
-        .padding(18)
+        .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .swCardStyle(
-            strokeColor: AppTheme.accentTerracotta.opacity(0.35),
-            background: Color.white.opacity(0.88),
+            strokeColor: AppTheme.accentTerracotta,
+            background: Color.white,
             cornerRadius: AppTheme.cornerLarge,
             padding: 0,
-            strokeWidth: 0.8
+            strokeWidth: 3
         )
-        .shadow(color: AppTheme.accentTerracotta.opacity(0.08), radius: 14, x: 0, y: 6)
         .onAppear(perform: onAppearAction)
     }
 }
@@ -628,27 +630,51 @@ private struct PoemPlayButton: View {
     let poem: Poem
     var emphasized: Bool = false
     @EnvironmentObject private var speech: PoemSpeechService
+    
+    @State private var isRippling = false
 
     var body: some View {
+        let isPlaying = speech.activePoemId == poem.id
         Button {
             speech.toggleSpeak(poem: poem)
         } label: {
-            Image(systemName: speech.activePoemId == poem.id ? "stop.fill" : "play.fill")
-                .font(.system(size: emphasized ? 16 : 14, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: emphasized ? 42 : 34, height: emphasized ? 42 : 34)
-                .background(
-                    LinearGradient(
-                        colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: Circle()
-                )
-                .shadow(color: AppTheme.accentBlue.opacity(0.2), radius: emphasized ? 10 : 6, x: 0, y: 3)
+            ZStack {
+                if isPlaying {
+                    Circle()
+                        .stroke(AppTheme.accentBlue.opacity(0.4), lineWidth: 4)
+                        .scaleEffect(isRippling ? 1.8 : 1.0)
+                        .opacity(isRippling ? 0 : 1)
+                        .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false), value: isRippling)
+                        .onAppear { isRippling = true }
+                        .onDisappear { isRippling = false }
+                }
+
+                Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                    .font(.system(size: emphasized ? 20 : 16, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: emphasized ? 54 : 44, height: emphasized ? 54 : 44)
+                    .background(
+                        LinearGradient(
+                            colors: isPlaying ? [AppTheme.accentTerracotta, AppTheme.accentTerracotta.opacity(0.8)] : [AppTheme.accentBlue, AppTheme.accentIndigo],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        in: Circle()
+                    )
+                    .overlay(
+                        Circle().strokeBorder(Color.white.opacity(0.3), lineWidth: 2)
+                    )
+                    .overlay(
+                        Circle().strokeBorder(Color.black.opacity(0.15), lineWidth: 3).offset(y: 3).clipShape(Circle())
+                    )
+                    .shadow(color: (isPlaying ? AppTheme.accentTerracotta : AppTheme.accentBlue).opacity(0.3), radius: 6, x: 0, y: 4)
+            }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(speech.activePoemId == poem.id ? "停止朗读" : "朗读全诗")
+        .accessibilityLabel(isPlaying ? "停止朗读" : "朗读全诗")
+        .onChange(of: isPlaying) { playing in
+            isRippling = playing
+        }
     }
 }
 
@@ -664,25 +690,25 @@ private struct PoemRow: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
                         Text(poem.title)
-                            .font(.system(.title3, design: .rounded).weight(.bold))
+                            .font(.system(size: 22, weight: .heavy, design: .rounded))
                             .foregroundStyle(AppTheme.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                         if isRead {
                             Image(systemName: "checkmark.circle.fill")
-                                .font(.caption)
+                                .font(.system(size: 14))
                                 .foregroundStyle(AppTheme.accentSage)
                         }
                     }
 
                     HStack(spacing: 8) {
                         Text(poem.author)
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.textSecondary)
                         Text(poem.type)
-                            .font(.caption.weight(.semibold))
-                            .padding(.horizontal, 8)
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(AppTheme.accentBlue.opacity(0.1), in: Capsule())
+                            .background(AppTheme.accentBlue.opacity(0.15), in: Capsule())
                             .foregroundStyle(AppTheme.accentBlue)
                     }
                 }
@@ -692,18 +718,17 @@ private struct PoemRow: View {
                 PoemPlayButton(poem: poem)
             }
 
-            PoemBodyBlock(contents: poem.contents, font: .body, lineSpacing: 7)
+            PoemBodyBlock(contents: poem.contents, font: .system(size: 18, weight: .medium, design: .rounded), lineSpacing: 10)
         }
-        .padding(18)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .swCardStyle(
-            strokeColor: AppTheme.accentBlue.opacity(0.24),
-            background: Color.white.opacity(0.82),
+            strokeColor: AppTheme.accentBlue,
+            background: Color.white,
             cornerRadius: AppTheme.cornerLarge,
             padding: 0,
-            strokeWidth: 0.75
+            strokeWidth: 2.5
         )
-        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
         .contentShape(Rectangle())
         .onTapGesture {
             onTap()
@@ -733,19 +758,15 @@ private struct PoemBodyBlock: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
         .background(
-            LinearGradient(
-                colors: [Color.white.opacity(0.72), Color.white.opacity(0.42)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
+            Color(red: 248/255.0, green: 250/255.0, blue: 252/255.0), // 更暖的纸张白
             in: RoundedRectangle(cornerRadius: 16, style: .continuous)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(AppTheme.separator.opacity(0.12), lineWidth: 0.6)
+                .strokeBorder(Color.black.opacity(0.08), lineWidth: 2)
         )
     }
 }
@@ -807,54 +828,39 @@ struct ProfileView: View {
         }
     }
 
+    @State private var isBreathing = false
+
     private var avatarBlock: some View {
-        HStack(alignment: .center, spacing: 16) {
+        VStack(spacing: 10) {
             Image(systemName: "sparkles")
-                .font(.system(size: 28))
+                .font(.system(size: 44, weight: .bold))
                 .foregroundStyle(.white)
-                .frame(width: 64, height: 64)
-                .background(.white.opacity(0.22), in: Circle())
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("学习伙伴")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.white)
-                Text("成就与打卡仅保存在本机")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.75))
-            }
-
-            Spacer()
-
-            if progress.streakDays > 0 {
-                VStack(spacing: 2) {
-                    HStack(spacing: 3) {
-                        Image(systemName: "flame.fill")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(.orange)
-                        Text("\(progress.streakDays)")
-                            .font(.system(.title2, design: .rounded).weight(.black))
-                            .foregroundStyle(.white)
-                    }
-                    Text("天连续打卡")
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.75))
+                .frame(width: 96, height: 96)
+                .background(
+                    LinearGradient(colors: [AppTheme.accentBlue, AppTheme.accentIndigo], startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: Circle()
+                )
+                .overlay(
+                    Circle().strokeBorder(Color.white.opacity(0.3), lineWidth: 4)
+                )
+                .overlay(
+                    Circle().strokeBorder(Color.black.opacity(0.15), lineWidth: 4).offset(y: 4).clipShape(Circle())
+                )
+                .shadow(color: AppTheme.accentBlue.opacity(0.3), radius: 10, y: 6)
+                .scaleEffect(isBreathing ? 1.05 : 0.95)
+                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isBreathing)
+                .onAppear {
+                    isBreathing = true
                 }
-            }
+            
+            Text("学习伙伴")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+            Text("成就与打卡仅保存在本机")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity)
-        .background(
-            LinearGradient(
-                colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-        )
-        .shadow(color: AppTheme.accentBlue.opacity(0.28), radius: 16, x: 0, y: 8)
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 8)
+        .padding(.top, 16)
     }
 
     private var achievementsSection: some View {
@@ -885,35 +891,20 @@ private struct AchievementTile: View {
                 .font(.title2)
                 .foregroundStyle(unlocked ? AppTheme.accentBlue : AppTheme.textSecondary.opacity(0.35))
             Text(achievement.title)
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundStyle(unlocked ? AppTheme.textPrimary : AppTheme.textSecondary)
             Text(achievement.subtitle)
-                .font(.caption2)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(14)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            unlocked
-                ? LinearGradient(
-                    colors: [AppTheme.accentBlue.opacity(0.14), AppTheme.accentIndigo.opacity(0.08)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                  )
-                : LinearGradient(
-                    colors: [AppTheme.card.opacity(0.65), AppTheme.card.opacity(0.65)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                  )
-        )
+        .background(AppTheme.card.opacity(unlocked ? 1 : 0.65))
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous)
-                .strokeBorder(
-                    unlocked ? AppTheme.accentBlue.opacity(0.35) : AppTheme.separator.opacity(0.5),
-                    lineWidth: unlocked ? 1.0 : 0.5
-                )
+                .strokeBorder(unlocked ? AppTheme.accentBlue.opacity(0.3) : AppTheme.separator.opacity(0.5), lineWidth: unlocked ? 2 : 1)
         }
     }
 }
@@ -924,20 +915,22 @@ struct StatCard: View {
     let tint: Color
 
     var body: some View {
-        VStack(spacing: 6) {
-            Text(value)
-                .font(.system(.title2, design: .rounded).weight(.black))
-                .foregroundStyle(tint)
+        VStack(spacing: 8) {
             Text(title)
-                .font(.caption2)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(value)
+                .font(.system(size: 24, weight: .heavy, design: .rounded))
+                .foregroundStyle(tint)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .background(tint.opacity(0.1))
+        .background(tint.opacity(0.15))
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous)
+                .strokeBorder(tint.opacity(0.3), lineWidth: 2)
+        )
     }
 }
 

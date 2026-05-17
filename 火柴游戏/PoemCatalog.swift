@@ -17,7 +17,7 @@ enum PoemCatalog {
         lock.lock()
         defer { lock.unlock() }
         if let cached { return cached }
-        guard let url = Bundle.main.url(forResource: "300", withExtension: "json"),
+        guard let url = Bundle.main.url(forResource: "唐诗三百首(二)", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let decoded = try? JSONDecoder().decode([Poem].self, from: data) else {
             return []

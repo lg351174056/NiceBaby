@@ -200,7 +200,7 @@ class MathEngine {
     }
 }
 
-/// 与 `MathEngine.problemBank` 长度一致，供首页「每日一题」等使用。
+/// 与 `MathEngine.problemBank` 长度一致，供首页“每日一题”等使用。
 enum MatchstickProblemSet {
     static var count: Int { MathEngine().problemBank.count }
 }
@@ -218,8 +218,8 @@ struct MatchstickView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(red: 0.88, green: 0.72, blue: 0.48),
-                            Color(red: 0.62, green: 0.44, blue: 0.26)
+                            Color(red: 0.95, green: 0.82, blue: 0.55),
+                            Color(red: 0.85, green: 0.65, blue: 0.35)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -227,18 +227,18 @@ struct MatchstickView: View {
                 )
                 .overlay(
                     Capsule()
-                        .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+                        .stroke(Color.white.opacity(0.4), lineWidth: 1.5)
                 )
 
             Capsule()
                 .fill(
                     LinearGradient(
-                        colors: [Color(red: 0.78, green: 0.22, blue: 0.2), Color(red: 0.55, green: 0.12, blue: 0.12)],
+                        colors: [Color(red: 0.85, green: 0.25, blue: 0.2), Color(red: 0.70, green: 0.15, blue: 0.15)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .overlay(Capsule().stroke(Color.black.opacity(0.12), lineWidth: 0.5))
+                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
                 .frame(
                     width: orientation == .horizontal ? thickness * 1.45 : thickness,
                     height: orientation == .vertical ? thickness * 1.45 : thickness
@@ -249,7 +249,12 @@ struct MatchstickView: View {
                 )
         }
         .frame(width: orientation == .horizontal ? length : thickness, height: orientation == .vertical ? length : thickness)
-        .shadow(color: .black.opacity(0.22), radius: 2, x: 1, y: 2)
+        .shadow(color: .black.opacity(0.15), radius: 4, x: 2, y: 4)
+        .overlay(
+            // 高光，增强立体感
+            Capsule()
+                .strokeBorder(LinearGradient(colors: [.white.opacity(0.6), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+        )
     }
 }
 
@@ -337,7 +342,7 @@ struct MatchstickContentView: View {
         
         ZStack {
             // 1. 信息区域 (顶部 15%)
-            topBarCompact()
+            topBarCompact
                 .frame(width: landscapeWidth - insets.leading - insets.trailing, height: infoAreaHeight)
                 .position(x: landscapeWidth / 2, y: infoAreaHeight / 2)
             
@@ -390,68 +395,64 @@ struct MatchstickContentView: View {
 
     private var timerCapsuleCompact: some View {
         Text(String(format: "%02d:%02d", timeRemaining / 60, timeRemaining % 60))
-            .font(.system(size: 20, design: .monospaced).weight(.bold))
-            .foregroundStyle(timeRemaining <= 10 ? Color.red.opacity(0.95) : AppTheme.matchControlTint)
-            .padding(.horizontal, 14)
+            .font(.system(size: 22, design: .monospaced).weight(.heavy))
+            .foregroundStyle(timeRemaining <= 10 ? Color.white : AppTheme.textPrimary)
+            .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-            .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
+            .background(
+                timeRemaining <= 10 ? AppTheme.accentTerracotta : Color.white,
+                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color.black.opacity(0.15), lineWidth: 3)
+                    .offset(y: 3)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            )
+            .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
     }
 
-    /// 顶栏：返回键、统计与倒计时（平铺不加卡片背景）
-    private func topBarCompact() -> some View {
-        HStack(alignment: .center, spacing: 10) {
+    // MARK: - 极简顶部状态栏 (Top Bar)
+    private var topBarCompact: some View {
+        HStack(alignment: .top) {
+            // 左上角返回按钮
             if let exit = onExit {
                 Button(action: exit) {
-                    Image(systemName: "chevron.backward")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(AppTheme.matchInk)
-                        .frame(width: 46, height: 46)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
-                        .contentShape(Circle())
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 50, height: 50)
+                        .background(Color.black.opacity(0.2), in: Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
-
-            VStack(alignment: .leading, spacing: 3) {
+            
+            Spacer()
+            
+            // 右上角信息区
+            VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 6) {
                     if isDailyChallenge, currentProblemIndex == dailyTargetIndex, dailyTargetIndex >= 0 {
                         Text("每日")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .padding(.horizontal, 10)
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(
-                                LinearGradient(
-                                    colors: [AppTheme.accentBlue.opacity(0.22), AppTheme.accentIndigo.opacity(0.14)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                in: Capsule()
-                            )
-                            .foregroundStyle(AppTheme.accentBlue)
+                            .background(AppTheme.accentYellow, in: Capsule())
                     }
                     Text("移动一根火柴，使等式成立")
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
                 }
-                Text("\(correctCount) 对 · \(wrongCount) 错  ·  第 \(currentProblemIndex + 1) / \(engine.problemBank.count) 题")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.9))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Group {
-                if timeRemaining <= 15 {
-                    SWShimmer(duration: 1.1, delay: 0.3) { timerCapsuleCompact }
-                } else {
-                    timerCapsuleCompact
-                }
+                
+                Text("\(correctCount) 对 · \(wrongCount) 错 · 第 \(currentProblemIndex + 1) / \(MatchstickProblemSet.count) 题")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
             }
         }
-        .padding(.top, 16) // 为状态栏预留空间，让内容靠下对齐
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
     }
 
     private func boardLayer(canvasSize: CGSize) -> some View {
@@ -521,25 +522,46 @@ struct MatchstickContentView: View {
 
             if isSuccessAlert {
                 SWShimmer(duration: 1.8, delay: 0.4) {
-                    Text("等式成立")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                    Text("等式成立！")
+                        .font(.system(size: 40, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 28)
-                        .padding(.vertical, 18)
-                        .background(AppTheme.accentSage, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: AppTheme.accentSage.opacity(0.45), radius: 12, y: 4)
+                        .padding(.horizontal, 48)
+                        .padding(.vertical, 24)
+                        .background(AppTheme.accentSage, in: RoundedRectangle(cornerRadius: 32, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.4), lineWidth: 4)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                .strokeBorder(Color.black.opacity(0.2), lineWidth: 6)
+                                .offset(y: 6)
+                                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                        )
+                        .shadow(color: AppTheme.accentSage.opacity(0.5), radius: 20, y: 10)
                 }
                 .zIndex(100)
-                .transition(.scale(scale: 0.88).combined(with: .opacity))
+                .transition(.asymmetric(insertion: .scale(scale: 0.5).combined(with: .opacity).animation(.spring(response: 0.4, dampingFraction: 0.5)), removal: .scale(scale: 0.8).combined(with: .opacity)))
             } else if isFailureAlert {
-                Text("时间到")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                Text("时间到！")
+                    .font(.system(size: 40, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 18)
-                    .background(AppTheme.accentTerracotta.opacity(0.92), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .padding(.horizontal, 48)
+                    .padding(.vertical, 24)
+                    .background(AppTheme.accentTerracotta, in: RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 32, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.4), lineWidth: 4)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 32, style: .continuous)
+                            .strokeBorder(Color.black.opacity(0.2), lineWidth: 6)
+                            .offset(y: 6)
+                            .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    )
+                    .shadow(color: AppTheme.accentTerracotta.opacity(0.5), radius: 20, y: 10)
                     .zIndex(100)
-                    .transition(.scale(scale: 0.88).combined(with: .opacity))
+                    .transition(.asymmetric(insertion: .scale(scale: 0.5).combined(with: .opacity).animation(.spring(response: 0.4, dampingFraction: 0.5)), removal: .scale(scale: 0.8).combined(with: .opacity)))
             }
         }
         .offset(x: shakeAmount)
@@ -547,27 +569,47 @@ struct MatchstickContentView: View {
         .frame(width: canvasSize.width, height: canvasSize.height)
     }
 
+    // MARK: - 极简底部工具栏 (Bottom Toolbar)
     private var bottomToolbarUnified: some View {
-        HStack(spacing: 18) {
-            barButton(icon: "chevron.left", label: "上题", action: { changeProblem(offset: -1) })
-            barButton(icon: "arrow.uturn.backward", label: "重开", action: resetCurrentProblem)
-            barButton(icon: "shuffle", label: "随机", action: pickRandomProblem)
-            barButton(icon: "chevron.right", label: "下题", action: { changeProblem(offset: 1) })
+        HStack(spacing: 24) {
+            Spacer()
+            
+            iconButton(icon: "chevron.left", label: "上题") {
+                withAnimation { changeProblem(offset: -1) }
+            }
+            
+            iconButton(icon: "arrow.counterclockwise", label: "重开") {
+                withAnimation { resetCurrentProblem() }
+            }
+            
+            iconButton(icon: "shuffle", label: "随机") {
+                withAnimation { pickRandomProblem() }
+            }
+            
+            iconButton(icon: "chevron.right", label: "下题") {
+                withAnimation { changeProblem(offset: 1) }
+            }
+            
+            Spacer()
         }
-        .padding(.bottom, 24) // 为底部安全区预留空间，让内容靠上对齐
+        .padding(.bottom, 24)
     }
 
-    private func barButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
+    private func iconButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 3) {
+            VStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(AppTheme.accentBlue.opacity(0.85), in: Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.4), lineWidth: 1))
+                    .shadow(color: AppTheme.accentBlue.opacity(0.3), radius: 6, y: 4)
+                
                 Text(label)
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
             }
-            .foregroundStyle(AppTheme.matchControlTint)
-            .frame(minWidth: 54, minHeight: 54)
-            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -633,7 +675,7 @@ struct MatchstickContentView: View {
     
     // MARK: - 拖拽与吸附逻辑
     
-    // 通过题库的绝对规律严格限定不同「坑位/插槽」能放的火柴形状
+    // 通过题库的绝对规律严格限定不同“坑位/插槽”能放的火柴形状
     private func allowedSegments(for slotIndex: Int) -> [SegmentType] {
         // 索引为1的位置必定是 加号或减号
         if slotIndex == 1 {
