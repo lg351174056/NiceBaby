@@ -1,5 +1,5 @@
-import AVKit
 import SwiftUI
+import AVKit
 
 struct VideoPlayerView: View {
     let url: URL
@@ -18,25 +18,38 @@ struct VideoPlayerView: View {
                     .ignoresSafeArea()
             }
 
-            Button {
-                player?.pause()
-                onDismiss()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28))
-                    Text(title)
-                        .font(.system(size: 14, weight: .medium))
-                        .lineLimit(1)
+            HStack {
+                Button {
+                    player?.pause()
+                    onDismiss()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .bold))
+                        Text(title)
+                            .font(.system(size: 15, weight: .semibold))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.4))
+                    .clipShape(Capsule())
                 }
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.6), radius: 4)
-                .padding(16)
+                Spacer()
             }
+            .padding(.top, 54)
+            .padding(.horizontal, 16)
         }
+        .statusBarHidden()
         .onAppear {
-            let normalizedUrl = normalizeVideoUrl(url)
-            let avPlayer = AVPlayer(url: normalizedUrl)
+            let headers: [String: String] = [
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15",
+                "Referer": "https://servicewechat.com/wxcbf549e856866db7/23/page-frame.html"
+            ]
+            let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+            let item = AVPlayerItem(asset: asset)
+            let avPlayer = AVPlayer(playerItem: item)
             self.player = avPlayer
             avPlayer.play()
         }
@@ -44,11 +57,5 @@ struct VideoPlayerView: View {
             player?.pause()
             player = nil
         }
-    }
-
-    private func normalizeVideoUrl(_ original: URL) -> URL {
-        guard let decoded = original.absoluteString.removingPercentEncoding else { return original }
-        guard let reEncoded = decoded.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return original }
-        return URL(string: reEncoded) ?? original
     }
 }

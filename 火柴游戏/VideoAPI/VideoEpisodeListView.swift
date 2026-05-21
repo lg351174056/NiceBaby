@@ -4,48 +4,47 @@ struct VideoEpisodeListView: View {
     let series: VideoSeries
     @State private var episodes: [VideoEpisode] = []
     @State private var isLoading = false
-    @State private var playingUrl: URL?
-    @State private var playingName = ""
-    @State private var playingCover = ""
-    @State private var showPlayer = false
+    @State private var playingItem: PlayingItem?
 
     var body: some View {
-        Group {
-            if isLoading {
-                ProgressView("正在加载集数...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if episodes.isEmpty {
-                Text("暂无集数")
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 10) {
-                        ForEach(episodes) { ep in
-                            episodeRow(ep)
+        if #available(iOS 16.0, *) {
+            Group {
+                if isLoading {
+                    ProgressView("正在加载集数...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if episodes.isEmpty {
+                    Text("暂无集数")
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 10) {
+                            ForEach(episodes) { ep in
+                                episodeRow(ep)
+                            }
                         }
+                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .padding(.vertical, 16)
                     }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.vertical, 16)
                 }
             }
-        }
-        .navigationTitle(series.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
-        .fullScreenCover(isPresented: $showPlayer) {
-            if let url = playingUrl {
-                VideoPlayerView(url: url, title: playingName, coverUrl: playingCover) {
-                    showPlayer = false
+            .navigationTitle(series.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .tabBar)
+            .fullScreenCover(item: $playingItem) { item in
+                VideoPlayerView(url: item.url, title: item.name, coverUrl: item.coverUrl) {
+                    playingItem = nil
                 }
             }
-        }
-        .task {
-            if episodes.isEmpty {
-                isLoading = true
-                episodes = await VideoAPIService.shared.fetchEpisodes(infoId: series.id)
-                isLoading = false
+            .task {
+                if episodes.isEmpty {
+                    isLoading = true
+                    episodes = await VideoAPIService.shared.fetchEpisodes(infoId: series.id)
+                    isLoading = false
+                }
             }
+        } else {
+            // Fallback on earlier versions
         }
     }
 
@@ -124,10 +123,7 @@ struct VideoEpisodeListView: View {
             print("[VideoPlayer] URL 解析失败: \(info.playUrl)")
             return
         }
-        playingUrl = url
-        playingName = ep.name
-        playingCover = ep.coverUrl
-        showPlayer = true
+        playingItem = PlayingItem(url: url, name: ep.name, coverUrl: ep.coverUrl)
     }
 
     private func formatDuration(_ seconds: Int) -> String {
@@ -135,4 +131,11 @@ struct VideoEpisodeListView: View {
         let s = seconds % 60
         return String(format: "%d:%02d", m, s)
     }
+}
+
+struct PlayingItem: Identifiable {
+    let id = UUID()
+    let url: URL
+    let name: String
+    let coverUrl: String
 }
