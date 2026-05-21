@@ -37,11 +37,22 @@ struct ExploreView: View {
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
                         
+                        NavigationLink(destination: VideoCategoryListView()) {
+                            ExploreModuleCard(
+                                title: "视频乐园",
+                                subtitle: "海量英语动画、科学百科，随时播放",
+                                icon: "play.tv.fill",
+                                colors: (AppTheme.accentPurple, AppTheme.accentPink),
+                                isPlaceholder: false
+                            )
+                        }
+                        .buttonStyle(ExploreBounceButtonStyle())
+
                         ExploreModuleCard(
                             title: "奇妙科学",
                             subtitle: "即将开放...",
                             icon: "flask.fill",
-                            colors: (AppTheme.accentPurple, AppTheme.accentPink),
+                            colors: (Color.orange, AppTheme.accentYellow),
                             isPlaceholder: true
                         )
                         
