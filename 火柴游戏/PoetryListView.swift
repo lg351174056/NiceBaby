@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// 旧版 PoetryListView 保留兼容（用于其他地方可能的引用）
+/// 新版诗库导航已使用 PoetryPoemListView + PoetryDetailView
 struct PoetryListView: View {
     let category: String
     let poems: [Poem]
@@ -7,55 +9,53 @@ struct PoetryListView: View {
     @State private var selectedPoem: Poem?
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(poems) { poem in
-                        Button {
-                            selectedPoem = poem
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(poem.title)
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                                        .foregroundStyle(AppTheme.textPrimary)
-                                        .lineLimit(1)
-                                    
-                                    Text(poem.author)
-                                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                                        .foregroundStyle(AppTheme.textSecondary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
-                            }
-                            .padding()
-                            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .shadow(color: .black.opacity(0.03), radius: 5, y: 2)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(AppTheme.paddingScreen)
-            }
-            .background(AppTheme.background.ignoresSafeArea())
-            .navigationTitle(category)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 10) {
+                ForEach(poems) { poem in
                     Button {
-                        dismiss()
+                        selectedPoem = poem
                     } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(AppTheme.textPrimary)
+                        HStack(spacing: 14) {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .fill(
+                                    LinearGradient(colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
+                                                   startPoint: .top, endPoint: .bottom)
+                                )
+                                .frame(width: 4, height: 36)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(poem.title)
+                                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                    .lineLimit(1)
+                                Text(poem.author)
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(AppTheme.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .shadow(color: .black.opacity(0.03), radius: 4, y: 2)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .fullScreenCover(item: $selectedPoem) { poem in
-                PoetryReaderView(poem: poem)
-                    .environmentObject(PoemSpeechService.shared)
-            }
+            .padding(.horizontal, AppTheme.paddingScreen)
+            .padding(.top, 12)
+            .padding(.bottom, 40)
+        }
+        .background(AppTheme.background.ignoresSafeArea())
+        .navigationTitle(category)
+        .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(item: $selectedPoem) { poem in
+            PoetryReaderView(poem: poem)
+                .environmentObject(PoemSpeechService.shared)
         }
     }
 }

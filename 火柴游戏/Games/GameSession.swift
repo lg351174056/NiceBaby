@@ -9,6 +9,9 @@ enum GameKind: String, CaseIterable, Identifiable {
     case surnameMatch    // 百家姓配对
     case idiomFillBlank  // 成语填空（4 字挖 1）
     case idiomDictionary // 成语大全
+    case xiehouyuDictionary // 歇后语大全
+    case sanzijing          // 三字经
+    case dictionary         // 汉语词典
 
     var id: String { rawValue }
 
@@ -16,9 +19,12 @@ enum GameKind: String, CaseIterable, Identifiable {
         switch self {
         case .matchstick:     return "火柴游戏"
         case .poetryComplete: return "诗词补全"
-        case .surnameMatch:   return "百家姓配对"
+        case .surnameMatch:   return "百家姓闯关"
         case .idiomFillBlank: return "成语填空"
-        case .idiomDictionary: return "成语大全"
+        case .idiomDictionary:return "成语大全"
+        case .xiehouyuDictionary: return "歇后语大全"
+        case .sanzijing:      return "三字经"
+        case .dictionary:     return "汉语词典"
         }
     }
 
@@ -26,9 +32,12 @@ enum GameKind: String, CaseIterable, Identifiable {
         switch self {
         case .matchstick:     return "移动一根火柴，让等式成立"
         case .poetryComplete: return "古诗少了一句，从四个选项中选出来"
-        case .surnameMatch:   return "翻牌找出汉字与拼音的配对"
+        case .surnameMatch:   return "看字选音、听音选字、看音选字三种模式"
         case .idiomFillBlank: return "成语缺一字，从下方候选中选出来"
-        case .idiomDictionary: return "海量成语词典，支持拼音索引"
+        case .idiomDictionary:return "海量成语词典，支持拼音索引"
+        case .xiehouyuDictionary: return "经典歇后语，支持快速搜索"
+        case .sanzijing:      return "人之初，性本善"
+        case .dictionary:     return "查拼音、看部首、听发音"
         }
     }
 
@@ -36,19 +45,25 @@ enum GameKind: String, CaseIterable, Identifiable {
         switch self {
         case .matchstick:     return "function"
         case .poetryComplete: return "scroll.fill"
-        case .surnameMatch:   return "rectangle.grid.2x2.fill"
+        case .surnameMatch:   return "person.2.fill"
         case .idiomFillBlank: return "square.dashed"
-        case .idiomDictionary: return "text.book.closed.fill"
+        case .idiomDictionary:return "text.book.closed.fill"
+        case .xiehouyuDictionary: return "quote.bubble.fill"
+        case .sanzijing:      return "book.fill"
+        case .dictionary:     return "character.book.closed.fill"
         }
     }
 
     var palette: (Color, Color) {
         switch self {
         case .matchstick:     return (AppTheme.accentBlue, AppTheme.accentIndigo)
-        case .poetryComplete: return (AppTheme.accentTerracotta, AppTheme.accentYellow)
+        case .poetryComplete: return (AppTheme.accentBlue, AppTheme.accentIndigo)
         case .surnameMatch:   return (AppTheme.accentMint, AppTheme.accentSage)
         case .idiomFillBlank: return (AppTheme.accentPurple, AppTheme.accentPink)
-        case .idiomDictionary: return (AppTheme.accentBlue, AppTheme.accentPink)
+        case .idiomDictionary:return (AppTheme.accentBlue, AppTheme.accentPink)
+        case .xiehouyuDictionary: return (Color.orange, Color.red)
+        case .sanzijing:      return (Color.teal, Color.cyan)
+        case .dictionary:     return (Color(red: 180/255, green: 130/255, blue: 70/255), Color(red: 210/255, green: 160/255, blue: 100/255))
         }
     }
 }
@@ -320,47 +335,51 @@ private struct ConfettiPieceView: View {
 struct GameTopBar<Trailing: View>: View {
     let title: String
     let progressText: String
-    var palette: (Color, Color)
+    let palette: (Color, Color)
     let onExit: () -> Void
-    var trailingView: Trailing
+    var trailing: Trailing? = nil
+    
+    var body: some View {
+        HStack {
+            Button(action: onExit) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(palette.0)
+                    .padding(10)
+                    .background(palette.0.opacity(0.15), in: Circle())
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
+                
+                Text(progressText)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+            .padding(.leading, 4)
+            
+            Spacer()
+            
+            if let trailing = trailing {
+                trailing
+            }
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+        .background(AppTheme.background)
+    }
+}
 
-    init(title: String, progressText: String, palette: (Color, Color), onExit: @escaping () -> Void, @ViewBuilder trailingView: () -> Trailing) {
+// 提供一个默认扩展，让没有 trailing 的地方依然能正常编译
+extension GameTopBar where Trailing == EmptyView {
+    init(title: String, progressText: String, palette: (Color, Color), onExit: @escaping () -> Void) {
         self.title = title
         self.progressText = progressText
         self.palette = palette
         self.onExit = onExit
-        self.trailingView = trailingView()
-    }
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Button(action: onExit) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.7), AppTheme.card)
-            }
-            .buttonStyle(.plain)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(progressText)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-
-            Spacer()
-            
-            trailingView
-        }
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 8)
-    }
-}
-
-extension GameTopBar where Trailing == EmptyView {
-    init(title: String, progressText: String, palette: (Color, Color), onExit: @escaping () -> Void) {
-        self.init(title: title, progressText: progressText, palette: palette, onExit: onExit) { EmptyView() }
+        self.trailing = nil
     }
 }

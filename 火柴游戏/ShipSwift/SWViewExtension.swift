@@ -145,6 +145,36 @@ extension View {
     }
 }
 
+// MARK: - Glass Card Style
+
+extension View {
+    func glassCard(
+        cornerRadius: CGFloat = 24,
+        padding: CGFloat = 20
+    ) -> some View {
+        self
+            .padding(padding)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
+            .shadow(color: .black.opacity(0.02), radius: 2, x: 0, y: 1)
+    }
+}
+
+// MARK: - Bouncy Press ButtonStyle
+
+struct SWBouncyButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.92 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == SWBouncyButtonStyle {
+    static var bouncy: SWBouncyButtonStyle { .init() }
+}
+
 // MARK: - Preview
 
 #Preview("Button Styles") {

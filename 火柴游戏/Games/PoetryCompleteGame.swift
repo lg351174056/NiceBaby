@@ -1,49 +1,170 @@
 import SwiftUI
+import Combine
 
 // MARK: - 行状态（文件级共享，供 ViewModifier 访问）
 fileprivate enum LineState { case normal, correct, wrong }
 
+// MARK: - 学段 / 年级 / 题册
+
+enum SchoolStage: String, CaseIterable, Identifiable, Codable {
+    case primary    // 小学
+    case junior     // 初中
+    case senior     // 高中
+    var id: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .primary: return "小学"
+        case .junior:  return "初中"
+        case .senior:  return "高中"
+        }
+    }
+}
+
+/// 一本"册子" = 一个 JSON 文件
+struct GradeBook: Hashable, Identifiable {
+    let stage: SchoolStage
+    let gradeIndex: Int    // 小学 1..6 / 初中 7..9 / 高中 10..12
+    let term: Int          // 1=上册, 2=下册
+    let track: Int         // 0=未区分, 1=课内, 2=课外（仅初中区分）
+    let displayName: String   // "三上"
+    let fileName: String      // "小学古诗·三年级上册"
+
+    var id: String { fileName + (track == 0 ? "" : "·t\(track)") }
+
+    /// 学段累积排序键（同学期的课内+课外算同一档，互相补给）
+    var sortKey: Int { gradeIndex * 100 + term * 10 }
+
+    static func gradeChinese(_ g: Int) -> String {
+        switch g {
+        case 1, 7, 10:  return "一"
+        case 2, 8, 11:  return "二"
+        case 3, 9, 12:  return "三"
+        case 4: return "四"
+        case 5: return "五"
+        case 6: return "六"
+        default: return "?"
+        }
+    }
+}
+
 // MARK: - 诗词补全数据层
-//
-// 数据来源：Bundle 里的“唐诗三百首.json”“唐诗三百首(二).json”
-// 同时支持两种字段格式：
-//   a) paragraphs: ["床前明月光，疑是地上霜。", "举头望明月，低头思故乡。"]
-//   b) contents:   "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。"
-//
-// 入选标准：切完子句后 = 4 句或 8 句，且全部句子字数一致（5 或 7），
-// 这样填空时 4 个候选字数相同，不会一眼穿。
 
 struct PoemCompleteEntry: Hashable {
     let title: String
     let author: String
     let dynasty: String
     let lines: [String]   // 切分后的句子（不含标点）
-    let charPerLine: Int  // 每句字数（5 或 7）
+    let charPerLine: Int  // 每句字数
 }
 
 enum PoetryCompleteCatalog {
-    /// 启动时一次性构建。
-    static let entries: [PoemCompleteEntry] = build()
 
-    private static let resourceFiles = ["唐诗三百首", "唐诗三百首(二)"]
+    // 全部已知册子（与 Datas/JSON/ 下文件名对应）
+    static let allBooks: [GradeBook] = buildAllBooks()
 
-    private static func build() -> [PoemCompleteEntry] {
-        var result: [PoemCompleteEntry] = []
-        for name in resourceFiles {
-            if let arr = loadFile(name: name) {
-                result.append(contentsOf: arr)
+    private static func buildAllBooks() -> [GradeBook] {
+        var arr: [GradeBook] = []
+        // 小学：一上 ~ 六下
+        for g in 1...6 {
+            for term in 1...2 {
+                let termCh = (term == 1) ? "上" : "下"
+                let gradeCh = GradeBook.gradeChinese(g)
+                arr.append(GradeBook(
+                    stage: .primary,
+                    gradeIndex: g,
+                    term: term,
+                    track: 0,
+                    displayName: "\(gradeCh)\(termCh)",
+                    fileName: "poetry_primary_g\(g)_t\(term)"
+                ))
             }
         }
-        // 跨文件去重（按所有句子拼接做 key）
+        // 初中：七上 ~ 九下，每册分课内/课外
+        for g in 7...9 {
+            for term in 1...2 {
+                for track in [1, 2] {
+                    let termCh = (term == 1) ? "上" : "下"
+                    let gradeCh = GradeBook.gradeChinese(g)
+                    let trackCh = (track == 1) ? "课内" : "课外"
+                    let trackEn = (track == 1) ? "in" : "out"
+                    arr.append(GradeBook(
+                        stage: .junior,
+                        gradeIndex: g,
+                        term: term,
+                        track: track,
+                        displayName: "\(gradeCh)\(termCh)·\(trackCh)",
+                        fileName: "poetry_junior_g\(g)_t\(term)_\(trackEn)"
+                    ))
+                }
+            }
+        }
+        // 高中：一上 ~ 三下
+        for g in 10...12 {
+            for term in 1...2 {
+                let termCh = (term == 1) ? "上" : "下"
+                let gradeCh = GradeBook.gradeChinese(g)
+                arr.append(GradeBook(
+                    stage: .senior,
+                    gradeIndex: g,
+                    term: term,
+                    track: 0,
+                    displayName: "\(gradeCh)\(termCh)",
+                    fileName: "poetry_senior_g\(g)_t\(term)"
+                ))
+            }
+        }
+        return arr
+    }
+
+    /// 学段下所有册子
+    static func books(for stage: SchoolStage) -> [GradeBook] {
+        allBooks.filter { $0.stage == stage }.sorted { $0.sortKey < $1.sortKey }
+    }
+
+    /// 累积模式下应包含的册子（同学段内 sortKey ≤ target）
+    static func cumulativeBooks(upTo target: GradeBook) -> [GradeBook] {
+        allBooks.filter { $0.stage == target.stage && $0.sortKey <= target.sortKey }
+    }
+
+    // MARK: 单文件加载（带缓存）
+
+    private static var fileCache: [String: [PoemCompleteEntry]] = [:]
+    private static let cacheLock = NSLock()
+
+    /// 加载单个册子的入选诗集合（按学段规则过滤）
+    static func entries(for book: GradeBook) -> [PoemCompleteEntry] {
+        cacheLock.lock()
+        if let cached = fileCache[book.fileName] {
+            cacheLock.unlock()
+            return cached
+        }
+        cacheLock.unlock()
+
+        let raw = loadFile(name: book.fileName) ?? []
+        let filtered = raw.compactMap { e -> PoemCompleteEntry? in
+            return passFilter(entry: e, stage: book.stage)
+        }
+
+        cacheLock.lock()
+        fileCache[book.fileName] = filtered
+        cacheLock.unlock()
+        return filtered
+    }
+
+    /// 累积模式下的入选诗集合（去重）
+    static func entries(for book: GradeBook, cumulative: Bool) -> [PoemCompleteEntry] {
+        let books = cumulative ? cumulativeBooks(upTo: book) : [book]
         var seen = Set<String>()
-        var unique: [PoemCompleteEntry] = []
-        for e in result {
-            let key = e.lines.joined()
-            if seen.insert(key).inserted {
-                unique.append(e)
+        var result: [PoemCompleteEntry] = []
+        for b in books {
+            for e in entries(for: b) {
+                let key = e.lines.joined()
+                if seen.insert(key).inserted {
+                    result.append(e)
+                }
             }
         }
-        return unique
+        return result
     }
 
     private static func loadFile(name: String) -> [PoemCompleteEntry]? {
@@ -59,7 +180,7 @@ enum PoetryCompleteCatalog {
         }
         guard let arr = try? JSONDecoder().decode([Entry].self, from: data) else { return nil }
 
-        return arr.compactMap { e in
+        return arr.compactMap { e -> PoemCompleteEntry? in
             let raw: String = {
                 if let p = e.paragraphs, !p.isEmpty { return p.joined(separator: "\n") }
                 if let c = e.contents, !c.isEmpty { return c }
@@ -68,12 +189,9 @@ enum PoetryCompleteCatalog {
             if raw.isEmpty { return nil }
 
             let lines = splitToShortLines(raw)
-            // 仅收 4/8 句、字数一致、5 或 7 字
-            guard lines.count == 4 || lines.count == 8 else { return nil }
+            guard !lines.isEmpty else { return nil }
             let lens = lines.map { $0.count }
-            guard let n = lens.first, lens.allSatisfy({ $0 == n }) else { return nil }
-            guard n == 5 || n == 7 else { return nil }
-
+            guard let n = lens.first else { return nil }
             return PoemCompleteEntry(
                 title: e.title ?? "",
                 author: e.author ?? "",
@@ -82,6 +200,22 @@ enum PoetryCompleteCatalog {
                 charPerLine: n
             )
         }
+    }
+
+    /// 学段差异化入选规则
+    /// - 小学：4 句 + 字数一致（4–7 字，兼容童诗）
+    /// - 初中/高中：4 / 6 / 8 句 + 字数一致（4–7 字，兼容乐府/词牌/元曲）
+    private static func passFilter(entry: PoemCompleteEntry, stage: SchoolStage) -> PoemCompleteEntry? {
+        let lens = entry.lines.map { $0.count }
+        guard let n = lens.first, lens.allSatisfy({ $0 == n }) else { return nil }
+        guard n >= 4 && n <= 7 else { return nil }
+        switch stage {
+        case .primary:
+            guard entry.lines.count == 4 else { return nil }
+        case .junior, .senior:
+            guard [4, 6, 8].contains(entry.lines.count) else { return nil }
+        }
+        return entry
     }
 
     /// 按 "，。；！？、\n" 切分为子句，返回不含标点的句子。
@@ -109,36 +243,61 @@ enum PoetryCompleteCatalog {
         let id = UUID()
         let entry: PoemCompleteEntry
         let blankIndex: Int    // 0..lines.count-1
-        let answer: String     // 正确的那一句（无标点）
+        let answer: String     // 正确的那一句
         let options: [String]  // 4 选项已打乱
     }
 
-    /// 出 N 道题。干扰句来自同字数池，要求与该首诗任何一句都不重复，且选项互不重复。
-    static func makeQuestions(count: Int) -> [Question] {
-        guard !entries.isEmpty else { return [] }
+    /// 在指定题库下出 N 道题。
+    /// - 干扰句优先来自当前题库（同字数池），不够时回退到全学段。
+    /// - 当前题库本体诗也不足时，自动并入同学段全部册子作兜底。
+    static func makeQuestions(book: GradeBook, cumulative: Bool, count: Int) -> [Question] {
+        var pool = entries(for: book, cumulative: cumulative)
 
-        // 按字数建立干扰句池
-        var poolByLen: [Int: [String]] = [:]
-        for e in entries {
-            poolByLen[e.charPerLine, default: []].append(contentsOf: e.lines)
+        // 本体兜底：当前册（含累积）筛完 < count，自动扩到同学段全部册子
+        if pool.count < count {
+            var seen = Set(pool.map { $0.lines.joined() })
+            for b in books(for: book.stage) {
+                for e in entries(for: b) {
+                    let key = e.lines.joined()
+                    if seen.insert(key).inserted { pool.append(e) }
+                }
+            }
         }
-        for (k, v) in poolByLen {
-            poolByLen[k] = Array(Set(v))
+        if pool.isEmpty { return [] }
+
+        // 同字数干扰句池（来自当前题库）
+        var distractorPool: [Int: [String]] = [:]
+        for e in pool {
+            distractorPool[e.charPerLine, default: []].append(contentsOf: e.lines)
+        }
+        // 去重
+        for (k, v) in distractorPool { distractorPool[k] = Array(Set(v)) }
+
+        // 当前池干扰句不够时（小池场景），从同学段全部册子补
+        let needFallback = distractorPool.values.contains(where: { $0.count < 8 })
+        if needFallback {
+            for b in books(for: book.stage) {
+                for e in entries(for: b) {
+                    distractorPool[e.charPerLine, default: []].append(contentsOf: e.lines)
+                }
+            }
+            for (k, v) in distractorPool { distractorPool[k] = Array(Set(v)) }
         }
 
         var qs: [Question] = []
-        for entry in entries.shuffled() {
+        pool.shuffle()
+        for entry in pool {
             if qs.count >= count { break }
             let blank = Int.random(in: 0..<entry.lines.count)
             let answer = entry.lines[blank]
             let exclude = Set(entry.lines)
-            let pool = poolByLen[entry.charPerLine] ?? []
+            let candidates = distractorPool[entry.charPerLine] ?? []
 
             var distractors: [String] = []
             var seen = Set<String>([answer])
             var safety = 0
-            while distractors.count < 3 && safety < 300 {
-                if let s = pool.randomElement(),
+            while distractors.count < 3 && safety < 400 {
+                if let s = candidates.randomElement(),
                    !exclude.contains(s),
                    seen.insert(s).inserted {
                     distractors.append(s)
@@ -167,15 +326,76 @@ enum PoetryCompleteCatalog {
     }
 }
 
+// MARK: - 视图模型（学段/年级/累积持久化）
+
+@MainActor
+final class PoetryCompleteSelection: ObservableObject {
+    @Published var stage: SchoolStage
+    @Published var book: GradeBook
+    @Published var cumulative: Bool
+
+    private let stageKey = "poetry.complete.stage"
+    private let bookKey = "poetry.complete.book"
+    private let cumKey  = "poetry.complete.cumulative"
+
+    init() {
+        let d = UserDefaults.standard
+        let savedStage = SchoolStage(rawValue: d.string(forKey: "poetry.complete.stage") ?? "") ?? .primary
+        let savedBookId = d.string(forKey: "poetry.complete.book") ?? ""
+        let cum = d.object(forKey: "poetry.complete.cumulative") as? Bool ?? true
+
+        let books = PoetryCompleteCatalog.books(for: savedStage)
+        let book = books.first(where: { $0.id == savedBookId })
+            ?? books.first(where: { savedStage == .primary && $0.gradeIndex == 3 && $0.term == 2 })
+            ?? books.last
+            ?? PoetryCompleteCatalog.allBooks[0]
+
+        self.stage = savedStage
+        self.book = book
+        self.cumulative = cum
+    }
+
+    func selectStage(_ s: SchoolStage) {
+        guard stage != s else { return }
+        stage = s
+        // 切学段时挑该学段最后一册（最容易"累积"覆盖最多）
+        if let last = PoetryCompleteCatalog.books(for: s).last {
+            book = last
+        }
+        persist()
+    }
+
+    func selectBook(_ b: GradeBook) {
+        guard book != b else { return }
+        book = b
+        persist()
+    }
+
+    func setCumulative(_ on: Bool) {
+        guard cumulative != on else { return }
+        cumulative = on
+        persist()
+    }
+
+    private func persist() {
+        let d = UserDefaults.standard
+        d.set(stage.rawValue, forKey: stageKey)
+        d.set(book.id, forKey: bookKey)
+        d.set(cumulative, forKey: cumKey)
+    }
+}
+
 // MARK: - 诗词补全游戏视图
 
 struct PoetryCompleteGameView: View {
     let onExit: () -> Void
 
+    @StateObject private var selection = PoetryCompleteSelection()
+
     @State private var questions: [PoetryCompleteCatalog.Question] = []
     @State private var currentIndex = 0
-    @State private var picked: String? = nil      // 用户已点击的选项
-    @State private var isCorrect: Bool? = nil     // nil = 未作答
+    @State private var picked: String? = nil
+    @State private var isCorrect: Bool? = nil
     @State private var correctCount = 0
     @State private var startTime = Date()
     @State private var showResult = false
@@ -202,6 +422,11 @@ struct PoetryCompleteGameView: View {
                     onExit: onExit
                 )
 
+                gradePicker
+                    .padding(.horizontal, AppTheme.paddingScreen)
+                    .padding(.top, 10)
+                    .padding(.bottom, 6)
+
                 if let q = current {
                     questionBody(q: q).id(q.id)
                 } else if questions.isEmpty {
@@ -226,21 +451,116 @@ struct PoetryCompleteGameView: View {
             }
         }
         .onAppear {
-            if questions.isEmpty {
-                questions = PoetryCompleteCatalog.makeQuestions(count: totalQuestions)
-                startTime = Date()
+            if questions.isEmpty { reloadQuestions() }
+        }
+        .onChange(of: selection.book) { _, _ in reloadQuestions() }
+        .onChange(of: selection.cumulative) { _, _ in reloadQuestions() }
+    }
+
+    // MARK: - 顶部学段 + 年级选择条
+
+    private var gradePicker: some View {
+        VStack(spacing: 8) {
+            // 学段 segment
+            HStack(spacing: 8) {
+                ForEach(SchoolStage.allCases) { s in
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        withAnimation(.easeInOut(duration: 0.18)) { selection.selectStage(s) }
+                    } label: {
+                        Text(s.displayName)
+                            .font(.system(size: 14, weight: .heavy, design: .rounded))
+                            .foregroundStyle(selection.stage == s ? .white : kind.palette.0)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
+                            .background(
+                                Capsule().fill(
+                                    selection.stage == s
+                                    ? AnyShapeStyle(LinearGradient(colors: [kind.palette.0, kind.palette.1],
+                                                                   startPoint: .leading, endPoint: .trailing))
+                                    : AnyShapeStyle(kind.palette.0.opacity(0.12))
+                                )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer(minLength: 0)
+
+                // 累积/仅本册
+                Toggle(isOn: Binding(get: { selection.cumulative },
+                                     set: { selection.setCumulative($0) })) {
+                    Text(selection.cumulative ? "累积" : "仅本册")
+                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .tint(kind.palette.0)
+                .scaleEffect(0.78)
+                .frame(width: 52)
+                Text(selection.cumulative ? "累积" : "仅本册")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+
+            // 年级胶囊（横向滚动）
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(PoetryCompleteCatalog.books(for: selection.stage)) { b in
+                        let selected = (b == selection.book)
+                        Button {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            withAnimation(.easeInOut(duration: 0.18)) { selection.selectBook(b) }
+                        } label: {
+                            Text(b.displayName)
+                                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                                .foregroundStyle(selected ? .white : AppTheme.textPrimary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule().fill(
+                                        selected
+                                        ? AnyShapeStyle(kind.palette.0)
+                                        : AnyShapeStyle(AppTheme.card)
+                                    )
+                                )
+                                .overlay(
+                                    Capsule().strokeBorder(
+                                        selected ? Color.clear : kind.palette.0.opacity(0.25),
+                                        lineWidth: 1.5
+                                    )
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 2)
             }
         }
     }
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Image(systemName: "scroll")
                 .font(.system(size: 56, weight: .light))
                 .foregroundStyle(AppTheme.textSecondary.opacity(0.6))
-            Text("暂无可用诗题")
+            Text("当前题库为空")
                 .font(.system(size: 16, weight: .heavy, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary)
+            if !selection.cumulative {
+                Button {
+                    selection.setCumulative(true)
+                } label: {
+                    Text("切换为「累积」模式")
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Capsule().fill(kind.palette.0))
+                }
+                .buttonStyle(.plain)
+            }
         }
         .frame(maxHeight: .infinity)
     }
@@ -305,29 +625,21 @@ struct PoetryCompleteGameView: View {
         let author = q.entry.author
         if !dynasty.isEmpty || !author.isEmpty {
             HStack(spacing: 4) {
-                if !dynasty.isEmpty {
-                    Text("【\(dynasty)】")
-                }
-                if !author.isEmpty {
-                    Text(author)
-                }
+                if !dynasty.isEmpty { Text("【\(dynasty)】") }
+                if !author.isEmpty  { Text(author) }
             }
             .font(.system(size: 13, weight: .semibold, design: .rounded))
             .foregroundStyle(AppTheme.textSecondary)
         }
     }
 
-    /// 正常一行：文字 + 末标点（偶数索引"，"，奇数索引"。"）
     private func lineRow(text: String, idx: Int, state: LineState) -> some View {
         let punc = (idx % 2 == 0) ? "，" : "。"
         let (fg, bgStart, bgEnd): (Color, Color, Color) = {
             switch state {
-            case .normal:
-                return (AppTheme.textPrimary, .clear, .clear)
-            case .correct:
-                return (.white, AppTheme.accentSage, AppTheme.accentMint)
-            case .wrong:
-                return (.white, AppTheme.accentPink, AppTheme.accentTerracotta)
+            case .normal:  return (AppTheme.textPrimary, .clear, .clear)
+            case .correct: return (.white, AppTheme.accentSage, AppTheme.accentMint)
+            case .wrong:   return (.white, AppTheme.accentPink, AppTheme.accentTerracotta)
             }
         }()
         return HStack(spacing: 0) {
@@ -345,7 +657,6 @@ struct PoetryCompleteGameView: View {
         .modifier(PoetryShake(state: state))
     }
 
-    /// 隐藏的那一行：未答 = 虚线方框 + 问号；已答 = 飞入的句子，颜色按对错
     @ViewBuilder
     private func blankLineRow(q: PoetryCompleteCatalog.Question) -> some View {
         if let p = picked {
@@ -391,8 +702,6 @@ struct PoetryCompleteGameView: View {
         }
     }
 
-    // MARK: - 提示文字
-
     private var hintLabel: some View {
         HStack(spacing: 6) {
             Image(systemName: isCorrect == true ? "checkmark.circle.fill"
@@ -411,8 +720,6 @@ struct PoetryCompleteGameView: View {
         .animation(.easeInOut(duration: 0.2), value: isCorrect)
     }
 
-    // MARK: - 候选选项
-
     private func optionList(q: PoetryCompleteCatalog.Question) -> some View {
         VStack(spacing: 10) {
             ForEach(Array(q.options.enumerated()), id: \.element) { (idx, line) in
@@ -425,7 +732,6 @@ struct PoetryCompleteGameView: View {
     private func optionRow(line: String, label: String, q: PoetryCompleteCatalog.Question) -> some View {
         let isPicked = (picked == line)
         if isPicked {
-            // 占位（matchedGeometryEffect 的 source 端，让网格不抖）
             Color.clear.frame(height: 56)
         } else {
             Button {
@@ -465,7 +771,6 @@ struct PoetryCompleteGameView: View {
         withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
             picked = line
         }
-        // 等飞行完成再判定
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             let correct = (line == q.answer)
             withAnimation(.easeInOut(duration: 0.2)) { isCorrect = correct }
@@ -489,13 +794,22 @@ struct PoetryCompleteGameView: View {
     }
 
     private func restart() {
-        questions = PoetryCompleteCatalog.makeQuestions(count: totalQuestions)
+        reloadQuestions()
+        startTime = Date()
+        showResult = false
+    }
+
+    private func reloadQuestions() {
+        questions = PoetryCompleteCatalog.makeQuestions(
+            book: selection.book,
+            cumulative: selection.cumulative,
+            count: totalQuestions
+        )
         currentIndex = 0
         picked = nil
         isCorrect = nil
         correctCount = 0
         startTime = Date()
-        showResult = false
     }
 }
 

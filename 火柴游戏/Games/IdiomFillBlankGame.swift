@@ -43,21 +43,24 @@ struct IdiomFillBlankGameView: View {
                     title: kind.title,
                     progressText: "第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)",
                     palette: kind.palette,
-                    onExit: onExit
-                ) {
-                    if current != nil {
-                        Button {
-                            showExplanation = true
-                        } label: {
-                            Image(systemName: "book.pages.fill")
-                                .font(.system(size: 24))
-                                .foregroundStyle(kind.palette.0)
-                                .padding(8)
-                                .background(kind.palette.0.opacity(0.15), in: Circle())
+                    onExit: onExit,
+                    trailing: AnyView(
+                        Group {
+                            if current != nil {
+                                Button {
+                                    showExplanation = true
+                                } label: {
+                                    Image(systemName: "book.pages.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundStyle(kind.palette.0)
+                                        .padding(8)
+                                        .background(kind.palette.0.opacity(0.15), in: Circle())
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .buttonStyle(.plain)
-                    }
-                }
+                    )
+                )
 
                 if let q = current {
                     questionBody(q: q)

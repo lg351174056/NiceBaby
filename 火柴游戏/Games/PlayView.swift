@@ -132,6 +132,15 @@ struct PlayView: View {
 
         case .idiomDictionary:
             IdiomDictionaryView(onExit: { presentedGame = nil })
+
+        case .xiehouyuDictionary:
+            XiehouyuDictionaryView(onExit: { presentedGame = nil })
+
+        case .sanzijing:
+            SanzijingView(onExit: { presentedGame = nil })
+            
+        case .dictionary:
+            DictionaryGameView(onExit: { presentedGame = nil })
         }
     }
 }

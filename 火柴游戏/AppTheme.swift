@@ -39,4 +39,28 @@ enum AppTheme {
     static func titleHero() -> Font { .system(size: 32, weight: .heavy, design: .rounded) }
     static func titleSection() -> Font { .system(size: 22, weight: .bold, design: .rounded) }
     static func captionMuted() -> Font { .system(size: 14, weight: .semibold, design: .rounded) }
+
+    // MARK: Home Mesh Gradient
+    static let homeMeshA: [Color] = [
+        Color(red: 0.92, green: 0.94, blue: 1.0),
+        Color(red: 0.88, green: 0.92, blue: 0.99),
+        Color(red: 0.94, green: 0.95, blue: 1.0),
+        Color(red: 0.90, green: 0.93, blue: 0.99),
+        Color(red: 0.93, green: 0.95, blue: 1.0),
+        Color(red: 0.89, green: 0.91, blue: 0.98),
+        Color(red: 0.95, green: 0.96, blue: 1.0),
+        Color(red: 0.91, green: 0.94, blue: 0.99),
+        Color(red: 0.93, green: 0.95, blue: 1.0)
+    ]
+    static let homeMeshB: [Color] = [
+        Color(red: 0.94, green: 0.92, blue: 1.0),
+        Color(red: 0.91, green: 0.93, blue: 1.0),
+        Color(red: 0.89, green: 0.94, blue: 0.98),
+        Color(red: 0.93, green: 0.91, blue: 0.99),
+        Color(red: 0.90, green: 0.95, blue: 1.0),
+        Color(red: 0.92, green: 0.93, blue: 0.98),
+        Color(red: 0.91, green: 0.95, blue: 0.99),
+        Color(red: 0.94, green: 0.93, blue: 1.0),
+        Color(red: 0.90, green: 0.94, blue: 0.99)
+    ]
 }
