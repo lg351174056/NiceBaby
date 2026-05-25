@@ -48,6 +48,17 @@ struct ExploreView: View {
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
 
+                        NavigationLink(destination: TutuTagSelectionView()) {
+                            ExploreModuleCard(
+                                title: "学习资料",
+                                subtitle: "课程笔记、单元练习，全科覆盖",
+                                icon: "books.vertical.fill",
+                                colors: (AppTheme.accentMint, AppTheme.accentSage),
+                                isPlaceholder: false
+                            )
+                        }
+                        .buttonStyle(ExploreBounceButtonStyle())
+
                         ExploreModuleCard(
                             title: "奇妙科学",
                             subtitle: "即将开放...",
