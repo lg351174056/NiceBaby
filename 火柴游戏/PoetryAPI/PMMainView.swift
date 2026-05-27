@@ -38,6 +38,7 @@ struct PMMainView: View {
         .background(AppTheme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar, .tabBar)
+        .enableSwipeBack()
     }
 
     // MARK: - Header Area

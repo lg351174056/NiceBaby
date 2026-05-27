@@ -154,7 +154,10 @@ extension View {
     ) -> some View {
         self
             .padding(padding)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(
+                Color.white.opacity(0.78),
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
             .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
             .shadow(color: .black.opacity(0.02), radius: 2, x: 0, y: 1)
     }

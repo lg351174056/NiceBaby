@@ -243,6 +243,7 @@ struct ChinaGeographyView: View {
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
     }
     
     private func mainContent(width: CGFloat, height: CGFloat) -> some View {

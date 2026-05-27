@@ -33,6 +33,7 @@ struct SWAnimatedMeshGradient: View {
             ],
             colors: appear ? paletteA : paletteB
         )
+        .drawingGroup()
         .onAppear {
             withAnimation(.easeInOut(duration: duration).repeatForever(autoreverses: true)) {
                 appear = true

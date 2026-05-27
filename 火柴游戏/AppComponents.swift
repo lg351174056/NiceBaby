@@ -55,12 +55,45 @@ struct UnifiedBackButton: ViewModifier {
                     }
                 }
             }
+            .enableSwipeBack()
     }
 }
 
 extension View {
     func unifiedBackButton(title: String) -> some View {
         modifier(UnifiedBackButton(title: title))
+    }
+}
+
+// MARK: - 恢复侧滑返回手势
+
+struct EnableSwipeBackModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content.background { SwipeBackHelper() }
+    }
+}
+
+extension View {
+    func enableSwipeBack() -> some View {
+        modifier(EnableSwipeBackModifier())
+    }
+}
+
+private struct SwipeBackHelper: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> SwipeBackViewController {
+        SwipeBackViewController()
+    }
+    func updateUIViewController(_ uiViewController: SwipeBackViewController, context: Context) {}
+}
+
+final class SwipeBackViewController: UIViewController {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // 沿 responder chain 找到 NavigationController，强制开启侧滑
+        if let nav = navigationController {
+            nav.interactivePopGestureRecognizer?.isEnabled = true
+            nav.interactivePopGestureRecognizer?.delegate = nil
+        }
     }
 }
 

@@ -468,17 +468,15 @@ private struct GradeBookRow: View {
 struct PoetryCollectionListView: View {
     let item: PoetryLibraryItem
     @StateObject private var store = ClassicalPoetryStore.shared
-    
+
     private var matchedPoems: [Poem] {
-        // 教材同步走特殊路径
         if item.id == "textbook" { return [] }
-        
         let matched = store.allCollections.filter { collection in
             item.filePatterns.contains(where: { collection.title.contains($0) })
         }
         return matched.flatMap { $0.poems }
     }
-    
+
     var body: some View {
         Group {
             if item.id == "textbook" {
@@ -487,7 +485,13 @@ struct PoetryCollectionListView: View {
                         .padding(.bottom, 40)
                 }
             } else {
-                poemListContent(poems: matchedPoems)
+                PoemCollectionContent(
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    emoji: item.emoji,
+                    colors: item.colors,
+                    poems: matchedPoems
+                )
             }
         }
         .background(AppTheme.background.ignoresSafeArea())
@@ -502,77 +506,151 @@ struct PoetryPoemListView: View {
     let poems: [Poem]
 
     var body: some View {
-        poemListContent(poems: poems)
-            .background(AppTheme.background.ignoresSafeArea())
-            .unifiedBackButton(title: title)
+        PoemCollectionContent(
+            title: title,
+            subtitle: "\(poems.count) 首诗词",
+            emoji: "📖",
+            colors: (AppTheme.accentBlue, AppTheme.accentIndigo),
+            poems: poems
+        )
+        .background(AppTheme.background.ignoresSafeArea())
+        .unifiedBackButton(title: title)
     }
 }
 
-// MARK: - 通用诗词列表内容（可复用）
+// MARK: - 诗词集合页内容（Hero + 诗词卡片列表）
 
-@ViewBuilder
-private func poemListContent(poems: [Poem]) -> some View {
-    if poems.isEmpty {
-        VStack(spacing: 16) {
-            Image(systemName: "tray")
-                .font(.system(size: 48))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
-            Text("暂无诗词数据")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    } else {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 10) {
-                ForEach(poems) { poem in
-                    NavigationLink(value: poem) {
-                        PoemRow(poem: poem)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 12)
-            .padding(.bottom, 40)
-        }
-    }
-}
+private struct PoemCollectionContent: View {
+    let title: String
+    let subtitle: String
+    let emoji: String
+    let colors: (Color, Color)
+    let poems: [Poem]
 
-private struct PoemRow: View {
-    let poem: Poem
-    
     var body: some View {
-        HStack(spacing: 14) {
-            // 左侧小色块装饰
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(
-                    LinearGradient(colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
-                                   startPoint: .top, endPoint: .bottom)
-                )
-                .frame(width: 4, height: 36)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(poem.title)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(1)
-                Text(poem.author)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
+        if poems.isEmpty {
+            VStack(spacing: 16) {
+                Image(systemName: "tray")
+                    .font(.system(size: 48))
+                    .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                Text("暂无诗词数据")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
             }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 0) {
+                    // Hero 头部
+                    collectionHero
+
+                    // 诗词列表
+                    LazyVStack(spacing: 12) {
+                        ForEach(Array(poems.enumerated()), id: \.element.id) { index, poem in
+                            NavigationLink(value: poem) {
+                                PoemCard(poem: poem, index: index, accentColor: colors.0)
+                            }
+                            .buttonStyle(.bouncy)
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.paddingScreen)
+                    .padding(.top, 20)
+                    .padding(.bottom, 40)
+                }
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(AppTheme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.03), radius: 4, y: 2)
+    }
+
+    private var collectionHero: some View {
+        VStack(spacing: 12) {
+            Text(emoji)
+                .font(.system(size: 48))
+
+            Text(title)
+                .font(.system(size: 24, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+
+            Text(subtitle + " · 共 \(poems.count) 首")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .background(
+            LinearGradient(
+                colors: [colors.0, colors.1],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(
+            RoundedRectangle(cornerRadius: 0, style: .continuous)
+        )
+        .overlay(alignment: .bottom) {
+            // 底部曲线过渡
+            Ellipse()
+                .fill(AppTheme.background)
+                .frame(width: UIScreen.main.bounds.width * 1.2, height: 40)
+                .offset(y: 20)
+        }
+        .clipped()
+    }
+}
+
+// MARK: - 诗词卡片（升级版）
+
+private struct PoemCard: View {
+    let poem: Poem
+    let index: Int
+    let accentColor: Color
+
+    private var firstLine: String {
+        let lines = poem.contents.components(separatedBy: "\n")
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        return lines.first ?? ""
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            // 序号
+            Text("\(index + 1)")
+                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(
+                    accentColor.opacity(0.8),
+                    in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                )
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(poem.title)
+                        .font(.system(size: 17, weight: .bold, design: .serif))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .lineLimit(1)
+                    Spacer()
+                    Text(poem.author)
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(accentColor.opacity(0.8))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(accentColor.opacity(0.1), in: Capsule())
+                }
+
+                Text(firstLine)
+                    .font(.system(size: 13, weight: .medium, design: .serif))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+                    .lineSpacing(2)
+            }
+        }
+        .padding(14)
+        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppTheme.separator.opacity(0.6), lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
     }
 }
 
@@ -696,6 +774,7 @@ struct PoetryDetailView: View {
         )
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .onDisappear {
             if speechService.activePoemId == poem.id {
                 speechService.stop()
