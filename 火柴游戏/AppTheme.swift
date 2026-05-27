@@ -28,17 +28,34 @@ enum AppTheme {
     static let matchControlTint = Color(red: 79/255.0, green: 70/255.0, blue: 229/255.0)
 
     // MARK: Layout
-    static let cornerLarge: CGFloat = 24 // 增加圆角
-    static let cornerMedium: CGFloat = 18 // 增加圆角
+    static let cornerXL: CGFloat = 28
+    static let cornerLarge: CGFloat = 24
+    static let cornerMedium: CGFloat = 18
     static let cornerSmall: CGFloat = 14
+    static let cornerXS: CGFloat = 10
     static let paddingScreen: CGFloat = 20
     static let cardShadowRadius: CGFloat = 12
 
+    // Spacing scale (8-base)
+    static let spacing4: CGFloat = 4
+    static let spacing8: CGFloat = 8
+    static let spacing12: CGFloat = 12
+    static let spacing16: CGFloat = 16
+    static let spacing20: CGFloat = 20
+    static let spacing24: CGFloat = 24
+    static let spacing32: CGFloat = 32
+    static let spacing48: CGFloat = 48
+
     // MARK: Typography helpers
-    // 全部替换为加粗、大字号的圆体字
-    static func titleHero() -> Font { .system(size: 32, weight: .heavy, design: .rounded) }
-    static func titleSection() -> Font { .system(size: 22, weight: .bold, design: .rounded) }
+    static func titleHero() -> Font { .system(size: 34, weight: .bold, design: .rounded) }
+    static func titleSection() -> Font { .system(size: 22, weight: .heavy, design: .rounded) }
+    static func cardTitle() -> Font { .system(size: 17, weight: .heavy, design: .rounded) }
+    static func bodyText() -> Font { .system(size: 15, weight: .medium, design: .rounded) }
+    static func caption() -> Font { .system(size: 13, weight: .semibold, design: .rounded) }
     static func captionMuted() -> Font { .system(size: 14, weight: .semibold, design: .rounded) }
+    static func micro() -> Font { .system(size: 11, weight: .medium, design: .rounded) }
+    static func poemDisplay() -> Font { .system(size: 22, weight: .medium, design: .serif) }
+    static func poemTitle() -> Font { .system(size: 32, weight: .heavy, design: .serif) }
 
     // MARK: Home Mesh Gradient
     static let homeMeshA: [Color] = [

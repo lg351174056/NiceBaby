@@ -1,10 +1,13 @@
 import SwiftUI
 
 struct ExploreView: View {
+    @State private var navPath = NavigationPath()
+
+    private var hideTabBar: Bool { !navPath.isEmpty }
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             VStack(spacing: 0) {
-                // 统一 TopBar
                 HStack(alignment: .center) {
                     Text("探索")
                         .font(.largeTitle.weight(.bold))
@@ -23,10 +26,10 @@ struct ExploreView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 12)
                 .background(AppTheme.background)
-                
+
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
-                        NavigationLink(destination: ChinaGeographyView()) {
+                        NavigationLink(value: ExploreDestination.geography) {
                             ExploreModuleCard(
                                 title: "中国地理大探险",
                                 subtitle: "木质拼图与图鉴，点亮神州大地",
@@ -36,8 +39,8 @@ struct ExploreView: View {
                             )
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
-                        
-                        NavigationLink(destination: VideoCategoryListView()) {
+
+                        NavigationLink(value: ExploreDestination.video) {
                             ExploreModuleCard(
                                 title: "视频乐园",
                                 subtitle: "海量英语动画、科学百科，随时播放",
@@ -48,7 +51,7 @@ struct ExploreView: View {
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
 
-                        NavigationLink(destination: TutuHomeView()) {
+                        NavigationLink(value: ExploreDestination.tutu) {
                             ExploreModuleCard(
                                 title: "学习资料",
                                 subtitle: "课程笔记、单元练习，全科覆盖",
@@ -66,7 +69,7 @@ struct ExploreView: View {
                             colors: (Color.orange, AppTheme.accentYellow),
                             isPlaceholder: true
                         )
-                        
+
                         ExploreModuleCard(
                             title: "上下五千年",
                             subtitle: "即将开放...",
@@ -81,9 +84,32 @@ struct ExploreView: View {
                 }
             }
             .background(AppTheme.background.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: ExploreDestination.self) { dest in
+                switch dest {
+                case .geography:
+                    ChinaGeographyView()
+                case .video:
+                    VideoCategoryListView()
+                case .tutu:
+                    TutuHomeView()
+                }
+            }
         }
+        .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
+        .animation(.easeInOut(duration: 0.2), value: hideTabBar)
     }
 }
+
+// MARK: - 导航目标
+
+enum ExploreDestination: Hashable {
+    case geography
+    case video
+    case tutu
+}
+
+// MARK: - Module Card
 
 private struct ExploreModuleCard: View {
     let title: String
@@ -91,7 +117,7 @@ private struct ExploreModuleCard: View {
     let icon: String
     let colors: (Color, Color)
     let isPlaceholder: Bool
-    
+
     var body: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
@@ -104,7 +130,7 @@ private struct ExploreModuleCard: View {
                             .font(.system(size: 20))
                             .foregroundStyle(.white)
                     }
-                    
+
                     Text(title)
                         .font(.system(size: 22, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)

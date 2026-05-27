@@ -128,9 +128,8 @@ struct PMPoetryHomeView: View {
                         NavigationLink(destination: PMPoetryDetailView(poetryId: item.id, initialName: item.name)) {
                             DailyRecommendCard(item: item, index: index)
                                 .opacity(appearAnimation ? 1 : 0)
-                                .offset(y: appearAnimation ? 0 : 20)
                                 .animation(
-                                    .spring(response: 0.5, dampingFraction: 0.75).delay(Double(index) * 0.08),
+                                    .easeOut(duration: 0.4).delay(Double(index) * 0.06),
                                     value: appearAnimation
                                 )
                         }
@@ -167,9 +166,8 @@ struct PMPoetryHomeView: View {
                 NavigationLink(destination: PMPoetryDetailView(poetryId: poetry.id, initialName: poetry.name)) {
                     PoetryListCard(poetry: poetry, index: index)
                         .opacity(appearAnimation ? 1 : 0)
-                        .offset(x: appearAnimation ? 0 : -30)
                         .animation(
-                            .spring(response: 0.5, dampingFraction: 0.8).delay(Double(min(index, 10)) * 0.05),
+                            .easeOut(duration: 0.3).delay(Double(min(index, 8)) * 0.04),
                             value: appearAnimation
                         )
                 }

@@ -14,9 +14,8 @@ struct PMGujiListView: View {
                     NavigationLink(destination: PMGujiChapterListView(gujiId: guji.id, gujiName: guji.name)) {
                         GujiCard(guji: guji, index: index)
                             .opacity(appearAnimation ? 1 : 0)
-                            .offset(y: appearAnimation ? 0 : 20)
                             .animation(
-                                .spring(response: 0.5, dampingFraction: 0.8).delay(Double(min(index, 8)) * 0.06),
+                                .easeOut(duration: 0.3).delay(Double(min(index, 8)) * 0.05),
                                 value: appearAnimation
                             )
                     }
