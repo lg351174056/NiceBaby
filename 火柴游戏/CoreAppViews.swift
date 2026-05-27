@@ -390,9 +390,12 @@ struct DiscoverView: View {
                 } else {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 20) {
+                            // 诗词古文大全 —— 第一个大卡片
+                            poetryEncyclopediaCard
+
                             // 教材同步 —— 特殊大卡片
                             textbookCard
-                            
+
                             // 其他集子 —— 双列网格
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
                                 ForEach(PoetryLibraryItem.allItems) { item in
@@ -420,6 +423,9 @@ struct DiscoverView: View {
                 .ignoresSafeArea()
             )
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: PMNavigationTarget.self) { _ in
+                PMMainView()
+            }
             .navigationDestination(for: PoetryLibraryItem.self) { item in
                 PoetryCollectionListView(item: item)
             }
@@ -437,6 +443,43 @@ struct DiscoverView: View {
         .animation(.easeInOut(duration: 0.25), value: hideTabBar)
     }
     
+    // 诗词古文大全入口卡
+    private var poetryEncyclopediaCard: some View {
+        NavigationLink(value: PMNavigationTarget.home) {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        Text("📜")
+                            .font(.system(size: 28))
+                        Text("诗词古文大全")
+                            .font(.system(size: 22, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                    Text("唐诗宋词 · 古籍经典 · 名家赏析\n海量诗文，随查随读")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineSpacing(4)
+                }
+                Spacer()
+                Image(systemName: "chevron.right.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(colors: [AppTheme.accentTerracotta, Color(red: 0.85, green: 0.45, blue: 0.12)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .shadow(color: AppTheme.accentTerracotta.opacity(0.35), radius: 12, x: 0, y: 8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color.white.opacity(0.4), lineWidth: 2)
+            )
+        }
+        .buttonStyle(BounceButtonStyle())
+    }
+
     // 教材同步大横卡
     private var textbookCard: some View {
         NavigationLink(value: PoetryLibraryItem.textbookPlaceholder) {

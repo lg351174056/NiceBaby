@@ -15,6 +15,7 @@ struct TutuCategory: Identifiable, Hashable {
     let id: Int
     let name: String
     let icon: String
+    let dictSlaveKey: String
 }
 
 struct TutuSubCategory: Identifiable, Hashable {
@@ -22,6 +23,7 @@ struct TutuSubCategory: Identifiable, Hashable {
     let name: String
     let image: String
     let repositoriesId: Int?
+    let dictSlaveKey: String
 }
 
 struct TutuResource: Identifiable, Hashable {
@@ -57,6 +59,27 @@ struct TutuDownloadPermission {
     let nonmemberQuantityLimitCondition: Bool
 }
 
+struct TutuBanner: Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let imageUrl: String
+    let link: String
+}
+
+struct TutuPlan: Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let introduce: String
+    let cover: String
+    let virtualUsers: Int
+}
+
+struct TutuDictItem: Identifiable, Hashable {
+    let id: Int
+    let key: String
+    let value: String
+}
+
 // MARK: - Service
 
 @MainActor
@@ -74,7 +97,7 @@ final class TutuAPIService: ObservableObject {
     private let baseURL = "https://www.tutuzlk.com/api/applet-tutu"
     private let cdnBase = "https://cdn.tutuzlk.com"
 
-    private static let defaultToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJBUFAiLCJpc3MiOiJTZXJ2aWNlIiwiZXhwIjoxODExMjA4MDczLCJ1c2VyIjoie1wiaWRcIjoyNTAxMDksXCJuYW1lXCI6XCJvUlRsbzE1WjNLeXAzXzM0bU9fNkVjWE0xckZBXCJ9IiwiaWF0IjoxNzc5NjcyMDczfQ.ow2cqnTWO3eEGkFOwfATmrYm8lDsA1UPQ2QvSyDJjd8"
+    private static let defaultToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJBUFAiLCJpc3MiOiJTZXJ2aWNlIiwiZXhwIjoxODExMjE1NDIxLCJ1c2VyIjoie1wiaWRcIjoyNTAxMDksXCJuYW1lXCI6XCJvUlRsbzE1WjNLeXAzXzM0bU9fNkVjWE0xckZBXCJ9IiwiaWF0IjoxNzc5Njc5NDIxfQ.XY7uzYOY46LetervHKg80_4NC3ztVwAfsnmtg1oKuB8"
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: "tutu_api_token") ?? ""
@@ -139,6 +162,22 @@ final class TutuAPIService: ObservableObject {
         } ?? []
     }
 
+    func fetchCategoriesV2(tagId: Int) async -> [TutuCategory] {
+        await get("/repositories/category/v2/list", params: ["repositoriesTagId": String(tagId)]) { data in
+            guard let list = data as? [[String: Any]] else { return nil }
+            return list.compactMap { item in
+                guard let id = item["id"] as? Int,
+                      let name = item["name"] as? String else { return nil }
+                return TutuCategory(
+                    id: id,
+                    name: name,
+                    icon: item["icon"] as? String ?? "",
+                    dictSlaveKey: item["dictSlaveKey"] as? String ?? ""
+                )
+            }
+        } ?? []
+    }
+
     func fetchCategories(tagId: Int) async -> [TutuCategory] {
         await get("/repositories/category/list", params: ["repositoriesTagId": String(tagId)]) { data in
             guard let list = data as? [[String: Any]] else { return nil }
@@ -148,19 +187,24 @@ final class TutuAPIService: ObservableObject {
                 return TutuCategory(
                     id: id,
                     name: name,
-                    icon: item["icon"] as? String ?? ""
+                    icon: item["icon"] as? String ?? "",
+                    dictSlaveKey: item["dictSlaveKey"] as? String ?? ""
                 )
             }
         } ?? []
     }
 
-    func fetchSubCategories(parentId: Int, tagId: Int, page: Int = 1) async -> [TutuSubCategory] {
-        await get("/repositories/category/lowermost/list", params: [
+    func fetchSubCategories(parentId: Int, tagId: Int, dictSlaveKey: String = "") async -> [TutuSubCategory] {
+        var params: [String: String] = [
             "parentId": String(parentId),
             "repositoriesTagId": String(tagId),
-            "pageIndex": String(page),
-            "pageSize": "50"
-        ]) { data in
+            "pageIndex": "1",
+            "pageSize": "999"
+        ]
+        if !dictSlaveKey.isEmpty {
+            params["dictSlaveKey"] = dictSlaveKey
+        }
+        return await get("/repositories/category/lowermost/list", params: params) { data in
             guard let dict = data as? [String: Any],
                   let records = dict["records"] as? [[String: Any]] else { return nil }
             return records.compactMap { item in
@@ -170,18 +214,19 @@ final class TutuAPIService: ObservableObject {
                     id: id,
                     name: name,
                     image: item["image"] as? String ?? "",
-                    repositoriesId: item["repositoriesId"] as? Int
+                    repositoriesId: item["repositoriesId"] as? Int,
+                    dictSlaveKey: item["dictSlaveKey"] as? String ?? ""
                 )
             }
         } ?? []
     }
 
-    func fetchResources(categoryId: Int, tagId: Int, page: Int = 1) async -> [TutuResource] {
+    func fetchResources(categoryId: Int, tagId: Int) async -> [TutuResource] {
         await get("/repositories/list", params: [
             "categoryId": String(categoryId),
             "repositoriesTagId": String(tagId),
-            "pageIndex": String(page),
-            "pageSize": "20"
+            "pageIndex": "1",
+            "pageSize": "999"
         ]) { data in
             guard let dict = data as? [String: Any],
                   let records = dict["records"] as? [[String: Any]] else { return nil }
@@ -234,5 +279,55 @@ final class TutuAPIService: ObservableObject {
                 nonmemberQuantityLimitCondition: dict["nonmemberQuantityLimitCondition"] as? Bool ?? false
             )
         }
+    }
+
+    func fetchBanners() async -> [TutuBanner] {
+        await get("/advertise/list") { data in
+            guard let list = data as? [[String: Any]] else { return nil }
+            return list.compactMap { item in
+                guard let id = item["id"] as? Int,
+                      let imageUrl = item["imageUrl"] as? String else { return nil }
+                return TutuBanner(
+                    id: id,
+                    title: item["title"] as? String ?? "",
+                    imageUrl: imageUrl,
+                    link: item["link"] as? String ?? ""
+                )
+            }
+        } ?? []
+    }
+
+    func fetchPlans(tagId: Int) async -> [TutuPlan] {
+        await get("/plan/back/list", params: [
+            "repositoriesTagId": String(tagId),
+            "pageIndex": "1",
+            "pageSize": "999"
+        ]) { data in
+            guard let dict = data as? [String: Any],
+                  let records = dict["records"] as? [[String: Any]] else { return nil }
+            return records.compactMap { item in
+                guard let id = item["id"] as? Int,
+                      let title = item["title"] as? String else { return nil }
+                return TutuPlan(
+                    id: id,
+                    title: title,
+                    introduce: item["introduce"] as? String ?? "",
+                    cover: item["cover"] as? String ?? "",
+                    virtualUsers: item["virtualUsers"] as? Int ?? 0
+                )
+            }
+        } ?? []
+    }
+
+    func fetchDictionary(key: String = "jcbb") async -> [TutuDictItem] {
+        await get("/slave/dictionary/list", params: ["dictKey": key]) { data in
+            guard let list = data as? [[String: Any]] else { return nil }
+            return list.compactMap { item in
+                guard let id = item["id"] as? Int,
+                      let slaveKey = item["dictSlaveKey"] as? String,
+                      let value = item["dictSlaveValue"] as? String else { return nil }
+                return TutuDictItem(id: id, key: slaveKey, value: value)
+            }
+        } ?? []
     }
 }

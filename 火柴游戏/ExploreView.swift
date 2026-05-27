@@ -48,7 +48,7 @@ struct ExploreView: View {
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
 
-                        NavigationLink(destination: TutuTagSelectionView()) {
+                        NavigationLink(destination: TutuHomeView()) {
                             ExploreModuleCard(
                                 title: "学习资料",
                                 subtitle: "课程笔记、单元练习，全科覆盖",
