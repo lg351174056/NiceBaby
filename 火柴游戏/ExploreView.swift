@@ -73,6 +73,17 @@ struct ExploreView: View {
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
 
+                        NavigationLink(value: ExploreDestination.wallpaper) {
+                            ExploreModuleCard(
+                                title: "壁纸图库",
+                                subtitle: "超清精选、AI漫改、美女车模",
+                                icon: "photo.on.rectangle.angled",
+                                colors: (Color(hex: "#4facfe"), Color(hex: "#00f2fe")),
+                                isPlaceholder: false
+                            )
+                        }
+                        .buttonStyle(ExploreBounceButtonStyle())
+
                         ExploreModuleCard(
                             title: "奇妙科学",
                             subtitle: "即将开放...",
@@ -106,6 +117,8 @@ struct ExploreView: View {
                     TutuHomeView()
                 case .why:
                     WhyMainView()
+                case .wallpaper:
+                    WallpaperGalleryView()
                 }
             }
         }
@@ -121,6 +134,7 @@ enum ExploreDestination: Hashable {
     case video
     case tutu
     case why
+    case wallpaper
 }
 
 // MARK: - Module Card
