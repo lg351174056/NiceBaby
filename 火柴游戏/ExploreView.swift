@@ -62,6 +62,17 @@ struct ExploreView: View {
                         }
                         .buttonStyle(ExploreBounceButtonStyle())
 
+                        NavigationLink(value: ExploreDestination.why) {
+                            ExploreModuleCard(
+                                title: "十万个为什么",
+                                subtitle: "科学知识、自然奥秘、生活百科",
+                                icon: "questionmark.app.dashed",
+                                colors: (AppTheme.accentYellow, AppTheme.accentTerracotta),
+                                isPlaceholder: false
+                            )
+                        }
+                        .buttonStyle(ExploreBounceButtonStyle())
+
                         ExploreModuleCard(
                             title: "奇妙科学",
                             subtitle: "即将开放...",
@@ -93,6 +104,8 @@ struct ExploreView: View {
                     VideoCategoryListView()
                 case .tutu:
                     TutuHomeView()
+                case .why:
+                    WhyMainView()
                 }
             }
         }
@@ -107,6 +120,7 @@ enum ExploreDestination: Hashable {
     case geography
     case video
     case tutu
+    case why
 }
 
 // MARK: - Module Card
