@@ -76,7 +76,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
+                LazyVStack(alignment: .leading, spacing: 24) {
                     heroHeader
                         .staggerAppear(index: 0)
                     bentoGrid
@@ -102,11 +102,17 @@ struct HomeView: View {
                 .padding(.bottom, 40)
             }
             .background {
-                SWAnimatedMeshGradient(
-                    paletteA: AppTheme.homeMeshA,
-                    paletteB: AppTheme.homeMeshB,
-                    duration: 10
+                MeshGradient(
+                    width: 3,
+                    height: 3,
+                    points: [
+                        .init(0, 0), .init(0.5, 0), .init(1, 0),
+                        .init(0, 0.5), .init(0.5, 0.5), .init(1, 0.5),
+                        .init(0, 1), .init(0.5, 1), .init(1, 1)
+                    ],
+                    colors: AppTheme.homeMeshA
                 )
+                .drawingGroup()
                 .ignoresSafeArea()
             }
             .toolbar(.hidden, for: .navigationBar)

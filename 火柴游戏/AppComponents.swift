@@ -122,9 +122,7 @@ struct RingProgressView: View {
         }
         .frame(width: size, height: size)
         .onAppear {
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
-                animatedProgress = min(progress, 1.0)
-            }
+            animatedProgress = min(progress, 1.0)
         }
     }
 }
@@ -321,8 +319,8 @@ struct DiscoverySuggestionCard: View {
                     .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
             }
             .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
         }
         .buttonStyle(.bouncy)
         .padding(.horizontal, AppTheme.paddingScreen)

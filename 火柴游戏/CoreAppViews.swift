@@ -70,14 +70,11 @@ struct DiscoverView: View {
                     Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 20) {
-                            // 诗词古文大全 —— 第一个大卡片
+                        LazyVStack(spacing: 20) {
                             poetryEncyclopediaCard
 
-                            // 教材同步 —— 特殊大卡片
                             textbookCard
 
-                            // 其他集子 —— 双列网格
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
                                 ForEach(PoetryLibraryItem.allItems) { item in
                                     NavigationLink(value: item) {
@@ -121,7 +118,6 @@ struct DiscoverView: View {
             }
         }
         .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
-        .animation(.easeInOut(duration: 0.25), value: hideTabBar)
     }
     
     // 诗词古文大全入口卡
@@ -152,11 +148,7 @@ struct DiscoverView: View {
                 LinearGradient(colors: [AppTheme.accentTerracotta, Color(red: 0.85, green: 0.45, blue: 0.12)], startPoint: .topLeading, endPoint: .bottomTrailing)
             )
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .shadow(color: AppTheme.accentTerracotta.opacity(0.35), radius: 12, x: 0, y: 8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.4), lineWidth: 2)
-            )
+            .shadow(color: AppTheme.accentTerracotta.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.bouncy)
     }
@@ -189,11 +181,7 @@ struct DiscoverView: View {
                 LinearGradient(colors: [AppTheme.accentMint, AppTheme.accentSage], startPoint: .topLeading, endPoint: .bottomTrailing)
             )
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .shadow(color: AppTheme.accentMint.opacity(0.35), radius: 12, x: 0, y: 8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.4), lineWidth: 2)
-            )
+            .shadow(color: AppTheme.accentMint.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.bouncy)
     }
@@ -284,11 +272,7 @@ private struct CollectionCardView: View {
             LinearGradient(colors: [item.colors.0, item.colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
         )
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: item.colors.0.opacity(0.3), radius: 8, x: 0, y: 6)
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
-        )
+        .shadow(color: item.colors.0.opacity(0.15), radius: 6, x: 0, y: 4)
     }
 }
 
@@ -360,11 +344,12 @@ struct TextbookEntryView: View {
 struct TextbookGradeListView: View {
     let stage: ClassicalPoetryStore.TextbookStage
     @StateObject private var store = ClassicalPoetryStore.shared
+    @State private var collections: [PoetryCollection] = []
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 14) {
-                ForEach(store.textbookCollections(for: stage)) { collection in
+            LazyVStack(spacing: 14) {
+                ForEach(collections) { collection in
                     NavigationLink(value: collection) {
                         GradeBookRow(collection: collection, stage: stage)
                     }
@@ -377,6 +362,9 @@ struct TextbookGradeListView: View {
         }
         .background(AppTheme.background.ignoresSafeArea())
         .unifiedBackButton(title: stage.rawValue)
+        .onAppear {
+            collections = store.textbookCollections(for: stage)
+        }
     }
 }
 
@@ -527,6 +515,17 @@ private struct PoemCollectionContent: View {
     let colors: (Color, Color)
     let poems: [Poem]
 
+    private let pageSize = 20
+    @State private var displayedCount = 20
+
+    private var displayedPoems: [Poem] {
+        Array(poems.prefix(displayedCount))
+    }
+
+    private var hasMore: Bool {
+        displayedCount < poems.count
+    }
+
     var body: some View {
         if poems.isEmpty {
             VStack(spacing: 16) {
@@ -540,17 +539,25 @@ private struct PoemCollectionContent: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    // Hero 头部
+                VStack(spacing: 0) {
                     collectionHero
 
-                    // 诗词列表
                     LazyVStack(spacing: 12) {
-                        ForEach(Array(poems.enumerated()), id: \.element.id) { index, poem in
+                        ForEach(Array(displayedPoems.enumerated()), id: \.element.id) { index, poem in
                             NavigationLink(value: poem) {
                                 PoemCard(poem: poem, index: index, accentColor: colors.0)
                             }
                             .buttonStyle(.bouncy)
+                            .onAppear {
+                                if index == displayedPoems.count - 1, hasMore {
+                                    displayedCount += pageSize
+                                }
+                            }
+                        }
+
+                        if hasMore {
+                            ProgressView()
+                                .padding(.vertical, 16)
                         }
                     }
                     .padding(.horizontal, AppTheme.paddingScreen)
@@ -576,6 +583,7 @@ private struct PoemCollectionContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
+        .padding(.bottom, 16)
         .background(
             LinearGradient(
                 colors: [colors.0, colors.1],
@@ -583,17 +591,6 @@ private struct PoemCollectionContent: View {
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(
-            RoundedRectangle(cornerRadius: 0, style: .continuous)
-        )
-        .overlay(alignment: .bottom) {
-            // 底部曲线过渡
-            Ellipse()
-                .fill(AppTheme.background)
-                .frame(width: UIScreen.main.bounds.width * 1.2, height: 40)
-                .offset(y: 20)
-        }
-        .clipped()
     }
 }
 
@@ -604,15 +601,8 @@ private struct PoemCard: View {
     let index: Int
     let accentColor: Color
 
-    private var firstLine: String {
-        let lines = poem.contents.components(separatedBy: "\n")
-            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        return lines.first ?? ""
-    }
-
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            // 序号
             Text("\(index + 1)")
                 .font(.system(size: 13, weight: .heavy, design: .rounded))
                 .foregroundStyle(.white)
@@ -646,11 +636,11 @@ private struct PoemCard: View {
         }
         .padding(14)
         .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(AppTheme.separator.opacity(0.6), lineWidth: 0.5)
-        )
-        .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
+    }
+
+    private var firstLine: String {
+        poem.contents.components(separatedBy: "\n")
+            .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) ?? ""
     }
 }
 

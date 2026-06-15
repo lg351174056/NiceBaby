@@ -158,8 +158,7 @@ extension View {
                 Color.white.opacity(0.78),
                 in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             )
-            .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
-            .shadow(color: .black.opacity(0.02), radius: 2, x: 0, y: 1)
+            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
 }
 
