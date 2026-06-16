@@ -56,15 +56,19 @@ enum GameKind: String, CaseIterable, Identifiable {
 
     var palette: (Color, Color) {
         switch self {
-        case .matchstick:     return (AppTheme.accentBlue, AppTheme.accentIndigo)
-        case .poetryComplete: return (AppTheme.accentBlue, AppTheme.accentIndigo)
-        case .surnameMatch:   return (AppTheme.accentMint, AppTheme.accentSage)
-        case .idiomFillBlank: return (AppTheme.accentPurple, AppTheme.accentPink)
-        case .idiomDictionary:return (AppTheme.accentBlue, AppTheme.accentPink)
-        case .xiehouyuDictionary: return (Color.orange, Color.red)
-        case .sanzijing:      return (Color.teal, Color.cyan)
-        case .dictionary:     return (Color(red: 180/255, green: 130/255, blue: 70/255), Color(red: 210/255, green: 160/255, blue: 100/255))
+        case .matchstick:     return (AppTheme.accentCinnabar, Color(red: 168/255, green: 72/255, blue: 50/255))
+        case .poetryComplete: return (AppTheme.accentInkPurple, AppTheme.accentIndigo)
+        case .surnameMatch:   return (AppTheme.accentJade, AppTheme.accentBamboo)
+        case .idiomFillBlank: return (AppTheme.accentCinnabar, AppTheme.accentYellow)
+        case .idiomDictionary:return (AppTheme.accentBamboo, AppTheme.accentSage)
+        case .xiehouyuDictionary: return (AppTheme.accentYellow, AppTheme.accentCinnabar)
+        case .sanzijing:      return (AppTheme.accentBamboo, AppTheme.accentJade)
+        case .dictionary:     return (AppTheme.accentYellow, Color(red: 160/255, green: 130/255, blue: 50/255))
         }
+    }
+
+    var accent: Color {
+        palette.0
     }
 }
 

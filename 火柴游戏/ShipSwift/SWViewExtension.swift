@@ -1,38 +1,6 @@
-//
-//  SWViewExtension.swift
-//  ShipSwift
-//
-//  SwiftUI view extensions including SWButtonStyle (primary/secondary button styles) and
-//  the swCardStyle card modifier. Button styles are full-width rounded rectangles with
-//  automatic pressed/disabled state handling; card style features a gradient stroke.
-//
-//  Usage:
-//    // Primary button (accent background + white text, for confirm/save main actions):
-//    Button("Save") { save() }
-//        .buttonStyle(.swPrimary)
-//
-//    // Secondary button (light background, for cancel/close secondary actions):
-//    Button("Cancel") { dismiss() }
-//        .buttonStyle(.swSecondary)
-//
-//    // Custom border and corner radius:
-//    Button("Submit") { submit() }
-//        .buttonStyle(.swPrimary(showBorder: true, cornerRadius: 12))
-//
-//    // Card style modifier (gradient stroke + translucent background):
-//    VStack { content }
-//        .swCardStyle()
-//
-//    // Custom card parameters:
-//    VStack { content }
-//        .swCardStyle(strokeColor: .cyan, cornerRadius: 24, padding: 24, strokeWidth: 1.0)
-//
-//  Created by Wei Zhong on 3/1/26.
-//
-
 import SwiftUI
 
-// MARK: - Button Style
+// MARK: - Button Style (保留黏土按下回弹)
 
 struct SWButtonStyle: ButtonStyle {
     enum Variant {
@@ -48,22 +16,22 @@ struct SWButtonStyle: ButtonStyle {
 
     private var backgroundColor: Color {
         switch variant {
-        case .primary: Color.accentColor
-        case .secondary: Color.accentColor.opacity(0.1)
+        case .primary: AppTheme.accentCinnabar
+        case .secondary: AppTheme.accentCinnabar.opacity(0.1)
         }
     }
 
     private var foregroundColor: Color {
         switch variant {
         case .primary: .white
-        case .secondary: .primary.opacity(0.8)
+        case .secondary: AppTheme.textPrimary.opacity(0.8)
         }
     }
 
     private var borderColor: Color {
         switch variant {
-        case .primary: .primary
-        case .secondary: .secondary.opacity(0.8)
+        case .primary: AppTheme.accentCinnabar
+        case .secondary: AppTheme.separator
         }
     }
 
@@ -83,24 +51,15 @@ struct SWButtonStyle: ButtonStyle {
                         lineWidth: 1.5
                     )
             )
-            .overlay(
-                // 底部投影，制造 3D 厚度感 (黏土风)
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Color.black.opacity(0.15), lineWidth: 4)
-                    .offset(y: 4)
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            )
             .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
             .opacity(isEnabled ? 1 : 0.5)
     }
 }
 
 extension ButtonStyle where Self == SWButtonStyle {
-    /// Primary button style (confirm / save, etc.)
     static var swPrimary: SWButtonStyle { .init(variant: .primary) }
-    /// Secondary button style (cancel / close, etc.)
     static var swSecondary: SWButtonStyle { .init(variant: .secondary) }
 
     static func swPrimary(showBorder: Bool = true, cornerRadius: CGFloat = 12) -> SWButtonStyle {
@@ -112,25 +71,15 @@ extension ButtonStyle where Self == SWButtonStyle {
     }
 }
 
-// MARK: - Card Style
-// Usage:
-//   Text("Content").swCardStyle()
-//   Text("Content").swCardStyle(strokeColor: .cyan, cornerRadius: 20)
+// MARK: - 水墨卡片 Style
 
 extension View {
-    /// Card style modifier
-    /// - Parameters:
-    ///   - strokeColor: Starting color for the border gradient
-    ///   - background: Background color
-    ///   - cornerRadius: Corner radius
-    ///   - padding: Inner padding
-    ///   - strokeWidth: Border width
     func swCardStyle(
-        strokeColor: Color = .accentColor,
-        background: Color = .white,
+        strokeColor: Color = AppTheme.inkShadow,
+        background: Color = AppTheme.card,
         cornerRadius: CGFloat = 20,
         padding: CGFloat = 16,
-        strokeWidth: CGFloat = 2.0 // 加粗边框，符合黏土风
+        strokeWidth: CGFloat = 1.0
     ) -> some View {
         self
             .padding(padding)
@@ -138,27 +87,73 @@ extension View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(strokeColor.opacity(0.3), lineWidth: strokeWidth)
+                    .strokeBorder(strokeColor, lineWidth: strokeWidth)
             )
-            .shadow(color: strokeColor.opacity(0.15), radius: 0, x: 0, y: 6) // 硬阴影（3D感）
-            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4) // 软阴影
+            .shadow(color: AppTheme.inkShadow, radius: 6, x: 0, y: 2)
     }
 }
 
-// MARK: - Glass Card Style
+// MARK: - 水墨 Glass Card（宣纸底 + 轻单影 + 1px 墨边线）
 
 extension View {
     func glassCard(
-        cornerRadius: CGFloat = 24,
-        padding: CGFloat = 20
+        cornerRadius: CGFloat = 20,
+        padding: CGFloat = 18
     ) -> some View {
         self
             .padding(padding)
             .background(
-                Color.white.opacity(0.78),
+                Color.white.opacity(0.88),
                 in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             )
-            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
+            .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
+    }
+
+    /// 水墨轻边卡片：白底 + 1px 淡墨边 + 极轻投影
+    func inkCard(
+        cornerRadius: CGFloat = 16,
+        padding: CGFloat = 16
+    ) -> some View {
+        self
+            .padding(padding)
+            .background(
+                AppTheme.card,
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
+            .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
+    }
+
+    /// 强调卡片：带强调色左边框
+    func accentInkCard(
+        accent: Color = AppTheme.accentCinnabar,
+        cornerRadius: CGFloat = 16,
+        padding: CGFloat = 16
+    ) -> some View {
+        self
+            .padding(padding)
+            .background(
+                AppTheme.card,
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
+            .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
+            .overlay(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(accent)
+                    .frame(width: 4)
+                    .padding(.vertical, 8)
+            }
     }
 }
 
@@ -175,42 +170,4 @@ struct SWBouncyButtonStyle: ButtonStyle {
 
 extension ButtonStyle where Self == SWBouncyButtonStyle {
     static var bouncy: SWBouncyButtonStyle { .init() }
-}
-
-// MARK: - Preview
-
-#Preview("Button Styles") {
-    VStack(spacing: 20) {
-        Button("Primary Button") { }
-            .buttonStyle(.swPrimary)
-
-        Button("Secondary Button") { }
-            .buttonStyle(.swSecondary)
-
-        Button("Disabled") { }
-            .buttonStyle(.swPrimary)
-            .disabled(true)
-    }
-    .padding()
-}
-
-#Preview("Card Styles") {
-    VStack(spacing: 20) {
-        VStack {
-            ForEach(0..<3, id: \.self) { _ in
-                Text("Default Card")
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .swCardStyle()
-
-        VStack {
-            ForEach(0..<3, id: \.self) { _ in
-                Text("Custom Card")
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .swCardStyle(strokeColor: .cyan, cornerRadius: 24, padding: 24)
-    }
-    .padding()
 }

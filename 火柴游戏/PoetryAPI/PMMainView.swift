@@ -97,7 +97,7 @@ struct PMMainView: View {
                     .background(
                         isSelected
                             ? AnyShapeStyle(LinearGradient(
-                                colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
+                                colors: [AppTheme.accentInkPurple, AppTheme.accentIndigo],
                                 startPoint: .topLeading, endPoint: .bottomTrailing
                             ))
                             : AnyShapeStyle(AppTheme.separator.opacity(0.5))

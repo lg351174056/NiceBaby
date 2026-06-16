@@ -385,7 +385,7 @@ private struct FilterChip: View {
                 .background(
                     isSelected
                         ? AnyShapeStyle(LinearGradient(
-                            colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
+                            colors: [AppTheme.accentInkPurple, AppTheme.accentIndigo],
                             startPoint: .leading, endPoint: .trailing
                         ))
                         : AnyShapeStyle(AppTheme.card.opacity(0.8))

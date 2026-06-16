@@ -18,7 +18,7 @@ struct PoetryListView: View {
                         HStack(spacing: 14) {
                             RoundedRectangle(cornerRadius: 4, style: .continuous)
                                 .fill(
-                                    LinearGradient(colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
+                                    LinearGradient(colors: [AppTheme.accentInkPurple, AppTheme.accentIndigo],
                                                    startPoint: .top, endPoint: .bottom)
                                 )
                                 .frame(width: 4, height: 36)

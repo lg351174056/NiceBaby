@@ -1,15 +1,6 @@
 import SwiftUI
 
-// MARK: - 益智 Tab 主页：游戏卡片网格
-//
-// 当前包含 4 个游戏：
-// 1) 火柴游戏（已有，自由模式）
-// 2) 诗词接龙
-// 3) 百家姓配对
-// 4) 成语接龙
-//
-// 火柴游戏使用横屏容器（沿用 HomeView 的 LandscapeContainer），
-// 其他游戏直接竖屏展示。
+// MARK: - 益智 Tab · 墨紫色
 
 struct PlayView: View {
     @EnvironmentObject private var progress: AppProgressStore
@@ -19,20 +10,19 @@ struct PlayView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // 固定 header
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .center) {
                         Text("益智")
-                            .font(.largeTitle.weight(.bold))
+                            .font(.system(size: 32, weight: .bold, design: .serif))
                             .foregroundStyle(AppTheme.textPrimary)
                         Spacer()
                         ZStack {
                             Circle()
-                                .fill(AppTheme.accentPurple.opacity(0.15))
+                                .fill(AppTheme.accentInkPurple.opacity(0.1))
                                 .frame(width: 36, height: 36)
                             Image(systemName: "gamecontroller.fill")
                                 .font(.system(size: 16))
-                                .foregroundStyle(AppTheme.accentPurple)
+                                .foregroundStyle(AppTheme.accentInkPurple)
                         }
                     }
                 }
@@ -41,7 +31,6 @@ struct PlayView: View {
                 .padding(.bottom, 12)
                 .background(AppTheme.background)
 
-                // 可滚动内容
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 22) {
                         headerCard
@@ -59,7 +48,7 @@ struct PlayView: View {
         }
     }
 
-    // MARK: - 顶部摘要
+    // MARK: - 顶部摘要 · 深色卡
 
     private var headerCard: some View {
         HStack(spacing: 14) {
@@ -67,7 +56,7 @@ struct PlayView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
+                            colors: [AppTheme.accentInkPurple, AppTheme.accentIndigo],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -80,7 +69,7 @@ struct PlayView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("今天玩点什么？")
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .font(.system(size: 18, weight: .heavy, design: .serif))
                     .foregroundStyle(AppTheme.textPrimary)
                 Text("已通关火柴 \(progress.totalMatchstickSolves) 道 · 连续学习 \(progress.streakDays) 天")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -96,9 +85,10 @@ struct PlayView: View {
             RoundedRectangle(cornerRadius: AppTheme.cornerLarge)
                 .strokeBorder(AppTheme.separator, lineWidth: 1)
         )
+        .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
     }
 
-    // MARK: - 卡片网格
+    // MARK: - 游戏网格 · 墨韵轻边框
 
     private var grid: some View {
         let cols = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
@@ -138,14 +128,14 @@ struct PlayView: View {
 
         case .sanzijing:
             SanzijingView(onExit: { presentedGame = nil })
-            
+
         case .dictionary:
             DictionaryGameView(onExit: { presentedGame = nil })
         }
     }
 }
 
-// MARK: - 单个游戏入口卡片
+// MARK: - 游戏入口卡片 · 墨韵风
 
 private struct GameEntryCard: View {
     let kind: GameKind
@@ -157,18 +147,12 @@ private struct GameEntryCard: View {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: AppTheme.cornerMedium)
-                        .fill(
-                            LinearGradient(
-                                colors: [kind.palette.0, kind.palette.1],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(kind.accent.opacity(0.1))
+                        .frame(height: 80)
                     Image(systemName: kind.systemImage)
-                        .font(.system(size: 36, weight: .heavy))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundStyle(kind.accent)
                 }
-                .frame(height: 100)
                 .overlay(alignment: .topTrailing) {
                     if bestScore > 0 {
                         HStack(spacing: 4) {
@@ -176,19 +160,19 @@ private struct GameEntryCard: View {
                             Text("\(bestScore)")
                                 .font(.system(size: 12, weight: .heavy, design: .rounded))
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(kind.accent)
                         .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(Color.black.opacity(0.28), in: Capsule())
+                        .background(kind.accent.opacity(0.08), in: Capsule())
                         .padding(8)
                     }
                 }
 
                 Text(kind.title)
-                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    .font(.system(size: 17, weight: .heavy, design: .serif))
                     .foregroundStyle(AppTheme.textPrimary)
 
                 Text(kind.subtitle)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -200,15 +184,13 @@ private struct GameEntryCard: View {
                 RoundedRectangle(cornerRadius: AppTheme.cornerLarge)
                     .strokeBorder(AppTheme.separator, lineWidth: 1)
             )
+            .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
     }
 }
 
 // MARK: - 火柴游戏自由模式容器
-//
-// 横屏 + 网格背景，复用 HomeView 中既有的 LandscapeContainer 与 SWAnimatedMeshGradient。
-// 自由模式：不指定题号（沿用书签）、非每日挑战。
 
 private struct MatchstickGameContainer: View {
     let onExit: () -> Void

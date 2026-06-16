@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 统一导航栏（所有二级及以下页面使用）
+// MARK: - 统一导航栏（二级页）
 
 struct UnifiedNavBar: View {
     let title: String
@@ -18,7 +18,7 @@ struct UnifiedNavBar: View {
             }
 
             Text(title)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold, design: .serif))
                 .foregroundStyle(AppTheme.textPrimary)
                 .lineLimit(1)
 
@@ -31,7 +31,7 @@ struct UnifiedNavBar: View {
     }
 }
 
-// MARK: - 统一 Toolbar 返回按钮（轻量 Modifier，用于不改结构的页面）
+// MARK: - 统一 Toolbar 返回按钮（Modifier 版）
 
 struct UnifiedBackButton: ViewModifier {
     let title: String
@@ -49,7 +49,7 @@ struct UnifiedBackButton: ViewModifier {
                                 .frame(width: 30, height: 30)
                                 .background(.ultraThinMaterial, in: Circle())
                             Text(title)
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .font(.system(size: 17, weight: .bold, design: .serif))
                         }
                         .foregroundStyle(AppTheme.textPrimary)
                     }
@@ -89,7 +89,6 @@ private struct SwipeBackHelper: UIViewControllerRepresentable {
 final class SwipeBackViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // 沿 responder chain 找到 NavigationController，强制开启侧滑
         if let nav = navigationController {
             nav.interactivePopGestureRecognizer?.isEnabled = true
             nav.interactivePopGestureRecognizer?.delegate = nil
@@ -110,7 +109,7 @@ struct RingProgressView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(color.opacity(0.15), lineWidth: lineWidth)
+                .stroke(color.opacity(0.12), lineWidth: lineWidth)
 
             Circle()
                 .trim(from: 0, to: animatedProgress)
@@ -127,7 +126,7 @@ struct RingProgressView: View {
     }
 }
 
-// MARK: - 快捷入口胶囊
+// MARK: - 快捷入口胶囊（墨韵风）
 
 struct QuickEntryView: View {
     let icon: String
@@ -139,23 +138,16 @@ struct QuickEntryView: View {
         Button(action: action) {
             VStack(spacing: 8) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [color, color.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 52, height: 52)
-
+                    Circle()
+                        .fill(color.opacity(0.12))
+                        .frame(width: 48, height: 48)
                     Image(systemName: icon)
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(color)
                 }
 
                 Text(title)
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(1)
             }
@@ -165,7 +157,7 @@ struct QuickEntryView: View {
     }
 }
 
-// MARK: - 每日一词卡片
+// MARK: - 每日成语卡片（墨韵风）
 
 struct DailyIdiomCard: View {
     let idiom: ChineseIdiom
@@ -174,9 +166,9 @@ struct DailyIdiomCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: "lightbulb.fill")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(AppTheme.accentYellow)
+                Image(systemName: "seal.fill")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(AppTheme.accentCinnabar)
                 Text("今日成语")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
@@ -184,7 +176,7 @@ struct DailyIdiomCard: View {
             }
 
             Text(idiom.text)
-                .font(.system(size: 26, weight: .heavy, design: .rounded))
+                .font(.system(size: 26, weight: .heavy, design: .serif))
                 .foregroundStyle(AppTheme.textPrimary)
 
             if let explanation = idiom.explanation, !explanation.isEmpty {
@@ -204,16 +196,16 @@ struct DailyIdiomCard: View {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 11, weight: .bold))
                     }
-                    .foregroundStyle(AppTheme.accentBlue)
+                    .foregroundStyle(AppTheme.accentCinnabar)
                 }
             }
         }
-        .glassCard()
+        .inkCard()
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 }
 
-// MARK: - 学习周报卡片
+// MARK: - 学习进度卡片（墨韵风）
 
 struct WeeklyStatsCard: View {
     let matchSolves: Int
@@ -225,7 +217,7 @@ struct WeeklyStatsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("学习进度")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold, design: .serif))
                 .foregroundStyle(AppTheme.textPrimary)
 
             HStack(spacing: 0) {
@@ -233,14 +225,14 @@ struct WeeklyStatsCard: View {
                     progress: matchTotal > 0 ? Double(matchSolves) / Double(matchTotal) : 0,
                     value: "\(matchSolves)",
                     label: "火柴",
-                    color: AppTheme.accentBlue
+                    color: AppTheme.accentCinnabar
                 )
 
                 ringItem(
                     progress: poemsTotal > 0 ? Double(poemsRead) / Double(poemsTotal) : 0,
                     value: "\(poemsRead)",
                     label: "诗词",
-                    color: AppTheme.accentTerracotta
+                    color: AppTheme.accentBamboo
                 )
 
                 ringItem(
@@ -251,15 +243,14 @@ struct WeeklyStatsCard: View {
                 )
             }
         }
-        .glassCard()
+        .inkCard()
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 
     private func ringItem(progress: Double, value: String, label: String, color: Color) -> some View {
         VStack(spacing: 8) {
             ZStack {
-                RingProgressView(progress: progress, lineWidth: 6, size: 52, color: color)
-
+                RingProgressView(progress: progress, lineWidth: 5, size: 48, color: color)
                 Text(value)
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(AppTheme.textPrimary)
@@ -274,7 +265,7 @@ struct WeeklyStatsCard: View {
     }
 }
 
-// MARK: - 探索推荐卡
+// MARK: - 探索推荐卡片（墨韵风）
 
 struct DiscoverySuggestionCard: View {
     let icon: String
@@ -288,23 +279,16 @@ struct DiscoverySuggestionCard: View {
             HStack(spacing: 14) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [colors.0, colors.1],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(colors.0.opacity(0.1))
                         .frame(width: 44, height: 44)
-
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(colors.0)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
                     Text(subtitle)
                         .font(.system(size: 12, weight: .medium, design: .rounded))
@@ -319,8 +303,12 @@ struct DiscoverySuggestionCard: View {
                     .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
             }
             .padding(14)
-            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
+            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
+            .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.bouncy)
         .padding(.horizontal, AppTheme.paddingScreen)
@@ -340,10 +328,10 @@ struct EmptyStateView: View {
         VStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 48))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                .foregroundStyle(AppTheme.textSecondary.opacity(0.35))
 
             Text(title)
-                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .font(.system(size: 16, weight: .bold, design: .serif))
                 .foregroundStyle(AppTheme.textSecondary)
 
             if let subtitle {
@@ -359,7 +347,7 @@ struct EmptyStateView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
-                        .background(AppTheme.accentBlue, in: Capsule())
+                        .background(AppTheme.accentCinnabar, in: Capsule())
                 }
             }
         }
@@ -367,8 +355,7 @@ struct EmptyStateView: View {
     }
 }
 
-// MARK: - Stagger 入场动画 Modifier
-// 仅用 opacity 渐显，不用 offset，避免 ScrollView 布局抖动
+// MARK: - Stagger 入场动画
 
 struct StaggeredAppearModifier: ViewModifier {
     let index: Int
@@ -396,7 +383,7 @@ extension View {
     }
 }
 
-// MARK: - 渐变卡片 Modifier
+// MARK: - 渐变卡片 Modifier（保留，供诗集详情等场景使用）
 
 struct GradientCardModifier: ViewModifier {
     let colors: [Color]
@@ -412,16 +399,15 @@ struct GradientCardModifier: ViewModifier {
                 )
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .shadow(color: colors.first?.opacity(0.3) ?? .clear, radius: 12, x: 0, y: 8)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.35), lineWidth: 1.5)
+                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
             )
     }
 }
 
 extension View {
-    func gradientCard(colors: [Color], cornerRadius: CGFloat = 28) -> some View {
+    func gradientCard(colors: [Color], cornerRadius: CGFloat = 24) -> some View {
         modifier(GradientCardModifier(colors: colors, cornerRadius: cornerRadius))
     }
 }

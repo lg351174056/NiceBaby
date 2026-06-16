@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 首页
+// MARK: - 首页 · 墨韵新风
 
 struct HomeView: View {
     @EnvironmentObject private var progress: AppProgressStore
@@ -69,24 +69,26 @@ struct HomeView: View {
         var count = 0
         if progress.isDailyMatchstickCompletedToday() { count += 1 }
         if progress.openedPoemIds.count > 0 { count += 1 }
-        count += 1 // 成语默认已展示
+        count += 1
         return min(count, 3)
     }
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 24) {
+                LazyVStack(alignment: .leading, spacing: 28) {
                     heroHeader
                         .staggerAppear(index: 0)
-                    bentoGrid
+                    matchstickHeroCard
                         .staggerAppear(index: 1)
-                    quickEntrySection
+                    bentoGrid
                         .staggerAppear(index: 2)
+                    quickEntrySection
+                        .staggerAppear(index: 3)
                     DailyIdiomCard(idiom: dailyIdiom) {
-                        presentedGame = .idiomDictionary
-                    }
-                    .staggerAppear(index: 3)
+                            presentedGame = .idiomDictionary
+                        }
+                    .staggerAppear(index: 4)
                     WeeklyStatsCard(
                         matchSolves: progress.totalMatchstickSolves,
                         matchTotal: MatchstickProblemSet.count,
@@ -94,27 +96,14 @@ struct HomeView: View {
                         poemsTotal: poems.count,
                         streakDays: progress.streakDays
                     )
-                    .staggerAppear(index: 4)
+                    .staggerAppear(index: 5)
                     discoverySuggestion
-                        .staggerAppear(index: 5)
+                        .staggerAppear(index: 6)
                 }
                 .padding(.top, 12)
                 .padding(.bottom, 40)
             }
-            .background {
-                MeshGradient(
-                    width: 3,
-                    height: 3,
-                    points: [
-                        .init(0, 0), .init(0.5, 0), .init(1, 0),
-                        .init(0, 0.5), .init(0.5, 0.5), .init(1, 0.5),
-                        .init(0, 1), .init(0.5, 1), .init(1, 1)
-                    ],
-                    colors: AppTheme.homeMeshA
-                )
-                .drawingGroup()
-                .ignoresSafeArea()
-            }
+            .background(AppTheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
         }
         .fullScreenCover(isPresented: $isGamePresented) {
@@ -125,23 +114,23 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Hero Header
+    // MARK: - Hero Header · 朱砂印首
 
     private var heroHeader: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(greeting)
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.system(size: 34, weight: .bold, design: .serif))
                     .foregroundStyle(AppTheme.textPrimary)
                 HStack(spacing: 14) {
                     if progress.streakDays > 0 {
                         Label("\(progress.streakDays)天连续", systemImage: "flame.fill")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(AppTheme.accentCinnabar)
                     }
                     Label("今日 \(todayCompletionCount)/3", systemImage: "checkmark.circle.fill")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(todayCompletionCount >= 3 ? AppTheme.accentSage : AppTheme.accentBlue)
+                        .foregroundStyle(todayCompletionCount >= 3 ? AppTheme.accentSage : AppTheme.accentCinnabar)
                 }
             }
             Spacer()
@@ -150,108 +139,18 @@ struct HomeView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(.ultraThinMaterial)
+                        .fill(AppTheme.accentCinnabar.opacity(0.1))
                         .frame(width: 44, height: 44)
                     Image(systemName: "person.crop.circle.fill")
                         .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundStyle(AppTheme.accentCinnabar)
                 }
             }
         }
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 
-    // MARK: - Bento Grid
-
-    private var bentoGrid: some View {
-        VStack(spacing: 14) {
-            matchstickHeroCard
-
-            HStack(spacing: 14) {
-                dailyMatchCard
-                dailyPoemCard
-            }
-            .padding(.horizontal, AppTheme.paddingScreen)
-        }
-    }
-
-    private var dailyMatchCard: some View {
-        let done = progress.isDailyMatchstickCompletedToday()
-        return Button {
-            gameInitialIndex = dailyMatchIndex
-            gameIsDaily = true
-            isGamePresented = true
-        } label: {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "puzzlepiece.extension.fill")
-                        .font(.title2)
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [AppTheme.accentBlue, AppTheme.accentIndigo],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    Spacer()
-                    if done {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                            .foregroundStyle(AppTheme.accentSage)
-                    }
-                }
-                Spacer()
-                Text("每日一题")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(done ? "已完成" : "第 \(dailyMatchIndex + 1) 题")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-            .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
-            .glassCard()
-        }
-        .buttonStyle(.bouncy)
-    }
-
-    private var dailyPoemCard: some View {
-        Button {
-            progress.selectedTab = 1
-        } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Image(systemName: "leaf.fill")
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppTheme.accentTerracotta)
-                    Text("今日一诗")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                }
-                Spacer()
-                if let p = dailyPoem {
-                    Text(dailyPoemFirstLines)
-                        .font(.system(size: 14, weight: .medium, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(3)
-                        .lineSpacing(4)
-                    Text("-- \(p.author)")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                }
-            }
-            .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
-            .glassCard()
-        }
-        .buttonStyle(.bouncy)
-    }
-
-    // MARK: - Hero Card
+    // MARK: - 火柴英雄卡 · 朱砂红全宽
 
     private var matchstickHeroCard: some View {
         Button {
@@ -262,7 +161,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text("火柴游戏")
-                        .font(.system(size: 22, weight: .heavy, design: .rounded))
+                        .font(.system(size: 22, weight: .heavy, design: .serif))
                         .foregroundStyle(.white)
                     Spacer()
                     Text(matchstickHeroSubtitle)
@@ -283,7 +182,7 @@ struct HomeView: View {
                 HStack {
                     Text("移动一根火柴，让等式成立")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(.white.opacity(0.75))
                     Spacer()
                     Label("开始挑战", systemImage: "play.fill")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -296,48 +195,127 @@ struct HomeView: View {
             .padding(24)
             .background(
                 LinearGradient(
-                    colors: [AppTheme.accentBlue, AppTheme.accentIndigo.opacity(0.9)],
+                    colors: [AppTheme.accentCinnabar, Color(red: 168/255, green: 72/255, blue: 50/255)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-            .shadow(color: AppTheme.accentBlue.opacity(0.25), radius: 20, x: 0, y: 10)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+            )
         }
         .buttonStyle(.bouncy)
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 
-    // MARK: - Quick Entry Section
+    // MARK: - Bento Grid · 每日一题 + 今日一诗
+
+    private var bentoGrid: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 14) {
+                dailyMatchCard
+                dailyPoemCard
+            }
+            .padding(.horizontal, AppTheme.paddingScreen)
+        }
+    }
+
+    private var dailyMatchCard: some View {
+        let done = progress.isDailyMatchstickCompletedToday()
+        return Button {
+            gameInitialIndex = dailyMatchIndex
+            gameIsDaily = true
+            isGamePresented = true
+        } label: {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: "puzzlepiece.extension.fill")
+                        .font(.title2)
+                        .foregroundStyle(AppTheme.accentCinnabar)
+                    Spacer()
+                    if done {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(AppTheme.accentSage)
+                    }
+                }
+                Spacer()
+                Text("每日一题")
+                    .font(.system(size: 16, weight: .bold, design: .serif))
+                    .foregroundStyle(AppTheme.textPrimary)
+                Text(done ? "已完成" : "第 \(dailyMatchIndex + 1) 题")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+            .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
+            .inkCard()
+        }
+        .buttonStyle(.bouncy)
+    }
+
+    private var dailyPoemCard: some View {
+        Button {
+            progress.selectedTab = 1
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: "leaf.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppTheme.accentBamboo)
+                    Text("今日一诗")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                Spacer()
+                if let p = dailyPoem {
+                    Text(dailyPoemFirstLines)
+                        .font(.system(size: 14, weight: .medium, design: .serif))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .lineLimit(3)
+                        .lineSpacing(4)
+                    Text("-- \(p.author)")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
+            .inkCard()
+        }
+        .buttonStyle(.bouncy)
+    }
+
+    // MARK: - 快捷入口 · 线性图标
 
     private var quickEntrySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("快捷入口")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold, design: .serif))
                 .foregroundStyle(AppTheme.textPrimary)
                 .padding(.horizontal, AppTheme.paddingScreen)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 14) {
-                    QuickEntryView(icon: "scroll.fill", title: "诗词补全", color: AppTheme.accentIndigo) {
+                    QuickEntryView(icon: "scroll.fill", title: "诗词补全", color: AppTheme.accentInkPurple) {
                         presentedGame = .poetryComplete
                     }
-                    QuickEntryView(icon: "square.dashed", title: "成语填空", color: AppTheme.accentPurple) {
+                    QuickEntryView(icon: "square.dashed", title: "成语填空", color: AppTheme.accentCinnabar) {
                         presentedGame = .idiomFillBlank
                     }
-                    QuickEntryView(icon: "person.2.fill", title: "百家姓", color: AppTheme.accentMint) {
+                    QuickEntryView(icon: "person.2.fill", title: "百家姓", color: AppTheme.accentJade) {
                         presentedGame = .surnameMatch
                     }
-                    QuickEntryView(icon: "character.book.closed.fill", title: "词典", color: Color(red: 180/255, green: 130/255, blue: 70/255)) {
+                    QuickEntryView(icon: "character.book.closed.fill", title: "词典", color: AppTheme.accentYellow) {
                         presentedGame = .dictionary
                     }
-                    QuickEntryView(icon: "quote.bubble.fill", title: "歇后语", color: .orange) {
+                    QuickEntryView(icon: "quote.bubble.fill", title: "歇后语", color: AppTheme.accentPink) {
                         presentedGame = .xiehouyuDictionary
                     }
-                    QuickEntryView(icon: "book.fill", title: "三字经", color: .teal) {
+                    QuickEntryView(icon: "book.fill", title: "三字经", color: AppTheme.accentBamboo) {
                         presentedGame = .sanzijing
                     }
-                    QuickEntryView(icon: "map.fill", title: "地理", color: AppTheme.accentSage) {
+                    QuickEntryView(icon: "map.fill", title: "地理", color: AppTheme.accentJade) {
                         progress.selectedTab = 2
                     }
                 }
@@ -346,12 +324,12 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Discovery Suggestion
+    // MARK: - 推荐探索
 
     private var discoverySuggestion: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("推荐探索")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold, design: .serif))
                 .foregroundStyle(AppTheme.textPrimary)
                 .padding(.horizontal, AppTheme.paddingScreen)
 
@@ -359,7 +337,7 @@ struct HomeView: View {
                 icon: "play.tv.fill",
                 title: "视频乐园",
                 subtitle: "海量英语动画、科学百科，随时播放",
-                colors: (AppTheme.accentPurple, AppTheme.accentPink)
+                colors: (AppTheme.accentInkPurple, AppTheme.accentPink)
             ) {
                 progress.selectedTab = 2
             }
@@ -368,7 +346,7 @@ struct HomeView: View {
                 icon: "books.vertical.fill",
                 title: "学习资料",
                 subtitle: "课程笔记、单元练习，全科覆盖",
-                colors: (AppTheme.accentMint, AppTheme.accentSage)
+                colors: (AppTheme.accentJade, AppTheme.accentBamboo)
             ) {
                 progress.selectedTab = 2
             }
@@ -442,7 +420,7 @@ struct HomeView: View {
     }
 }
 
-// MARK: - 火柴游戏自由模式容器（从 PlayView 复用）
+// MARK: - 火柴游戏自由模式容器
 
 private struct MatchstickGameContainer: View {
     let onExit: () -> Void
