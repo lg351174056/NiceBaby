@@ -1,14 +1,16 @@
 import SwiftUI
 
-// MARK: - 探索 · 碧潭色 · Bento 探索岛
-
 struct ExploreView: View {
     @State private var navPath = NavigationPath()
     @State private var selectedChip = "全部"
 
     private var hideTabBar: Bool { !navPath.isEmpty }
 
-    private let chips = ["全部", "地理", "视频", "学习", "百科", "图库"]
+    private let chips = ["全部", "地理", "视频", "学习", "百科", "图库", "拼图"]
+
+    private let horizontalPadding: CGFloat = 20
+    private let sectionGap: CGFloat = 40
+    private let cardGap: CGFloat = 14
 
     var body: some View {
         NavigationStack(path: $navPath) {
@@ -18,63 +20,19 @@ struct ExploreView: View {
                 chipsRow
 
                 ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 12) {
-                        featuredCard
+                    LazyVStack(spacing: sectionGap) {
+                        featuredBannerSection
 
-                        HStack(spacing: 12) {
-                            tallCard(
-                                title: "视频乐园",
-                                subtitle: "英语动画、科学百科",
-                                icon: "play.tv.fill",
-                                accent: AppTheme.accentInkPurple,
-                                badge: "热门",
-                                destination: ExploreDestination.video
-                            )
+                        appCardSection
 
-                            tallCard(
-                                title: "学习资料",
-                                subtitle: "课程笔记、全科覆盖",
-                                icon: "books.vertical.fill",
-                                accent: AppTheme.accentBamboo,
-                                badge: nil,
-                                destination: ExploreDestination.tutu
-                            )
-                        }
+                        categorySection
 
-                        wideCard(
-                            title: "十万个为什么",
-                            subtitle: "科学知识 · 自然奥秘 · 生活百科",
-                            icon: "questionmark.app.dashed",
-                            accent: AppTheme.accentYellow,
-                            destination: ExploreDestination.why
-                        )
+                        contentCardSection
 
-                        wideCard(
-                            title: "壁纸图库",
-                            subtitle: "超清精选 · AI 漫改 · 美女车模",
-                            icon: "photo.on.rectangle.angled",
-                            accent: AppTheme.accentIndigo,
-                            destination: ExploreDestination.wallpaper
-                        )
-
-                        HStack(alignment: .center, spacing: 4) {
-                            Text("即将开放")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.textSecondary)
-                                .tracking(0.8)
-                            Spacer()
-                        }
-                        .padding(.horizontal, AppTheme.paddingScreen)
-                        .padding(.top, 6)
-
-                        HStack(spacing: 12) {
-                            soonCard(title: "奇妙科学", icon: "flask.fill", accent: AppTheme.accentJade)
-
-                            soonCard(title: "上下五千年", icon: "scroll.fill", accent: AppTheme.accentTerracotta)
-                        }
+                        comingSoonSection
                     }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.bottom, 40)
+                    .padding(.top, 8)
+                    .padding(.bottom, 48)
                 }
             }
             .background(AppTheme.background.ignoresSafeArea())
@@ -101,13 +59,10 @@ struct ExploreView: View {
     // MARK: - Hero Area
 
     private var heroArea: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center) {
-                Text("探索 · 发现")
-                    .font(.system(size: 34, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.gradientExplore)
-                Spacer()
-            }
+        VStack(alignment: .leading, spacing: 14) {
+            Text("探索")
+                .font(.system(size: 34, weight: .bold, design: .serif))
+                .foregroundStyle(AppTheme.gradientExplore)
 
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
@@ -120,21 +75,21 @@ struct ExploreView: View {
                 Text("热门")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.accentJade)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
                     .background(AppTheme.accentJade.opacity(0.1), in: Capsule())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(AppTheme.separator, lineWidth: 1)
             )
         }
-        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.horizontal, horizontalPadding)
         .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.bottom, 16)
         .background(AppTheme.background)
     }
 
@@ -142,7 +97,7 @@ struct ExploreView: View {
 
     private var chipsRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 ForEach(chips, id: \.self) { chip in
                     Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -152,8 +107,8 @@ struct ExploreView: View {
                         Text(chip)
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .foregroundStyle(selectedChip == chip ? .white : AppTheme.textSecondary)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 7)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                             .background(
                                 selectedChip == chip
                                     ? AppTheme.accentJade
@@ -168,20 +123,20 @@ struct ExploreView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
+            .padding(.horizontal, horizontalPadding)
         }
-        .padding(.bottom, 12)
+        .padding(.bottom, 20)
     }
 
-    // MARK: - Featured Card (2-column span)
+    // MARK: - Featured Banner
 
-    private var featuredCard: some View {
+    private var featuredBannerSection: some View {
         NavigationLink(value: ExploreDestination.geography) {
             ZStack(alignment: .bottomLeading) {
                 RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [AppTheme.accentJade.opacity(0.12), AppTheme.accentJade.opacity(0.04), AppTheme.card],
+                            colors: [AppTheme.accentJade.opacity(0.15), AppTheme.accentJade.opacity(0.05), AppTheme.card],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -190,145 +145,141 @@ struct ExploreView: View {
                         RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
                             .strokeBorder(AppTheme.separator, lineWidth: 1)
                     )
-                Circle()
-                    .strokeBorder(AppTheme.accentJade.opacity(0.08), lineWidth: 1)
-                    .frame(width: 140, height: 140)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .offset(x: 30, y: -30)
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("编辑推荐")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.accentJade)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
-                        .background(AppTheme.accentJade.opacity(0.12), in: Capsule())
+                        .background(AppTheme.accentJade.opacity(0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                     Text("中国地理大探险")
-                        .font(.system(size: 22, weight: .heavy, design: .serif))
+                        .font(.system(size: 26, weight: .heavy, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
 
                     Text("木质拼图与图鉴，点亮神州大地")
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                 }
-                .padding(20)
+                .padding(28)
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .fill(AppTheme.accentJade.opacity(0.12))
+                        .frame(width: 80, height: 80)
+                    Image(systemName: "globe.asia.filled")
+                        .font(.system(size: 36, weight: .medium))
+                        .foregroundStyle(AppTheme.accentJade)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.top, 28)
+                .padding(.trailing, 24)
 
                 Circle()
                     .fill(AppTheme.accentJade)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 40, height: 40)
                     .overlay(
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.white)
                     )
-                    .shadow(color: AppTheme.accentJade.opacity(0.35), radius: 8, y: 3)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(18)
+                    .padding(24)
             }
-            .frame(minHeight: 200)
+            .frame(minHeight: 220)
+            .padding(.horizontal, horizontalPadding)
         }
         .buttonStyle(ExploreBounceButtonStyle())
     }
 
-    // MARK: - Tall Card (1 column, tall)
+    // MARK: - 大家都在玩（App 图标卡横滑）
 
-    private func tallCard(title: String, subtitle: String, icon: String, accent: Color, badge: String?, destination: ExploreDestination) -> some View {
-        NavigationLink(value: destination) {
-            VStack(alignment: .leading, spacing: 0) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [accent.opacity(0.08), accent.opacity(0.02)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: 90)
+    private var appCardSection: some View {
+        VStack(spacing: 16) {
+            sectionHeader(title: "大家都在玩", showSeeAll: true)
 
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(accent.opacity(0.10))
-                            .frame(width: 48, height: 48)
-                        Image(systemName: icon)
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(accent)
-                    }
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: cardGap) {
+                    appCard(
+                        title: "地理大探险",
+                        subtitle: "311 道关卡 · 神州漫游",
+                        icon: "globe.asia.filled",
+                        accent: AppTheme.accentJade,
+                        isPrimary: true,
+                        destination: .geography
+                    )
 
-                    Image(systemName: icon)
-                        .font(.system(size: 44))
-                        .foregroundStyle(accent.opacity(0.06))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                        .offset(x: -6, y: 6)
+                    appCard(
+                        title: "视频乐园",
+                        subtitle: "英语动画 · 科学百科",
+                        icon: "play.tv.fill",
+                        accent: AppTheme.accentInkPurple,
+                        isPrimary: false,
+                        destination: .video
+                    )
+
+                    appCard(
+                        title: "火柴游戏",
+                        subtitle: "经典火柴 · 益智烧脑",
+                        icon: "line.3.horizontal.decrease.circle.fill",
+                        accent: AppTheme.accentCinnabar,
+                        isPrimary: true,
+                        destination: .geography
+                    )
+
+                    appCard(
+                        title: "学习资料",
+                        subtitle: "课程笔记 · 全科覆盖",
+                        icon: "books.vertical.fill",
+                        accent: AppTheme.accentBamboo,
+                        isPrimary: false,
+                        destination: .tutu
+                    )
                 }
-                .frame(height: 90)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .heavy, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-
-                    Text(subtitle)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .lineLimit(2)
-                }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .strokeBorder(AppTheme.separator, lineWidth: 1)
-            )
-            .overlay(alignment: .topTrailing) {
-                if let badge {
-                    Text(badge)
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(accent)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(accent.opacity(0.1), in: Capsule())
-                        .padding(10)
-                }
+                .padding(.horizontal, horizontalPadding)
             }
         }
-        .buttonStyle(ExploreBounceButtonStyle())
     }
 
-    // MARK: - Wide Card (2-column span)
-
-    private func wideCard(title: String, subtitle: String, icon: String, accent: Color, destination: ExploreDestination) -> some View {
+    private func appCard(title: String, subtitle: String, icon: String, accent: Color, isPrimary: Bool, destination: ExploreDestination) -> some View {
         NavigationLink(value: destination) {
             HStack(spacing: 14) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(accent.opacity(0.1))
-                        .frame(width: 56, height: 56)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(accent.opacity(0.10))
+                        .frame(width: 68, height: 68)
                     Image(systemName: icon)
-                        .font(.system(size: 24, weight: .medium))
+                        .font(.system(size: 30, weight: .medium))
                         .foregroundStyle(accent)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: 17, weight: .heavy, design: .serif))
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
+                        .lineLimit(1)
                     Text(subtitle)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                         .lineLimit(1)
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                Text("进入")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(isPrimary ? .white : accent)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 7)
+                    .background(
+                        isPrimary ? accent : accent.opacity(0.08),
+                        in: Capsule()
+                    )
             }
-            .padding(14)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(width: 300)
             .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
@@ -338,16 +289,190 @@ struct ExploreView: View {
         .buttonStyle(ExploreBounceButtonStyle())
     }
 
-    // MARK: - Coming Soon Card (dashed border)
+    // MARK: - 分类推荐（视觉方块横滑）
+
+    private var categorySection: some View {
+        VStack(spacing: 16) {
+            sectionHeader(title: "分类推荐", showSeeAll: true)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: cardGap) {
+                    catCard(title: "地理探索", count: "311 道题", icon: "globe.asia.filled", accent: AppTheme.accentJade)
+                    catCard(title: "视频学习", count: "86 个视频", icon: "play.tv.fill", accent: AppTheme.accentInkPurple)
+                    catCard(title: "诗词文学", count: "311 首", icon: "books.vertical.fill", accent: AppTheme.accentBamboo)
+                    catCard(title: "十万个为什么", count: "科学百科", icon: "questionmark.app.dashed", accent: AppTheme.accentYellow)
+                    catCard(title: "壁纸图库", count: "超清精选", icon: "photo.on.rectangle.angled", accent: AppTheme.accentIndigo)
+                }
+                .padding(.horizontal, horizontalPadding)
+            }
+        }
+    }
+
+    private func catCard(title: String, count: String, icon: String, accent: Color) -> some View {
+        VStack(spacing: 0) {
+            ZStack {
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [accent.opacity(0.12), accent.opacity(0.03)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(accent.opacity(0.15))
+                    .frame(width: 64, height: 64)
+
+                Image(systemName: icon)
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(accent)
+            }
+            .frame(height: 110)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.textPrimary)
+                Text(count)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.card)
+        }
+        .frame(width: 170)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                .strokeBorder(AppTheme.separator, lineWidth: 1)
+        )
+    }
+
+    // MARK: - 精选内容（大尺寸内容卡横滑）
+
+    private var contentCardSection: some View {
+        VStack(spacing: 16) {
+            sectionHeader(title: "精选内容", showSeeAll: true)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: cardGap) {
+                    contentCard(
+                        title: "中国地理大探险",
+                        subtitle: "311 道关卡，走遍神州大地",
+                        icon: "globe.asia.filled",
+                        accent: AppTheme.accentJade,
+                        tag: "热门"
+                    )
+
+                    contentCard(
+                        title: "视频乐园",
+                        subtitle: "英语动画、科学百科",
+                        icon: "play.tv.fill",
+                        accent: AppTheme.accentInkPurple,
+                        tag: "推荐"
+                    )
+
+                    contentCard(
+                        title: "学习资料",
+                        subtitle: "课程笔记、全科覆盖",
+                        icon: "books.vertical.fill",
+                        accent: AppTheme.accentBamboo,
+                        tag: nil
+                    )
+
+                    contentCard(
+                        title: "十万个为什么",
+                        subtitle: "科学知识 · 自然奥秘",
+                        icon: "questionmark.app.dashed",
+                        accent: AppTheme.accentYellow,
+                        tag: nil
+                    )
+                }
+                .padding(.horizontal, horizontalPadding)
+            }
+        }
+    }
+
+    private func contentCard(title: String, subtitle: String, icon: String, accent: Color, tag: String?) -> some View {
+        VStack(spacing: 0) {
+            ZStack {
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [accent.opacity(0.15), accent.opacity(0.04)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(accent.opacity(0.12))
+                    .frame(width: 72, height: 72)
+
+                Image(systemName: icon)
+                    .font(.system(size: 34, weight: .medium))
+                    .foregroundStyle(accent)
+            }
+            .frame(height: 160)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 16, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(2)
+
+                if let tag {
+                    Text(tag)
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                        .padding(.top, 4)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.card)
+        }
+        .frame(width: 220)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                .strokeBorder(AppTheme.separator, lineWidth: 1)
+        )
+    }
+
+    // MARK: - 即将开放（2列虚线卡片）
+
+    private var comingSoonSection: some View {
+        VStack(spacing: 16) {
+            sectionHeader(title: "即将开放", showSeeAll: false)
+
+            HStack(spacing: cardGap) {
+                soonCard(title: "奇妙科学", icon: "flask.fill", accent: AppTheme.accentJade)
+                soonCard(title: "上下五千年", icon: "scroll.fill", accent: AppTheme.accentTerracotta)
+            }
+            .padding(.horizontal, horizontalPadding)
+        }
+    }
 
     private func soonCard(title: String, icon: String, accent: Color) -> some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(accent.opacity(0.06))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 56, height: 56)
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .medium))
+                    .font(.system(size: 24, weight: .medium))
                     .foregroundStyle(accent.opacity(0.5))
             }
 
@@ -358,14 +483,40 @@ struct ExploreView: View {
             Text("即将开放")
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
-                 .tracking(0.4)
+                .tracking(0.4)
         }
-        .frame(maxWidth: .infinity, minHeight: 140)
+        .frame(maxWidth: .infinity, minHeight: 160)
         .background(AppTheme.background)
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
                 .strokeBorder(AppTheme.separator, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
         )
+    }
+
+    // MARK: - Section Header
+
+    private func sectionHeader(title: String, showSeeAll: Bool) -> some View {
+        HStack(alignment: .center) {
+            Text(title)
+                .font(.system(size: 20, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.textPrimary)
+
+            Spacer()
+
+            if showSeeAll {
+                Button {} label: {
+                    HStack(spacing: 3) {
+                        Text("查看全部")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .foregroundStyle(AppTheme.accentJade)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, horizontalPadding)
     }
 }
 
