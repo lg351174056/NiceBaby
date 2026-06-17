@@ -121,7 +121,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(greeting)
                     .font(.system(size: 34, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .foregroundStyle(AppTheme.gradientHome)
                 HStack(spacing: 14) {
                     if progress.streakDays > 0 {
                         Label("\(progress.streakDays)天连续", systemImage: "flame.fill")

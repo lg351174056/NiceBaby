@@ -57,6 +57,28 @@ enum AppTheme {
     static let spacing32: CGFloat = 32
     static let spacing48: CGFloat = 48
 
+    // MARK: — 标题渐变色（每 Tab 独立渐变）
+    static let gradientHome = LinearGradient(
+        colors: [Color(red: 201/255, green: 100/255, blue: 66/255), Color(red: 232/255, green: 148/255, blue: 100/255)],
+        startPoint: .leading, endPoint: .trailing
+    )
+    static let gradientDiscover = LinearGradient(
+        colors: [Color(red: 74/255, green: 124/255, blue: 89/255), Color(red: 110/255, green: 172/255, blue: 120/255)],
+        startPoint: .leading, endPoint: .trailing
+    )
+    static let gradientExplore = LinearGradient(
+        colors: [Color(red: 59/255, green: 142/255, blue: 165/255), Color(red: 80/255, green: 180/255, blue: 160/255)],
+        startPoint: .leading, endPoint: .trailing
+    )
+    static let gradientPlay = LinearGradient(
+        colors: [Color(red: 92/255, green: 75/255, blue: 138/255), Color(red: 140/255, green: 115/255, blue: 195/255)],
+        startPoint: .leading, endPoint: .trailing
+    )
+    static let gradientProfile = LinearGradient(
+        colors: [Color(red: 74/255, green: 111/255, blue: 165/255), Color(red: 120/255, green: 160/255, blue: 210/255)],
+        startPoint: .leading, endPoint: .trailing
+    )
+
     // MARK: — Typography（宋体标题 + 圆体正文）
     static func titleHero() -> Font { .system(size: 34, weight: .bold, design: .serif) }
     static func titleSection() -> Font { .system(size: 22, weight: .heavy, design: .serif) }

@@ -42,7 +42,7 @@ struct DiscoverView: View {
                 HStack(alignment: .center) {
                     Text("诗库")
                         .font(.system(size: 32, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .foregroundStyle(AppTheme.gradientDiscover)
                     Spacer()
                     ZStack {
                         Circle()
@@ -771,7 +771,7 @@ struct ProfileView: View {
                     HStack(alignment: .center) {
                         Text("我的")
                             .font(.system(size: 32, weight: .bold, design: .serif))
-                            .foregroundStyle(AppTheme.textPrimary)
+                            .foregroundStyle(AppTheme.gradientProfile)
                         Spacer()
                         ZStack {
                             Circle()
