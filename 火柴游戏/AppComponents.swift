@@ -148,7 +148,7 @@ struct QuickEntryView: View {
             }
             .frame(width: 64)
         }
-        .buttonStyle(.bouncy)
+        .buttonStyle(.plain)
     }
 }
 
@@ -195,7 +195,15 @@ struct DailyIdiomCard: View {
                 }
             }
         }
-        .inkCard()
+        .padding(16)
+        .background(
+            AppTheme.card,
+            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppTheme.separator, lineWidth: 1)
+        )
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 }
@@ -238,7 +246,15 @@ struct WeeklyStatsCard: View {
                 )
             }
         }
-        .inkCard()
+        .padding(16)
+        .background(
+            AppTheme.card,
+            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppTheme.separator, lineWidth: 1)
+        )
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 
@@ -303,9 +319,8 @@ struct DiscoverySuggestionCard: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(AppTheme.separator, lineWidth: 1)
             )
-            .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
         }
-        .buttonStyle(.bouncy)
+        .buttonStyle(.plain)
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 }

@@ -5,7 +5,7 @@ import AVFoundation
 
 // MARK: - 汉语词典数据模型
 
-struct DictEntry: Codable, Identifiable {
+struct DictEntry: Decodable, Identifiable, Hashable {
     let word: String
     let oldword: String
     let strokes: String
@@ -13,18 +13,44 @@ struct DictEntry: Codable, Identifiable {
     let radicals: String
     let explanation: String
     let more: String
+    let briefExplanation: String
+    let searchPinyin: String
+    let searchExplanation: String
     
     var id: String { word + pinyin }
-    
-    /// 简化释义（去掉换行和过多细节，适合卡片预览）
-    var briefExplanation: String {
+
+    private enum CodingKeys: String, CodingKey {
+        case word
+        case oldword
+        case strokes
+        case pinyin
+        case radicals
+        case explanation
+        case more
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        word = try container.decode(String.self, forKey: .word)
+        oldword = try container.decode(String.self, forKey: .oldword)
+        strokes = try container.decode(String.self, forKey: .strokes)
+        pinyin = try container.decode(String.self, forKey: .pinyin)
+        radicals = try container.decode(String.self, forKey: .radicals)
+        explanation = try container.decode(String.self, forKey: .explanation)
+        more = try container.decode(String.self, forKey: .more)
+
         let cleaned = explanation
             .replacingOccurrences(of: "\n", with: "；")
             .replacingOccurrences(of: "  ", with: "")
-        // 截取前 60 字
-        if cleaned.count <= 60 { return cleaned }
-        let end = cleaned.index(cleaned.startIndex, offsetBy: 60)
-        return String(cleaned[..<end]) + "…"
+        if cleaned.count <= 60 {
+            briefExplanation = cleaned
+        } else {
+            let end = cleaned.index(cleaned.startIndex, offsetBy: 60)
+            briefExplanation = String(cleaned[..<end]) + "…"
+        }
+
+        searchPinyin = pinyin.lowercased()
+        searchExplanation = explanation.lowercased()
     }
     
     /// 拼音首字母（用于索引）
@@ -110,8 +136,8 @@ final class DictionaryStore: ObservableObject {
         
         return entries.filter { entry in
             entry.word.contains(query) ||
-            entry.pinyin.lowercased().contains(q) ||
-            entry.explanation.lowercased().contains(q)
+            entry.searchPinyin.contains(q) ||
+            entry.searchExplanation.contains(q)
         }
     }
     
@@ -148,19 +174,9 @@ struct DictionaryGameView: View {
     @State private var searchText = ""
     @State private var selectedLetter: Character? = nil
     @State private var selectedEntry: DictEntry? = nil
+    @State private var visibleEntries: [DictEntry] = []
     
     private let kind: GameKind = .idiomDictionary
-    
-    /// 当前展示的条目列表
-    private var displayEntries: [DictEntry] {
-        if !searchText.isEmpty {
-            return store.search(searchText)
-        }
-        if let letter = selectedLetter {
-            return store.pinyinIndex[letter] ?? []
-        }
-        return []
-    }
     
     var body: some View {
         NavigationStack {
@@ -192,11 +208,11 @@ struct DictionaryGameView: View {
                         VStack(spacing: 0) {
                             pinyinIndexBar
                             
-                            if !searchText.isEmpty && displayEntries.isEmpty {
+                            if !searchText.isEmpty && visibleEntries.isEmpty {
                                 emptySearchResult
                             } else if selectedLetter == nil && searchText.isEmpty {
                                 welcomeView
-                            } else if displayEntries.isEmpty {
+                            } else if visibleEntries.isEmpty {
                                 emptyState
                             } else {
                                 entryListView
@@ -208,7 +224,9 @@ struct DictionaryGameView: View {
             .navigationBarHidden(true)
             .onAppear {
                 if store.entries.isEmpty { Task { await store.load() } }
+                refreshVisibleEntries()
             }
+            .onChange(of: store.entries.count) { _, _ in refreshVisibleEntries() }
         }
     }
     
@@ -222,13 +240,15 @@ struct DictionaryGameView: View {
             
             TextField("搜索汉字或拼音...", text: $searchText)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .onChange(of: searchText) { _, _ in
-                    if !searchText.isEmpty { selectedLetter = nil }
+                .onChange(of: searchText) { _, newValue in
+                    if !newValue.isEmpty { selectedLetter = nil }
+                    refreshVisibleEntries()
                 }
             
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
+                    refreshVisibleEntries()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 16))
@@ -250,9 +270,8 @@ struct DictionaryGameView: View {
                 ForEach(store.indexLetters, id: \.self) { letter in
                     Button {
                         searchText = ""
-                        withAnimation(.easeInOut(duration: 0.1)) {
-                            selectedLetter = (selectedLetter == letter) ? nil : letter
-                        }
+                        selectedLetter = (selectedLetter == letter) ? nil : letter
+                        refreshVisibleEntries()
                     } label: {
                         VStack(spacing: 2) {
                             Text(String(letter).uppercased())
@@ -331,35 +350,55 @@ struct DictionaryGameView: View {
     // MARK: - 词条列表
     
     private var entryListView: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 8) {
-                ForEach(displayEntries) { entry in
-                    Button {
+        List {
+            ForEach(visibleEntries) { entry in
+                DictEntryRow(entry: entry, accent: kind.palette.0)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
                         selectedEntry = entry
-                    } label: {
-                        entryRow(entry)
                     }
-                    .buttonStyle(.plain)
-                }
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(AppTheme.background)
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 8)
-            .padding(.bottom, 32)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
+        .environment(\.defaultMinListRowHeight, 0)
+        .padding(.top, 4)
         .sheet(item: $selectedEntry) { entry in
             DictDetailView(entry: entry, palette: kind.palette)
         }
     }
-    
-    @ViewBuilder
-    private func entryRow(_ entry: DictEntry) -> some View {
+
+    private func refreshVisibleEntries() {
+        if !searchText.isEmpty {
+            visibleEntries = store.search(searchText)
+        } else if let letter = selectedLetter {
+            visibleEntries = store.pinyinIndex[letter] ?? []
+        } else {
+            visibleEntries = []
+        }
+    }
+}
+
+private struct DictEntryRow: View, Equatable {
+    let entry: DictEntry
+    let accent: Color
+
+    static func == (lhs: DictEntryRow, rhs: DictEntryRow) -> Bool {
+        lhs.entry.id == rhs.entry.id
+    }
+
+    var body: some View {
         HStack(spacing: 14) {
             // 左：大字
             Text(entry.word)
                 .font(.system(size: 32, weight: .heavy, design: .serif))
-                .foregroundStyle(kind.palette.0)
+                .foregroundStyle(accent)
                 .frame(width: 48, height: 48)
-                .background(kind.palette.0.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                .background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
             
             // 中：拼音 + 简要释义
             VStack(alignment: .leading, spacing: 4) {
@@ -399,9 +438,9 @@ struct DictionaryGameView: View {
             } label: {
                 Image(systemName: "speaker.wave.2.fill")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(kind.palette.0)
+                    .foregroundStyle(accent)
                     .frame(width: 36, height: 36)
-                    .background(kind.palette.0.opacity(0.1), in: Circle())
+                    .background(accent.opacity(0.1), in: Circle())
             }
             .buttonStyle(.plain)
             
@@ -411,7 +450,12 @@ struct DictionaryGameView: View {
         }
         .padding(12)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.03), radius: 3, y: 1)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AppTheme.separator.opacity(0.9), lineWidth: 1)
+        )
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.vertical, 6)
     }
 }
 

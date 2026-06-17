@@ -14,6 +14,7 @@ struct WhyCategoryListView: View {
     @State private var loadError: String?
     @State private var currentPage = 0
     @State private var totalPages = 1
+    private let pageSize = 20
 
     var body: some View {
         ZStack {
@@ -112,13 +113,16 @@ struct WhyCategoryListView: View {
                         NavigationLink(value: WhyQuestionRef(id: q.id, title: q.title)) {
                             WhyQuestionRow(question: q, accent: category.swiftUIColor)
                         }
-                        .buttonStyle(WhyBounceButtonStyle())
-                        .onAppear {
-                            // 触底分页
-                            if q.id == questions.last?.id, currentPage + 1 < totalPages, !isLoadingMore {
+                        .buttonStyle(.plain)
+                    }
+
+                    if currentPage + 1 < totalPages {
+                        Color.clear
+                            .frame(height: 1)
+                            .id(currentPage)
+                            .onAppear {
                                 Task { await loadMore() }
                             }
-                        }
                     }
 
                     if isLoadingMore {
@@ -169,7 +173,7 @@ struct WhyCategoryListView: View {
         isLoading = true
         loadError = nil
         currentPage = 0
-        let page = await service.fetchQuestionsByCategory(categoryId: category.id, page: 0, size: 10)
+        let page = await service.fetchQuestionsByCategory(categoryId: category.id, page: 0, size: pageSize)
         await MainActor.run {
             self.questions = page.content
             self.totalPages = max(1, page.totalPages)
@@ -181,7 +185,7 @@ struct WhyCategoryListView: View {
 
     private func reload() async {
         currentPage = 0
-        let page = await service.fetchQuestionsByCategory(categoryId: category.id, page: 0, size: 10)
+        let page = await service.fetchQuestionsByCategory(categoryId: category.id, page: 0, size: pageSize)
         await MainActor.run {
             self.questions = page.content
             self.totalPages = max(1, page.totalPages)
@@ -193,9 +197,11 @@ struct WhyCategoryListView: View {
         guard !isLoadingMore, currentPage + 1 < totalPages else { return }
         isLoadingMore = true
         let next = currentPage + 1
-        let page = await service.fetchQuestionsByCategory(categoryId: category.id, page: next, size: 10)
+        let page = await service.fetchQuestionsByCategory(categoryId: category.id, page: next, size: pageSize)
         await MainActor.run {
-            self.questions.append(contentsOf: page.content)
+            self.questions.append(contentsOf: page.content.filter { incoming in
+                !self.questions.contains(where: { $0.id == incoming.id })
+            })
             self.currentPage = page.number
             self.totalPages = max(1, page.totalPages)
             self.isLoadingMore = false
@@ -205,9 +211,26 @@ struct WhyCategoryListView: View {
 
 // MARK: - 列表行
 
-struct WhyQuestionRow: View {
+struct WhyQuestionRow: View, Equatable {
     let question: WhyQuestion
     let accent: Color
+    private let preview: String?
+
+    init(question: WhyQuestion, accent: Color) {
+        self.question = question
+        self.accent = accent
+        if let answer = question.answer, !answer.isEmpty {
+            self.preview = answer
+        } else if let content = question.content, !content.isEmpty {
+            self.preview = content
+        } else {
+            self.preview = nil
+        }
+    }
+
+    static func == (lhs: WhyQuestionRow, rhs: WhyQuestionRow) -> Bool {
+        lhs.question.id == rhs.question.id
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -227,7 +250,7 @@ struct WhyQuestionRow: View {
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
 
-                if let preview = previewText(), !preview.isEmpty {
+                if let preview, !preview.isEmpty {
                     Text(preview)
                         .font(.system(size: 12, weight: .regular, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
@@ -267,7 +290,6 @@ struct WhyQuestionRow: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(accent.opacity(0.15), lineWidth: 1)
         )
-        .shadow(color: accent.opacity(0.08), radius: 6, y: 3)
     }
 
     private func tagPill(text: String, color: Color, icon: String) -> some View {
@@ -282,12 +304,6 @@ struct WhyQuestionRow: View {
         .background(color.opacity(0.15))
         .foregroundStyle(color)
         .clipShape(Capsule())
-    }
-
-    private func previewText() -> String? {
-        if let a = question.answer, !a.isEmpty { return a }
-        if let c = question.content, !c.isEmpty { return c }
-        return nil
     }
 
     private func difficultyColor(_ level: String?) -> Color {

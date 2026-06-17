@@ -5,8 +5,6 @@ struct TutuResourceListView: View {
     let tag: TutuTag
     @State private var resources: [TutuResource] = []
     @State private var isLoading = false
-    @State private var appeared = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -35,9 +33,6 @@ struct TutuResourceListView: View {
                 isLoading = true
                 resources = await TutuAPIService.shared.fetchResources(categoryId: subCategory.id, tagId: tag.id)
                 isLoading = false
-                withAnimation(reduceMotion ? .none : .spring(response: 0.6, dampingFraction: 0.8)) {
-                    appeared = true
-                }
             }
         }
     }
@@ -61,21 +56,13 @@ struct TutuResourceListView: View {
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
                 .padding(.top, 8)
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 15)
 
                 LazyVStack(spacing: 12) {
                     ForEach(Array(resources.enumerated()), id: \.element.id) { index, resource in
                         NavigationLink(destination: TutuResourceDetailView(resource: resource)) {
                             ResourceCard(resource: resource, index: index)
                         }
-                        .buttonStyle(TutuCardBounceStyle())
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 20)
-                        .animation(
-                            reduceMotion ? .none : .spring(response: 0.5, dampingFraction: 0.75).delay(Double(index) * 0.06),
-                            value: appeared
-                        )
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
@@ -85,7 +72,7 @@ struct TutuResourceListView: View {
     }
 }
 
-private struct ResourceCard: View {
+private struct ResourceCard: View, Equatable {
     let resource: TutuResource
     let index: Int
 
@@ -95,6 +82,10 @@ private struct ResourceCard: View {
             Color(hex: "fa709a"), Color(hex: "a18cd1"), Color(hex: "fccb90")
         ]
         return colors[index % colors.count]
+    }
+
+    static func == (lhs: ResourceCard, rhs: ResourceCard) -> Bool {
+        lhs.resource.id == rhs.resource.id && lhs.index == rhs.index
     }
 
     var body: some View {
@@ -173,10 +164,9 @@ private struct ResourceCard: View {
         .padding(14)
         .background(AppTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: accentColor.opacity(0.08), radius: 10, x: 0, y: 4)
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(.white.opacity(0.6), lineWidth: 1.5)
+                .stroke(accentColor.opacity(0.12), lineWidth: 1)
         )
     }
 }

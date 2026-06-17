@@ -9,7 +9,8 @@ struct HomeView: View {
     @State private var gameIsDaily = false
     @State private var presentedGame: GameKind? = nil
 
-    private var poems: [Poem] { PoemCatalog.poems() }
+    private static let cachedPoems = PoemCatalog.poems()
+    private var poems: [Poem] { Self.cachedPoems }
     private var dailyPoem: Poem? {
         let list = poems
         guard !list.isEmpty else { return nil }
@@ -76,19 +77,14 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 28) {
                     heroHeader
-                        .staggerAppear(index: 0)
                     matchstickHeroCard
-                        .staggerAppear(index: 1)
                     bentoGrid
-                        .staggerAppear(index: 2)
                     quickEntrySection
-                        .staggerAppear(index: 3)
                     DailyIdiomCard(idiom: dailyIdiom) {
                             presentedGame = .idiomDictionary
                         }
-                    .staggerAppear(index: 4)
                     WeeklyStatsCard(
                         matchSolves: progress.totalMatchstickSolves,
                         matchTotal: MatchstickProblemSet.count,
@@ -96,9 +92,7 @@ struct HomeView: View {
                         poemsTotal: poems.count,
                         streakDays: progress.streakDays
                     )
-                    .staggerAppear(index: 5)
                     discoverySuggestion
-                        .staggerAppear(index: 6)
                 }
                 .padding(.top, 12)
                 .padding(.bottom, 40)
@@ -206,7 +200,7 @@ struct HomeView: View {
                     .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
             )
         }
-        .buttonStyle(.bouncy)
+        .buttonStyle(.plain)
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 
@@ -252,7 +246,7 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
             .inkCard()
         }
-        .buttonStyle(.bouncy)
+        .buttonStyle(.plain)
     }
 
     private var dailyPoemCard: some View {
@@ -283,7 +277,7 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
             .inkCard()
         }
-        .buttonStyle(.bouncy)
+        .buttonStyle(.plain)
     }
 
     // MARK: - 快捷入口 · 线性图标

@@ -447,13 +447,18 @@ private struct GradeBookRow: View {
 struct PoetryCollectionListView: View {
     let item: PoetryLibraryItem
     @StateObject private var store = ClassicalPoetryStore.shared
+    private let matchedPoems: [Poem]
 
-    private var matchedPoems: [Poem] {
-        if item.id == "textbook" { return [] }
-        let matched = store.allCollections.filter { collection in
-            item.filePatterns.contains(where: { collection.title.contains($0) })
+    init(item: PoetryLibraryItem) {
+        self.item = item
+        if item.id == "textbook" {
+            self.matchedPoems = []
+        } else {
+            let matched = ClassicalPoetryStore.shared.allCollections.filter { collection in
+                item.filePatterns.contains(where: { collection.title.contains($0) })
+            }
+            self.matchedPoems = matched.flatMap(\.poems)
         }
-        return matched.flatMap { $0.poems }
     }
 
     var body: some View {
@@ -535,8 +540,8 @@ private struct PoemCollectionContent: View {
                         ForEach(Array(displayedPoems.enumerated()), id: \.element.id) { index, poem in
                             NavigationLink(value: poem) {
                                 PoemCard(poem: poem, index: index, accentColor: colors.0)
+                                    .equatable()
                             }
-                            .buttonStyle(.bouncy)
                             .onAppear {
                                 if index == displayedPoems.count - 1, hasMore {
                                     displayedCount += pageSize
@@ -585,10 +590,23 @@ private struct PoemCollectionContent: View {
 
 // MARK: - 诗词卡片 · 墨韵版
 
-private struct PoemCard: View {
+private struct PoemCard: View, Equatable {
     let poem: Poem
     let index: Int
     let accentColor: Color
+    private let firstLine: String
+
+    init(poem: Poem, index: Int, accentColor: Color) {
+        self.poem = poem
+        self.index = index
+        self.accentColor = accentColor
+        self.firstLine = poem.contents.components(separatedBy: "\n")
+            .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) ?? ""
+    }
+
+    static func == (lhs: PoemCard, rhs: PoemCard) -> Bool {
+        lhs.poem.id == rhs.poem.id && lhs.index == rhs.index
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -629,12 +647,6 @@ private struct PoemCard: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(AppTheme.separator, lineWidth: 1)
         )
-        .shadow(color: AppTheme.inkShadow, radius: 4, x: 0, y: 2)
-    }
-
-    private var firstLine: String {
-        poem.contents.components(separatedBy: "\n")
-            .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) ?? ""
     }
 }
 

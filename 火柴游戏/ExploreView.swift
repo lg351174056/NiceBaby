@@ -168,7 +168,7 @@ struct ExploreView: View {
                     RoundedRectangle(cornerRadius: 30, style: .continuous)
                         .fill(AppTheme.accentJade.opacity(0.12))
                         .frame(width: 80, height: 80)
-                    Image(systemName: "globe.asia.filled")
+                    Image(systemName: "map.fill")
                         .font(.system(size: 36, weight: .medium))
                         .foregroundStyle(AppTheme.accentJade)
                 }
@@ -204,7 +204,7 @@ struct ExploreView: View {
                     appCard(
                         title: "地理大探险",
                         subtitle: "311 道关卡 · 神州漫游",
-                        icon: "globe.asia.filled",
+                        icon: "map.fill",
                         accent: AppTheme.accentJade,
                         isPrimary: true,
                         destination: .geography
@@ -213,7 +213,7 @@ struct ExploreView: View {
                     appCard(
                         title: "视频乐园",
                         subtitle: "英语动画 · 科学百科",
-                        icon: "play.tv.fill",
+                        icon: "play.square.fill",
                         accent: AppTheme.accentInkPurple,
                         isPrimary: false,
                         destination: .video
@@ -222,7 +222,7 @@ struct ExploreView: View {
                     appCard(
                         title: "火柴游戏",
                         subtitle: "经典火柴 · 益智烧脑",
-                        icon: "line.3.horizontal.decrease.circle.fill",
+                        icon: "gamecontroller.fill",
                         accent: AppTheme.accentCinnabar,
                         isPrimary: true,
                         destination: .geography
@@ -231,7 +231,7 @@ struct ExploreView: View {
                     appCard(
                         title: "学习资料",
                         subtitle: "课程笔记 · 全科覆盖",
-                        icon: "books.vertical.fill",
+                        icon: "book.closed.fill",
                         accent: AppTheme.accentBamboo,
                         isPrimary: false,
                         destination: .tutu
@@ -297,58 +297,61 @@ struct ExploreView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: cardGap) {
-                    catCard(title: "地理探索", count: "311 道题", icon: "globe.asia.filled", accent: AppTheme.accentJade)
-                    catCard(title: "视频学习", count: "86 个视频", icon: "play.tv.fill", accent: AppTheme.accentInkPurple)
-                    catCard(title: "诗词文学", count: "311 首", icon: "books.vertical.fill", accent: AppTheme.accentBamboo)
-                    catCard(title: "十万个为什么", count: "科学百科", icon: "questionmark.app.dashed", accent: AppTheme.accentYellow)
-                    catCard(title: "壁纸图库", count: "超清精选", icon: "photo.on.rectangle.angled", accent: AppTheme.accentIndigo)
+                    catCard(title: "地理探索", count: "311 道题", icon: "map.fill", accent: AppTheme.accentJade, destination: .geography)
+                    catCard(title: "视频学习", count: "86 个视频", icon: "play.square.fill", accent: AppTheme.accentInkPurple, destination: .video)
+                    catCard(title: "诗词文学", count: "311 首", icon: "book.closed.fill", accent: AppTheme.accentBamboo, destination: .tutu)
+                    catCard(title: "十万个为什么", count: "科学百科", icon: "questionmark.bubble.fill", accent: AppTheme.accentYellow, destination: .why)
+                    catCard(title: "壁纸图库", count: "超清精选", icon: "photo.stack.fill", accent: AppTheme.accentIndigo, destination: .wallpaper)
                 }
                 .padding(.horizontal, horizontalPadding)
             }
         }
     }
 
-    private func catCard(title: String, count: String, icon: String, accent: Color) -> some View {
-        VStack(spacing: 0) {
-            ZStack {
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [accent.opacity(0.12), accent.opacity(0.03)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+    private func catCard(title: String, count: String, icon: String, accent: Color, destination: ExploreDestination) -> some View {
+        NavigationLink(value: destination) {
+            VStack(spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [accent.opacity(0.12), accent.opacity(0.03)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
 
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(accent.opacity(0.15))
-                    .frame(width: 64, height: 64)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(accent.opacity(0.15))
+                        .frame(width: 64, height: 64)
 
-                Image(systemName: icon)
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(accent)
+                    Image(systemName: icon)
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundStyle(accent)
+                }
+                .frame(height: 110)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .heavy, design: .serif))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text(count)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppTheme.card)
             }
-            .frame(height: 110)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 14, weight: .heavy, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(count)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.card)
+            .frame(width: 170)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
         }
-        .frame(width: 170)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                .strokeBorder(AppTheme.separator, lineWidth: 1)
-        )
+        .buttonStyle(ExploreBounceButtonStyle())
     }
 
     // MARK: - 精选内容（大尺寸内容卡横滑）
@@ -362,33 +365,37 @@ struct ExploreView: View {
                     contentCard(
                         title: "中国地理大探险",
                         subtitle: "311 道关卡，走遍神州大地",
-                        icon: "globe.asia.filled",
+                        icon: "map.fill",
                         accent: AppTheme.accentJade,
-                        tag: "热门"
+                        tag: "热门",
+                        destination: .geography
                     )
 
                     contentCard(
                         title: "视频乐园",
                         subtitle: "英语动画、科学百科",
-                        icon: "play.tv.fill",
+                        icon: "play.square.fill",
                         accent: AppTheme.accentInkPurple,
-                        tag: "推荐"
+                        tag: "推荐",
+                        destination: .video
                     )
 
                     contentCard(
                         title: "学习资料",
                         subtitle: "课程笔记、全科覆盖",
-                        icon: "books.vertical.fill",
+                        icon: "book.closed.fill",
                         accent: AppTheme.accentBamboo,
-                        tag: nil
+                        tag: nil,
+                        destination: .tutu
                     )
 
                     contentCard(
                         title: "十万个为什么",
                         subtitle: "科学知识 · 自然奥秘",
-                        icon: "questionmark.app.dashed",
+                        icon: "questionmark.bubble.fill",
                         accent: AppTheme.accentYellow,
-                        tag: nil
+                        tag: nil,
+                        destination: .why
                     )
                 }
                 .padding(.horizontal, horizontalPadding)
@@ -396,59 +403,62 @@ struct ExploreView: View {
         }
     }
 
-    private func contentCard(title: String, subtitle: String, icon: String, accent: Color, tag: String?) -> some View {
-        VStack(spacing: 0) {
-            ZStack {
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [accent.opacity(0.15), accent.opacity(0.04)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+    private func contentCard(title: String, subtitle: String, icon: String, accent: Color, tag: String?, destination: ExploreDestination) -> some View {
+        NavigationLink(value: destination) {
+            VStack(spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [accent.opacity(0.15), accent.opacity(0.04)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
 
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(accent.opacity(0.12))
-                    .frame(width: 72, height: 72)
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .fill(accent.opacity(0.12))
+                        .frame(width: 72, height: 72)
 
-                Image(systemName: icon)
-                    .font(.system(size: 34, weight: .medium))
-                    .foregroundStyle(accent)
-            }
-            .frame(height: 160)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(1)
-                Text(subtitle)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .lineLimit(2)
-
-                if let tag {
-                    Text(tag)
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                    Image(systemName: icon)
+                        .font(.system(size: 34, weight: .medium))
                         .foregroundStyle(accent)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-                        .padding(.top, 4)
                 }
+                .frame(height: 160)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .lineLimit(2)
+
+                    if let tag {
+                        Text(tag)
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(accent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                            .padding(.top, 4)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppTheme.card)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.card)
+            .frame(width: 220)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
         }
-        .frame(width: 220)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                .strokeBorder(AppTheme.separator, lineWidth: 1)
-        )
+        .buttonStyle(ExploreBounceButtonStyle())
     }
 
     // MARK: - 即将开放（2列虚线卡片）

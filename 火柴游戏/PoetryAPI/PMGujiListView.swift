@@ -5,7 +5,6 @@ struct PMGujiListView: View {
     @State private var currentPage = 1
     @State private var isLoading = false
     @State private var hasMorePages = true
-    @State private var appearAnimation = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -13,18 +12,17 @@ struct PMGujiListView: View {
                 ForEach(Array(gujiList.enumerated()), id: \.element.id) { index, guji in
                     NavigationLink(destination: PMGujiChapterListView(gujiId: guji.id, gujiName: guji.name)) {
                         GujiCard(guji: guji, index: index)
-                            .opacity(appearAnimation ? 1 : 0)
-                            .animation(
-                                .easeOut(duration: 0.3).delay(Double(min(index, 8)) * 0.05),
-                                value: appearAnimation
-                            )
                     }
-                    .buttonStyle(GujiBounceStyle())
-                    .onAppear {
-                        if index == gujiList.count - 3, hasMorePages, !isLoading {
+                    .buttonStyle(.plain)
+                }
+
+                if hasMorePages {
+                    Color.clear
+                        .frame(height: 1)
+                        .id(currentPage)
+                        .onAppear {
                             Task { await loadMore() }
                         }
-                    }
                 }
 
                 if isLoading {
@@ -44,25 +42,25 @@ struct PMGujiListView: View {
         .background(AppTheme.background.ignoresSafeArea())
         .task {
             await loadInitial()
-            withAnimation(.easeOut(duration: 0.5)) {
-                appearAnimation = true
-            }
         }
     }
 
     private func loadInitial() async {
         isLoading = true
+        currentPage = 1
         gujiList = (try? await PoetryAPIService.shared.fetchGujiList(page: 1)) ?? []
         hasMorePages = gujiList.count >= 10
         isLoading = false
     }
 
     private func loadMore() async {
-        guard !isLoading else { return }
+        guard !isLoading, hasMorePages else { return }
         isLoading = true
-        currentPage += 1
-        let more = (try? await PoetryAPIService.shared.fetchGujiList(page: currentPage)) ?? []
-        gujiList.append(contentsOf: more)
+        let nextPage = currentPage + 1
+        let more = (try? await PoetryAPIService.shared.fetchGujiList(page: nextPage)) ?? []
+        let existingIDs = Set(gujiList.map(\.id))
+        gujiList.append(contentsOf: more.filter { !existingIDs.contains($0.id) })
+        currentPage = nextPage
         hasMorePages = more.count >= 10
         isLoading = false
     }
@@ -70,7 +68,7 @@ struct PMGujiListView: View {
 
 // MARK: - Guji Card
 
-private struct GujiCard: View {
+private struct GujiCard: View, Equatable {
     let guji: PMGuji
     let index: Int
 
@@ -87,6 +85,10 @@ private struct GujiCard: View {
     private let bookIcons = ["book.closed.fill", "text.book.closed.fill", "books.vertical.fill", "scroll.fill", "book.pages.fill"]
     private var icon: String { bookIcons[index % bookIcons.count] }
 
+    static func == (lhs: GujiCard, rhs: GujiCard) -> Bool {
+        lhs.guji.id == rhs.guji.id && lhs.index == rhs.index
+    }
+
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
@@ -95,7 +97,6 @@ private struct GujiCard: View {
                         LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
                     .frame(width: 54, height: 54)
-                    .shadow(color: colors.0.opacity(0.3), radius: 4, y: 2)
                 Image(systemName: icon)
                     .font(.system(size: 22))
                     .foregroundStyle(.white.opacity(0.9))
@@ -138,14 +139,9 @@ private struct GujiCard: View {
         .padding(14)
         .background(AppTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
-    }
-}
-
-private struct GujiBounceStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(AppTheme.separator.opacity(0.9), lineWidth: 1)
+        )
     }
 }

@@ -11,7 +11,6 @@ struct PMPoetryHomeView: View {
     @State private var selectedGenre: PMGenreFilter = .all
     @State private var selectedDynasty: PMDynastyFilter = .all
     @State private var showDynastyPicker = false
-    @State private var appearAnimation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,9 +34,6 @@ struct PMPoetryHomeView: View {
         .background(AppTheme.background.ignoresSafeArea())
         .task {
             await loadInitialData()
-            withAnimation(.easeOut(duration: 0.6)) {
-                appearAnimation = true
-            }
         }
         .onChange(of: selectedGenre) { _, _ in
             Task { await resetAndLoad() }
@@ -127,13 +123,8 @@ struct PMPoetryHomeView: View {
                     ForEach(Array(dailyRecommends.prefix(6).enumerated()), id: \.element.id) { index, item in
                         NavigationLink(destination: PMPoetryDetailView(poetryId: item.id, initialName: item.name)) {
                             DailyRecommendCard(item: item, index: index)
-                                .opacity(appearAnimation ? 1 : 0)
-                                .animation(
-                                    .easeOut(duration: 0.4).delay(Double(index) * 0.06),
-                                    value: appearAnimation
-                                )
                         }
-                        .buttonStyle(CardBounceStyle())
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
@@ -165,18 +156,17 @@ struct PMPoetryHomeView: View {
             ForEach(Array(poetryList.enumerated()), id: \.element.id) { index, poetry in
                 NavigationLink(destination: PMPoetryDetailView(poetryId: poetry.id, initialName: poetry.name)) {
                     PoetryListCard(poetry: poetry, index: index)
-                        .opacity(appearAnimation ? 1 : 0)
-                        .animation(
-                            .easeOut(duration: 0.3).delay(Double(min(index, 8)) * 0.04),
-                            value: appearAnimation
-                        )
                 }
                 .buttonStyle(.plain)
-                .onAppear {
-                    if index == poetryList.count - 3, hasMorePages, !isLoading {
+            }
+
+            if hasMorePages {
+                Color.clear
+                    .frame(height: 1)
+                    .id(currentPage)
+                    .onAppear {
                         Task { await loadMorePoetry() }
                     }
-                }
             }
         }
         .padding(.top, 12)
@@ -221,13 +211,15 @@ struct PMPoetryHomeView: View {
     }
 
     private func loadMorePoetry() async {
-        guard !isLoading else { return }
+        guard !isLoading, hasMorePages else { return }
         isLoading = true
-        currentPage += 1
+        let nextPage = currentPage + 1
         let genreValue = selectedGenre == .all ? "all" : selectedGenre.rawValue
         let dynastyValue = selectedDynasty == .all ? "all" : selectedDynasty.rawValue
-        let results = (try? await service.fetchPoetryList(genre: genreValue, dynasty: dynastyValue, page: currentPage)) ?? []
-        poetryList.append(contentsOf: results)
+        let results = (try? await service.fetchPoetryList(genre: genreValue, dynasty: dynastyValue, page: nextPage)) ?? []
+        let existingIDs = Set(poetryList.map(\.id))
+        poetryList.append(contentsOf: results.filter { !existingIDs.contains($0.id) })
+        currentPage = nextPage
         hasMorePages = results.count >= 10
         isLoading = false
     }

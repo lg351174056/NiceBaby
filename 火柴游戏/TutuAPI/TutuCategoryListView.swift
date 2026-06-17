@@ -4,8 +4,6 @@ struct TutuCategoryListView: View {
     let tag: TutuTag
     @State private var categories: [TutuCategory] = []
     @State private var isLoading = false
-    @State private var appeared = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let columns = [
         GridItem(.flexible(), spacing: 14),
@@ -40,9 +38,6 @@ struct TutuCategoryListView: View {
                 categories = await TutuAPIService.shared.fetchCategories(tagId: tag.id)
                 TutuAPIService.shared.selectedTagId = tag.id
                 isLoading = false
-                withAnimation(reduceMotion ? .none : .spring(response: 0.6, dampingFraction: 0.8)) {
-                    appeared = true
-                }
             }
         }
     }
@@ -77,21 +72,16 @@ struct TutuCategoryListView: View {
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
                 .padding(.top, 8)
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 15)
 
                 LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(Array(categories.enumerated()), id: \.element.id) { index, category in
                         NavigationLink(destination: TutuSubCategoryListView(category: category, tag: tag)) {
                             TutuCategoryCard(
                                 category: category,
-                                style: TutuCategoryCardStyle.forIndex(index),
-                                appeared: appeared,
-                                index: index,
-                                reduceMotion: reduceMotion
+                                style: TutuCategoryCardStyle.forIndex(index)
                             )
                         }
-                        .buttonStyle(TutuCardBounceStyle())
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
@@ -128,13 +118,6 @@ struct TutuCategoryCardStyle {
 private struct TutuCategoryCard: View {
     let category: TutuCategory
     let style: TutuCategoryCardStyle
-    let appeared: Bool
-    let index: Int
-    let reduceMotion: Bool
-
-    private var staggerDelay: Double {
-        reduceMotion ? 0 : Double(index) * 0.08
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -189,17 +172,9 @@ private struct TutuCategoryCard: View {
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: style.gradient[0].opacity(0.4), radius: 12, x: 0, y: 8)
-        .shadow(color: .black.opacity(0.08), radius: 2, x: 0, y: 1)
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(.white.opacity(0.4), lineWidth: 2)
-        )
-        .scaleEffect(appeared ? 1 : 0.8)
-        .opacity(appeared ? 1 : 0)
-        .animation(
-            reduceMotion ? .none : .spring(response: 0.5, dampingFraction: 0.7).delay(staggerDelay),
-            value: appeared
+                .stroke(.white.opacity(0.28), lineWidth: 1)
         )
     }
 }
@@ -207,11 +182,7 @@ private struct TutuCategoryCard: View {
 struct TutuCardBounceStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1)
-            .rotation3DEffect(
-                .degrees(configuration.isPressed ? 2 : 0),
-                axis: (x: 1, y: 0, z: 0)
-            )
-            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }

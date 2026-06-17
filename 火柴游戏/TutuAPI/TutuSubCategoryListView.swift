@@ -5,8 +5,6 @@ struct TutuSubCategoryListView: View {
     let tag: TutuTag
     @State private var subCategories: [TutuSubCategory] = []
     @State private var isLoading = false
-    @State private var appeared = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -35,9 +33,6 @@ struct TutuSubCategoryListView: View {
                 isLoading = true
                 subCategories = await TutuAPIService.shared.fetchSubCategories(parentId: category.id, tagId: tag.id)
                 isLoading = false
-                withAnimation(reduceMotion ? .none : .spring(response: 0.6, dampingFraction: 0.8)) {
-                    appeared = true
-                }
             }
         }
     }
@@ -58,8 +53,6 @@ struct TutuSubCategoryListView: View {
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
                 .padding(.top, 8)
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 15)
 
                 LazyVStack(spacing: 10) {
                     ForEach(Array(subCategories.enumerated()), id: \.element.id) { index, sub in
@@ -67,12 +60,6 @@ struct TutuSubCategoryListView: View {
                             SubCategoryRow(subCategory: sub, index: index)
                         }
                         .buttonStyle(.plain)
-                        .opacity(appeared ? 1 : 0)
-                        .offset(x: appeared ? 0 : -20)
-                        .animation(
-                            reduceMotion ? .none : .spring(response: 0.5, dampingFraction: 0.75).delay(Double(index) * 0.05),
-                            value: appeared
-                        )
                     }
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
@@ -82,10 +69,9 @@ struct TutuSubCategoryListView: View {
     }
 }
 
-private struct SubCategoryRow: View {
+private struct SubCategoryRow: View, Equatable {
     let subCategory: TutuSubCategory
     let index: Int
-    @State private var isPressed = false
 
     private var accentColor: Color {
         let colors: [Color] = [
@@ -93,6 +79,10 @@ private struct SubCategoryRow: View {
             AppTheme.accentSage, AppTheme.accentPink, AppTheme.accentYellow
         ]
         return colors[index % colors.count]
+    }
+
+    static func == (lhs: SubCategoryRow, rhs: SubCategoryRow) -> Bool {
+        lhs.subCategory.id == rhs.subCategory.id && lhs.index == rhs.index
     }
 
     var body: some View {
@@ -148,16 +138,9 @@ private struct SubCategoryRow: View {
         .padding(14)
         .background(AppTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(.white.opacity(0.6), lineWidth: 1.5)
+                .stroke(accentColor.opacity(0.12), lineWidth: 1)
         )
-        .scaleEffect(isPressed ? 0.97 : 1)
-        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
-            withAnimation(.spring(response: 0.25, dampingFraction: 0.6)) {
-                isPressed = pressing
-            }
-        }, perform: {})
     }
 }

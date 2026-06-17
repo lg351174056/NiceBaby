@@ -64,7 +64,7 @@ struct VideoSeriesListView: View {
                         NavigationLink(destination: VideoEpisodeListView(series: series)) {
                             FeaturedSeriesCard(series: series)
                         }
-                        .buttonStyle(CardBounceStyle())
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
@@ -102,8 +102,12 @@ struct VideoSeriesListView: View {
 
 // MARK: - 精选大卡片
 
-private struct FeaturedSeriesCard: View {
+private struct FeaturedSeriesCard: View, Equatable {
     let series: VideoSeries
+
+    static func == (lhs: FeaturedSeriesCard, rhs: FeaturedSeriesCard) -> Bool {
+        lhs.series.id == rhs.series.id
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -171,8 +175,12 @@ private struct FeaturedSeriesCard: View {
 
 // MARK: - 全部系列行卡片
 
-private struct SeriesRowCard: View {
+private struct SeriesRowCard: View, Equatable {
     let series: VideoSeries
+
+    static func == (lhs: SeriesRowCard, rhs: SeriesRowCard) -> Bool {
+        lhs.series.id == rhs.series.id
+    }
 
     var body: some View {
         HStack(spacing: 14) {
@@ -231,14 +239,9 @@ private struct SeriesRowCard: View {
         .padding(14)
         .background(AppTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
-    }
-}
-
-private struct CardBounceStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous)
+                .stroke(AppTheme.separator.opacity(0.9), lineWidth: 1)
+        )
     }
 }

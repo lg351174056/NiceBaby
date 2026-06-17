@@ -59,7 +59,7 @@ struct VideoCategoryListView: View {
                                 style: CategoryCardStyle.forIndex(index)
                             )
                         }
-                        .buttonStyle(CardBounceStyle())
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, AppTheme.paddingScreen)
@@ -244,19 +244,10 @@ private struct CategoryCard: View {
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: style.gradient[0].opacity(0.35), radius: 10, x: 0, y: 6)
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(.white.opacity(0.3), lineWidth: 1.5)
+                .stroke(.white.opacity(0.24), lineWidth: 1)
         )
-    }
-}
-
-private struct CardBounceStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
