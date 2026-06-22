@@ -45,8 +45,8 @@ struct ExploreView: View {
                     VideoCategoryListView()
                 case .tutu:
                     TutuHomeView()
-                case .why:
-                    WhyMainView()
+                case .idiomSolitaire:
+                    IdiomSolitaireView()
                 case .wallpaper:
                     WallpaperGalleryView()
                 }
@@ -300,7 +300,7 @@ struct ExploreView: View {
                     catCard(title: "地理探索", count: "311 道题", icon: "map.fill", accent: AppTheme.accentJade, destination: .geography)
                     catCard(title: "视频学习", count: "86 个视频", icon: "play.square.fill", accent: AppTheme.accentInkPurple, destination: .video)
                     catCard(title: "诗词文学", count: "311 首", icon: "book.closed.fill", accent: AppTheme.accentBamboo, destination: .tutu)
-                    catCard(title: "十万个为什么", count: "科学百科", icon: "questionmark.bubble.fill", accent: AppTheme.accentYellow, destination: .why)
+                    catCard(title: "成语接龙", count: "益智·接龙", icon: "text.append", accent: AppTheme.accentCinnabar, destination: .idiomSolitaire)
                     catCard(title: "壁纸图库", count: "超清精选", icon: "photo.stack.fill", accent: AppTheme.accentIndigo, destination: .wallpaper)
                 }
                 .padding(.horizontal, horizontalPadding)
@@ -390,12 +390,12 @@ struct ExploreView: View {
                     )
 
                     contentCard(
-                        title: "十万个为什么",
-                        subtitle: "科学知识 · 自然奥秘",
-                        icon: "questionmark.bubble.fill",
-                        accent: AppTheme.accentYellow,
-                        tag: nil,
-                        destination: .why
+                        title: "成语接龙",
+                        subtitle: "同字相承 · 绝杀封喉",
+                        icon: "text.append",
+                        accent: AppTheme.accentCinnabar,
+                        tag: "新",
+                        destination: .idiomSolitaire
                     )
                 }
                 .padding(.horizontal, horizontalPadding)
@@ -534,7 +534,7 @@ enum ExploreDestination: Hashable {
     case geography
     case video
     case tutu
-    case why
+    case idiomSolitaire
     case wallpaper
 }
 

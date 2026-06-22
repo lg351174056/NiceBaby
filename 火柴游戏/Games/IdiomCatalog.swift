@@ -3,11 +3,12 @@ import Foundation
 // MARK: - 数据模型
 
 /// 一条成语。第一版仅需字面（4 字），后续可在 JSON 中扩展释义/拼音。
-struct ChineseIdiom: Hashable {
+struct ChineseIdiom: Hashable, Identifiable {
     let text: String
     let explanation: String?
     let example: String?
-    
+
+    var id: String { text }
     var first: Character { text.first ?? " " }
     var last: Character { text.last ?? " " }
 }
@@ -27,7 +28,7 @@ enum IdiomCatalog {
     /// 全量成语，启动时一次性构建。
     static let all: [ChineseIdiom] = build()
 
-    /// 首字 → 以该字开头的所有成语（保留供未来"接龙"模式用）。
+    /// 首字 → 以该字开头的所有成语。
     static let byFirstChar: [Character: [ChineseIdiom]] = {
         var dict: [Character: [ChineseIdiom]] = [:]
         for i in all {
@@ -35,6 +36,118 @@ enum IdiomCatalog {
         }
         return dict
     }()
+
+    /// 尾字 → 以该字结尾的所有成语（用于回溯/绝杀判定）。
+    static let byLastChar: [Character: [ChineseIdiom]] = {
+        var dict: [Character: [ChineseIdiom]] = [:]
+        for i in all {
+            dict[i.last, default: []].append(i)
+        }
+        return dict
+    }()
+
+    /// 已收录成语集合（用于接龙出招校验）。
+    static let allSet: Set<String> = Set(all.map { $0.text })
+
+    // MARK: - 接龙判定
+
+    /// 该成语是否合法收录。
+    static func contains(_ text: String) -> Bool { allSet.contains(text) }
+
+    /// `prev` 的尾字与 `next` 的首字是否满足同字接龙。
+    static func chainable(_ prev: String, _ next: String) -> Bool {
+        guard let p = prev.last, let n = next.first else { return false }
+        return p == n
+    }
+
+    /// 以某字开头的候选成语。
+    static func idiomsStarting(with char: Character) -> [ChineseIdiom] {
+        byFirstChar[char] ?? []
+    }
+
+    /// 以某字开头的成语数量（对应 china-idiom 的 `next_count`，用以衡量绝杀难度）。
+    static func nextCount(of char: Character) -> Int {
+        byFirstChar[char]?.count ?? 0
+    }
+
+    /// 绝杀难度标签（对应 china-idiom 的 `get_difficulty`）。
+    static func difficultyLabel(for char: Character) -> String {
+        switch nextCount(of: char) {
+        case 0:        return "绝杀封喉"
+        case 1...2:    return "险地"
+        case 3...6:    return "难接"
+        case 7...14:   return "中"
+        default:       return "易接"
+        }
+    }
+
+    /// 随机开局成语：避开尾字接龙链过短的开局，保证开局可玩。
+    static func randomStarter() -> ChineseIdiom {
+        let pool = all.filter { nextCount(of: $0.last) >= 3 }
+        return pool.randomElement() ?? all.randomElement()!
+    }
+
+    // MARK: - 释义补充索引（懒加载，仅供详情卡使用）
+
+    /// 富信息成语（来自《成语大全.json》：含拼音/释义/出处/例句）。
+    struct RichIdiom {
+        let word: String
+        let pinyin: String?
+        let explanation: String?
+        let derivation: String?
+        let example: String?
+    }
+
+    /// 《成语大全.json》懒加载索引。一次性加载后按 word 索引。
+    /// 体积约 12MB，仅在首次打开成语详情卡时解析；若文件缺失则返回空表。
+    private static var _richIndex: [String: RichIdiom]?
+    private static let _richLock = NSLock()
+    static var richIndex: [String: RichIdiom] {
+        _richLock.lock(); defer { _richLock.unlock() }
+        if let idx = _richIndex { return idx }
+        let idx = loadRichIndex() ?? [:]
+        _richIndex = idx
+        return idx
+    }
+
+    /// 预取释义：优先《成语大全.json》富信息，回退到 idioms.json 的简单释义。
+    static func richInfo(for word: String) -> RichIdiom {
+        if let r = richIndex[word] { return r }
+        let simple = all.first { $0.text == word }
+        return RichIdiom(
+            word: word,
+            pinyin: nil,
+            explanation: simple?.explanation,
+            derivation: nil,
+            example: simple?.example
+        )
+    }
+
+    private static func loadRichIndex() -> [String: RichIdiom]? {
+        guard let url = Bundle.main.url(forResource: "成语大全", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        struct Entry: Decodable {
+            let word: String?
+            let pinyin: String?
+            let explanation: String?
+            let derivation: String?
+            let example: String?
+        }
+        guard let arr = try? JSONDecoder().decode([Entry].self, from: data) else { return nil }
+        var dict: [String: RichIdiom] = [:]
+        for e in arr {
+            if let w = e.word, w.count == 4, w.allSatisfy(isChineseChar) {
+                dict[w] = RichIdiom(
+                    word: w,
+                    pinyin: e.pinyin,
+                    explanation: e.explanation,
+                    derivation: e.derivation,
+                    example: e.example
+                )
+            }
+        }
+        return dict
+    }
 
     // MARK: - 出题：填空题
 
