@@ -410,6 +410,8 @@ struct HomeView: View {
             SanzijingView(onExit: { presentedGame = nil })
         case .dictionary:
             DictionaryGameView(onExit: { presentedGame = nil })
+        case .antonymMatch:
+            AntonymMatchView(onExit: { presentedGame = nil })
         }
     }
 }

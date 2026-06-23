@@ -12,6 +12,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case xiehouyuDictionary // 歇后语大全
     case sanzijing          // 三字经
     case dictionary         // 汉语词典
+    case antonymMatch       // 反义对对碰（儿童学反义词）
 
     var id: String { rawValue }
 
@@ -25,6 +26,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .xiehouyuDictionary: return "歇后语大全"
         case .sanzijing:      return "三字经"
         case .dictionary:     return "汉语词典"
+        case .antonymMatch:   return "反义对对碰"
         }
     }
 
@@ -38,6 +40,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .xiehouyuDictionary: return "经典歇后语，支持快速搜索"
         case .sanzijing:      return "人之初，性本善"
         case .dictionary:     return "查拼音、看部首、听发音"
+        case .antonymMatch:   return "翻翻乐·跷跷板·闯关地图，儿童学反义词"
         }
     }
 
@@ -51,6 +54,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .xiehouyuDictionary: return "quote.bubble.fill"
         case .sanzijing:      return "book.fill"
         case .dictionary:     return "character.book.closed.fill"
+        case .antonymMatch:   return "rectangle.on.rectangle.angled"
         }
     }
 
@@ -64,6 +68,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .xiehouyuDictionary: return (AppTheme.accentYellow, AppTheme.accentCinnabar)
         case .sanzijing:      return (AppTheme.accentBamboo, AppTheme.accentJade)
         case .dictionary:     return (AppTheme.accentYellow, Color(red: 160/255, green: 130/255, blue: 50/255))
+        case .antonymMatch:   return (AppTheme.accentCinnabar, AppTheme.accentBamboo)
         }
     }
 

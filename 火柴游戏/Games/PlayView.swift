@@ -4,7 +4,9 @@ import SwiftUI
 
 struct PlayView: View {
     @EnvironmentObject private var progress: AppProgressStore
-    @State private var presentedGame: GameKind? = nil
+    @State private var path = NavigationPath()
+
+    private var hideTabBar: Bool { !path.isEmpty }
 
     private var matchProgress: Double {
         let total = MatchstickProblemSet.count
@@ -13,7 +15,7 @@ struct PlayView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 HStack(alignment: .center) {
                     Text("益智乐园")
@@ -48,10 +50,19 @@ struct PlayView: View {
                 }
                 .background(AppTheme.background.ignoresSafeArea())
             }
+            .navigationDestination(for: GameKind.self) { kind in
+                gameContainer(for: kind)
+            }
         }
-        .fullScreenCover(item: $presentedGame) { kind in
-            gameContainer(for: kind)
-        }
+        .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
+    }
+
+    private func pushGame(_ kind: GameKind) {
+        path.append(kind)
+    }
+
+    private func popToRoot() {
+        path = NavigationPath()
     }
 
     // MARK: - Stats Hero Card (深紫渐变)
@@ -150,7 +161,7 @@ struct PlayView: View {
     // MARK: - Featured Game Card (Hero)
 
     private var featuredGameCard: some View {
-        Button { presentedGame = .matchstick } label: {
+        Button { pushGame(.matchstick) } label: {
             VStack(alignment: .leading, spacing: 0) {
                 ZStack {
                     LinearGradient(
@@ -237,6 +248,7 @@ struct PlayView: View {
             (.poetryComplete, true),
             (.surnameMatch, false),
             (.idiomFillBlank, false),
+            (.antonymMatch, false),
             (.sanzijing, false)
         ]
 
@@ -248,7 +260,7 @@ struct PlayView: View {
                     bestScore: GameBestScoreStore.best(for: kind),
                     isTall: isTall
                 ) {
-                    presentedGame = kind
+                    pushGame(kind)
                 }
             }
         }
@@ -268,7 +280,7 @@ struct PlayView: View {
     }
 
     private func toolChip(kind: GameKind, accent: Color, sub: String) -> some View {
-        Button { presentedGame = kind } label: {
+        Button { pushGame(kind) } label: {
             VStack(spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -305,23 +317,25 @@ struct PlayView: View {
     private func gameContainer(for kind: GameKind) -> some View {
         switch kind {
         case .matchstick:
-            MatchstickGameContainer(onExit: { presentedGame = nil })
+            MatchstickGameContainer(onExit: { popToRoot() })
                 .environmentObject(progress)
                 .environmentObject(PoemSpeechService.shared)
         case .poetryComplete:
-            PoetryCompleteGameView(onExit: { presentedGame = nil })
+            PoetryCompleteGameView(onExit: { popToRoot() })
         case .surnameMatch:
-            SurnameMatchGameView(onExit: { presentedGame = nil })
+            SurnameMatchGameView(onExit: { popToRoot() })
         case .idiomFillBlank:
-            IdiomFillBlankGameView(onExit: { presentedGame = nil })
+            IdiomFillBlankGameView(onExit: { popToRoot() })
         case .idiomDictionary:
-            IdiomDictionaryView(onExit: { presentedGame = nil })
+            IdiomDictionaryView(onExit: { popToRoot() })
         case .xiehouyuDictionary:
-            XiehouyuDictionaryView(onExit: { presentedGame = nil })
+            XiehouyuDictionaryView(onExit: { popToRoot() })
         case .sanzijing:
-            SanzijingView(onExit: { presentedGame = nil })
+            SanzijingView(onExit: { popToRoot() })
         case .dictionary:
-            DictionaryGameView(onExit: { presentedGame = nil })
+            DictionaryGameView(onExit: { popToRoot() })
+        case .antonymMatch:
+            AntonymMatchView(onExit: { popToRoot() })
         }
     }
 }
