@@ -7,27 +7,31 @@ struct TutuSubCategoryListView: View {
     @State private var isLoading = false
 
     var body: some View {
-        Group {
-            if isLoading {
-                ProgressView("正在加载...")
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: category.name)
+            Group {
+                if isLoading {
+                    ProgressView("正在加载...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if subCategories.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 40))
+                            .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
+                        Text("暂无内容")
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if subCategories.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 40))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
-                    Text("暂无内容")
-                        .foregroundStyle(AppTheme.textSecondary)
+                } else {
+                    subCategoryContent
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                subCategoryContent
             }
         }
-        .navigationTitle(category.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .background(AppTheme.background)
+        .enableSwipeBack()
         .task {
             if subCategories.isEmpty {
                 isLoading = true

@@ -6,27 +6,31 @@ struct VideoSeriesListView: View {
     @State private var isLoading = false
 
     var body: some View {
-        Group {
-            if isLoading {
-                ProgressView("正在加载...")
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: category.name)
+            Group {
+                if isLoading {
+                    ProgressView("正在加载...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if seriesList.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "film.stack")
+                            .font(.system(size: 40))
+                            .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
+                        Text("暂无系列")
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if seriesList.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "film.stack")
-                        .font(.system(size: 40))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
-                    Text("暂无系列")
-                        .foregroundStyle(AppTheme.textSecondary)
+                } else {
+                    seriesContent
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                seriesContent
             }
         }
-        .navigationTitle(category.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .background(AppTheme.background)
+        .enableSwipeBack()
         .task {
             if seriesList.isEmpty {
                 isLoading = true

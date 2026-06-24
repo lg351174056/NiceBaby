@@ -7,27 +7,31 @@ struct TutuResourceListView: View {
     @State private var isLoading = false
 
     var body: some View {
-        Group {
-            if isLoading {
-                ProgressView("正在加载...")
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: subCategory.name)
+            Group {
+                if isLoading {
+                    ProgressView("正在加载...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if resources.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 40))
+                            .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
+                        Text("暂无资料")
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if resources.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 40))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
-                    Text("暂无资料")
-                        .foregroundStyle(AppTheme.textSecondary)
+                } else {
+                    resourceContent
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                resourceContent
             }
         }
-        .navigationTitle(subCategory.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .background(AppTheme.background)
+        .enableSwipeBack()
         .task {
             if resources.isEmpty {
                 isLoading = true

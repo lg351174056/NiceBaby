@@ -17,25 +17,27 @@ struct TutuHomeView: View {
     }
 
     var body: some View {
-        Group {
-            if api.token.isEmpty {
-                tokenEmptyView
-            } else if isLoading && categories.isEmpty {
-                loadingView
-            } else {
-                homeContent
-            }
-        }
-        .navigationTitle("学习资料")
-        .toolbar(.hidden, for: .tabBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: "学习资料", trailing: AnyView(
                 Button { showTokenInput = true } label: {
                     Image(systemName: "gearshape.fill")
                         .foregroundStyle(AppTheme.textSecondary)
                 }
+            ))
+            Group {
+                if api.token.isEmpty {
+                    tokenEmptyView
+                } else if isLoading && categories.isEmpty {
+                    loadingView
+                } else {
+                    homeContent
+                }
             }
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
         .sheet(isPresented: $showTokenInput) {
             TutuTokenInputView()
         }

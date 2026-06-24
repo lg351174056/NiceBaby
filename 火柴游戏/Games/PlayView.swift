@@ -315,28 +315,33 @@ struct PlayView: View {
 
     @ViewBuilder
     private func gameContainer(for kind: GameKind) -> some View {
-        switch kind {
-        case .matchstick:
-            MatchstickGameContainer(onExit: { popToRoot() })
-                .environmentObject(progress)
-                .environmentObject(PoemSpeechService.shared)
-        case .poetryComplete:
-            PoetryCompleteGameView(onExit: { popToRoot() })
-        case .surnameMatch:
-            SurnameMatchGameView(onExit: { popToRoot() })
-        case .idiomFillBlank:
-            IdiomFillBlankGameView(onExit: { popToRoot() })
-        case .idiomDictionary:
-            IdiomDictionaryView(onExit: { popToRoot() })
-        case .xiehouyuDictionary:
-            XiehouyuDictionaryView(onExit: { popToRoot() })
-        case .sanzijing:
-            SanzijingView(onExit: { popToRoot() })
-        case .dictionary:
-            DictionaryGameView(onExit: { popToRoot() })
-        case .antonymMatch:
-            AntonymMatchView(onExit: { popToRoot() })
+        // 所有二级游戏页均自带自定义 TopBar/返回按钮，push 进入 NavigationStack 后
+        // 必须隐藏系统导航栏，否则会出现系统返回 + 自定义返回两个返回按钮。
+        Group {
+            switch kind {
+            case .matchstick:
+                MatchstickGameContainer(onExit: { popToRoot() })
+                    .environmentObject(progress)
+                    .environmentObject(PoemSpeechService.shared)
+            case .poetryComplete:
+                PoetryCompleteGameView(onExit: { popToRoot() })
+            case .surnameMatch:
+                SurnameMatchGameView(onExit: { popToRoot() })
+            case .idiomFillBlank:
+                IdiomFillBlankGameView(onExit: { popToRoot() })
+            case .idiomDictionary:
+                IdiomDictionaryView(onExit: { popToRoot() })
+            case .xiehouyuDictionary:
+                XiehouyuDictionaryView(onExit: { popToRoot() })
+            case .sanzijing:
+                SanzijingView(onExit: { popToRoot() })
+            case .dictionary:
+                DictionaryGameView(onExit: { popToRoot() })
+            case .antonymMatch:
+                AntonymMatchView(onExit: { popToRoot() })
+            }
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

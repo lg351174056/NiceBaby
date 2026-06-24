@@ -5,6 +5,7 @@ struct VideoEpisodeListView: View {
     @State private var episodes: [VideoEpisode] = []
     @State private var isLoading = false
     @State private var playingItem: PlayingItem?
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         if #available(iOS 16.0, *) {
@@ -31,6 +32,25 @@ struct VideoEpisodeListView: View {
 
                 // 2. 主体内容
                 VStack(alignment: .leading, spacing: 0) {
+                    // 返回按钮（浮动于沉浸式背景上）
+                    HStack {
+                        Button { dismiss() } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(.white.opacity(0.18))
+                                    .frame(width: 36, height: 36)
+                                    .overlay(Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1))
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
+
                     // 顶部标题区 (左侧对齐，更具杂志感)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("EPISODES")
@@ -81,9 +101,10 @@ struct VideoEpisodeListView: View {
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar) 
+            .navigationBarBackButtonHidden()
+            .toolbar(.hidden, for: .navigationBar)
             .toolbar(.hidden, for: .tabBar)
+            .enableSwipeBack()
             .fullScreenCover(item: $playingItem) { item in
                 VideoPlayerView(url: item.url, title: item.name, coverUrl: item.coverUrl) {
                     playingItem = nil

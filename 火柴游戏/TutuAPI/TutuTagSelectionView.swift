@@ -9,27 +9,29 @@ struct TutuTagSelectionView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Group {
-            if api.token.isEmpty {
-                tutuTokenEmptyView
-            } else if isLoading {
-                loadingView
-            } else if tags.isEmpty {
-                errorView
-            } else {
-                tagContent
-            }
-        }
-        .navigationTitle("学习资料")
-        .toolbar(.hidden, for: .tabBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: "学习资料", trailing: AnyView(
                 Button { showTokenInput = true } label: {
                     Image(systemName: "gearshape.fill")
                         .foregroundStyle(AppTheme.textSecondary)
                 }
+            ))
+            Group {
+                if api.token.isEmpty {
+                    tutuTokenEmptyView
+                } else if isLoading {
+                    loadingView
+                } else if tags.isEmpty {
+                    errorView
+                } else {
+                    tagContent
+                }
             }
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
         .sheet(isPresented: $showTokenInput) {
             TutuTokenInputView()
         }

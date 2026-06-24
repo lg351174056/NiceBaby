@@ -14,7 +14,8 @@ struct UnifiedNavBar: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(AppTheme.textPrimary)
                     .frame(width: 36, height: 36)
-                    .background(.ultraThinMaterial, in: Circle())
+                    .background(AppTheme.card, in: Circle())
+                    .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
             }
 
             Text(title)
@@ -27,7 +28,13 @@ struct UnifiedNavBar: View {
             if let trailing { trailing }
         }
         .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.vertical, 10)
+        .padding(.top, 8)
+        .padding(.bottom, 10)
+        .frame(maxWidth: .infinity)
+        .background(AppTheme.background, ignoresSafeAreaEdges: .top)
+        .overlay(alignment: .bottom) {
+            AppTheme.separator.frame(height: 0.5)
+        }
     }
 }
 

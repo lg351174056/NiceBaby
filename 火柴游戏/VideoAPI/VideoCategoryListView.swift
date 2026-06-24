@@ -12,27 +12,29 @@ struct VideoCategoryListView: View {
     ]
 
     var body: some View {
-        Group {
-            if api.token.isEmpty {
-                tokenEmptyView
-            } else if isLoading {
-                loadingView
-            } else if categories.isEmpty {
-                errorView
-            } else {
-                categoryContent
-            }
-        }
-        .navigationTitle("视频乐园")
-        .toolbar(.hidden, for: .tabBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: "视频乐园", trailing: AnyView(
                 Button { showTokenInput = true } label: {
                     Image(systemName: "gearshape.fill")
                         .foregroundStyle(AppTheme.textSecondary)
                 }
+            ))
+            Group {
+                if api.token.isEmpty {
+                    tokenEmptyView
+                } else if isLoading {
+                    loadingView
+                } else if categories.isEmpty {
+                    errorView
+                } else {
+                    categoryContent
+                }
             }
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
         .sheet(isPresented: $showTokenInput) {
             TokenInputView()
         }

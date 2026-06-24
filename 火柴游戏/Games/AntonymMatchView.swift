@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 // MARK: - 反义对对碰 · 儿童学反义词
 //
@@ -234,7 +235,7 @@ private struct ModeSelect: View {
                     Text("全部词汇")
                         .font(.system(size: 18, weight: .bold, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
-                    Text("完整收录 18,797 对反义词，可搜索浏览")
+                    Text("完整收录 9999+ 对反义词，可搜索浏览")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
                         .lineLimit(1)
@@ -1522,62 +1523,325 @@ private struct AdventureMapView: View {
     }
 }
 
-// MARK: - 全部词汇合集（18,797 对 · 可搜索 · LazyVStack 分段加载）
+// MARK: - 全部词汇合集（9999+ 对 · 可搜索 · 按首字分组 · 多米诺骨牌式）
 
 private struct AntonymCollectionView: View {
     let onHome: () -> Void
 
-    @State private var searchText: String = ""
-    @State private var allRaw: [AntonymPair] = []
-    @State private var pageSize: Int = 80
-    @State private var displayedCount: Int = 80
+    private enum Filter: String, CaseIterable {
+        case all, single, double
+        var label: String { self == .all ? "全部" : (self == .single ? "单字" : "双字") }
+    }
 
-    private var filtered: [AntonymPair] {
-        let base = allRaw
-        if searchText.isEmpty { return base }
-        return base.filter {
-            $0.left.localizedCaseInsensitiveContains(searchText) ||
-            $0.right.localizedCaseInsensitiveContains(searchText)
-        }
+    @State private var searchText: String = ""
+    @State private var filter: Filter = .all
+    @State private var allRaw: [AntonymPair] = []
+    @State private var singleCount: Int = 0
+    @State private var doubleCount: Int = 0
+    @State private var filteredCache: [AntonymPair] = []
+    @State private var groupsCache: [(char: String, pairs: [AntonymPair])] = []
+    @State private var loadedCount: Int = 120
+    @State private var showcasePairs: [AntonymPair] = []
+    @State private var showcaseIdx: Int = 0
+    @State private var showcaseFaceUp: Bool = true
+    @State private var currentGroup: (char: String, count: Int)? = nil
+
+    private let pageSize: Int = 120
+    private let showcaseTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+    private let preferredShowcase = [
+        ("大", "小"), ("光明", "黑暗"), ("冷", "热"),
+        ("真", "假"), ("美丽", "丑陋"), ("高兴", "悲伤")
+    ]
+
+    private var showcasePair: AntonymPair? {
+        guard !showcasePairs.isEmpty else { return nil }
+        return showcasePairs[showcaseIdx % showcasePairs.count]
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            TopBar(title: "全部词汇", subtitle: "共 \(AntonymCatalog.rawLineCount) 对反义词", onBack: onHome)
+            TopBar(title: "全部词汇", onBack: onHome)
+
+            hero
+                .padding(.top, 4)
 
             searchBar
-                .padding(.horizontal, 18)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .padding(.top, 14)
 
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 0, pinnedViews: []) {
-                        ForEach(Array(filtered.prefix(displayedCount).enumerated()), id: \.element.id) { idx, pair in
-                            CollectionRow(pair: pair, index: idx + 1)
-                                .padding(.horizontal, 18)
-                            Divider()
-                                .padding(.leading, 18)
-                        }
-                        if displayedCount < filtered.count {
-                            Color.clear
-                                .frame(height: 40)
-                                .onAppear {
-                                    DispatchQueue.main.async {
-                                        displayedCount = min(displayedCount + pageSize, filtered.count)
-                                    }
-                                }
-                        }
-                    }
-                    .padding(.bottom, 24)
+            filterBar
+                .padding(.horizontal, 14)
+                .padding(.top, 10)
+
+            ScrollView(showsIndicators: false) {
+                groupList
+            }
+            .scrollDismissesKeyboard(.immediately)
+            .overlay(alignment: .top) {
+                if let g = currentGroup, searchText.isEmpty {
+                    stickyCapsule(g)
+                        .padding(.top, 6)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                .scrollDismissesKeyboard(.immediately)
             }
         }
-        .onAppear { allRaw = AntonymCatalog.allRawPairs }
-        .onChange(of: searchText) { _, _ in
-            displayedCount = pageSize
+        .onAppear { load() }
+        .onChange(of: searchText) { _, _ in rebuild() }
+        .onChange(of: filter) { _, _ in rebuild() }
+        .onReceive(showcaseTimer) { _ in cycleShowcase() }
+    }
+
+    // MARK: 加载与重建
+
+    private func load() {
+        let raw = AntonymCatalog.allRawPairs
+        allRaw = raw
+        singleCount = raw.filter { $0.isSingleChar }.count
+        doubleCount = raw.count - singleCount
+        buildShowcase(from: raw)
+        rebuild()
+    }
+
+    private func rebuild() {
+        let filtered = allRaw.filter { pair in
+            if filter != .all {
+                if filter == .single && !pair.isSingleChar { return false }
+                if filter == .double && pair.isSingleChar { return false }
+            }
+            if !searchText.isEmpty {
+                return pair.left.localizedCaseInsensitiveContains(searchText) ||
+                       pair.right.localizedCaseInsensitiveContains(searchText)
+            }
+            return true
+        }
+        filteredCache = filtered
+        loadedCount = searchText.isEmpty ? pageSize : filtered.count
+        rebuildGroups()
+    }
+
+    private func rebuildGroups() {
+        let displayed = Array(filteredCache.prefix(loadedCount))
+        var dict: [String: [AntonymPair]] = [:]
+        var order: [String] = []
+        for p in displayed {
+            let c = String(p.left.prefix(1))
+            if dict[c] == nil { order.append(c) }
+            dict[c, default: []].append(p)
+        }
+        groupsCache = order.map { (char: $0, pairs: dict[$0] ?? []) }
+    }
+
+    private func buildShowcase(from raw: [AntonymPair]) {
+        let set = Set(raw.map { "\($0.left)|\($0.right)" })
+        var picked: [AntonymPair] = []
+        for (l, r) in preferredShowcase where set.contains("\(l)|\(r)") {
+            picked.append(AntonymPair(left: l, right: r))
+        }
+        if picked.count < 6 {
+            let extra = raw.filter { p in !picked.contains { $0.left == p.left && $0.right == p.right } }
+            picked.append(contentsOf: extra.shuffled().prefix(6 - picked.count))
+        }
+        showcasePairs = Array(picked.prefix(6))
+        showcaseIdx = 0
+    }
+
+    private func cycleShowcase() {
+        guard !showcasePairs.isEmpty else { return }
+        withAnimation(.easeInOut(duration: 0.45)) { showcaseFaceUp = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            showcaseIdx = (showcaseIdx + 1) % showcasePairs.count
+            withAnimation(.easeInOut(duration: 0.45)) { showcaseFaceUp = true }
         }
     }
+
+    private func shuffleShowcase() {
+        guard !showcasePairs.isEmpty else { return }
+        withAnimation(.easeInOut(duration: 0.4)) { showcaseFaceUp = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            showcaseIdx = Int.random(in: 0..<showcasePairs.count)
+            withAnimation(.easeInOut(duration: 0.4)) { showcaseFaceUp = true }
+        }
+    }
+
+    // MARK: Hero
+
+    private var hero: some View {
+        VStack(spacing: 12) {
+            HStack(alignment: .bottom, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text("9999")
+                            .font(.system(size: 30, weight: .heavy, design: .serif))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Text("+对")
+                            .font(.system(size: 18, weight: .bold, design: .serif))
+                            .foregroundStyle(AntColors.red)
+                    }
+                    Text("本地词库 · 离线可学")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .tracking(1.4)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 6) {
+                    countPill("单字 \(singleCount)", dot: AntColors.red)
+                    countPill("双字 \(doubleCount)", dot: AntColors.green)
+                }
+            }
+
+            showcaseCard
+
+            HStack(spacing: 6) {
+                Text("正在展示：")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                if let p = showcasePair {
+                    Text("\(p.left) — \(p.right)")
+                        .font(.system(size: 12, weight: .bold, design: .serif))
+                        .foregroundStyle(AppTheme.textPrimary)
+                }
+                Spacer()
+                Button { shuffleShowcase() } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.2.squarepath")
+                            .font(.system(size: 11, weight: .bold))
+                        Text("换一对")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                    }
+                    .foregroundStyle(AntColors.redDark)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(AntColors.redSoft, in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(16)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 255/255, green: 252/255, blue: 245/255),
+                    Color(red: 251/255, green: 248/255, blue: 241/255),
+                    Color(red: 241/255, green: 233/255, blue: 216/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            ),
+            in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+        )
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(AntColors.borderSoft, lineWidth: 1))
+        .padding(.horizontal, 14)
+    }
+
+    private func countPill(_ text: String, dot: Color) -> some View {
+        HStack(spacing: 5) {
+            Circle().fill(dot).frame(width: 6, height: 6)
+            Text(text)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(AppTheme.card.opacity(0.6), in: Capsule())
+        .overlay(Capsule().strokeBorder(AntColors.borderSoft, lineWidth: 1))
+    }
+
+    // MARK: Hero 翻卡展示
+
+    private var showcaseCard: some View {
+        let pair = showcasePair
+        return ZStack {
+            // 牌背
+            backFace
+                .opacity(showcaseFaceUp ? 0 : 1)
+            // 牌面
+            frontFace(pair)
+                .opacity(showcaseFaceUp ? 1 : 0)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 148)
+        .rotation3DEffect(
+            .degrees(showcaseFaceUp ? 0 : 180),
+            axis: (x: 0, y: 1, z: 0),
+            perspective: 0.5
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
+    }
+
+    private var backFace: some View {
+        ZStack {
+            Rectangle().fill(
+                RadialGradient(
+                    colors: [Color(red: 74/255, green: 67/255, blue: 104/255),
+                             Color(red: 50/255, green: 43/255, blue: 78/255),
+                             Color(red: 34/255, green: 29/255, blue: 56/255)],
+                    center: .center, startRadius: 4, endRadius: 120
+                )
+            )
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [AntColors.red, AntColors.redDark], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 60, height: 60)
+                    .overlay(Circle().strokeBorder(.white.opacity(0.9), lineWidth: 2))
+                    .overlay(Circle().strokeBorder(AntColors.red, lineWidth: 3).blur(radius: 0))
+                Text("印")
+                    .font(.system(size: 26, weight: .black, design: .serif))
+                    .foregroundStyle(Color(red: 247/255, green: 243/255, blue: 234/255))
+            }
+        }
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(AntColors.gold.opacity(0.4), lineWidth: 1))
+    }
+
+    private func frontFace(_ pair: AntonymPair?) -> some View {
+        let isSingle = pair?.isSingleChar ?? true
+        return ZStack {
+            Rectangle().fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 255/255, green: 252/255, blue: 245/255),
+                        Color(red: 251/255, green: 248/255, blue: 241/255),
+                        Color(red: 240/255, green: 231/255, blue: 212/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+            )
+            if let p = pair {
+                Text(p.left)
+                    .font(.system(size: isSingle ? 54 : 40, weight: .black, design: .serif))
+                    .foregroundStyle(AntColors.red)
+                    .shadow(color: AntColors.redDark.opacity(0.15), radius: 0.5, x: 1, y: 1)
+            }
+            VStack {
+                HStack {
+                    Text("第 \(String(format: "%02d", (showcaseIdx % max(showcasePairs.count,1)) + 1)) / \(String(format: "%02d", max(showcasePairs.count,1))) 对")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .tracking(1.6)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 12)
+                Spacer()
+            }
+            if let p = pair {
+                HStack(spacing: 4) {
+                    Text("反义")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AntColors.greenDark)
+                        .tracking(1)
+                    Text(p.right)
+                        .font(.system(size: 18, weight: .black, design: .serif))
+                        .foregroundStyle(AntColors.green)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.trailing, 14)
+                .padding(.bottom, 12)
+            }
+        }
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(AntColors.borderSoft, lineWidth: 1))
+    }
+
+    // MARK: 搜索
 
     private var searchBar: some View {
         HStack(spacing: 10) {
@@ -1601,46 +1865,205 @@ private struct AntonymCollectionView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(AppTheme.card.opacity(0.5), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(AntColors.borderSoft, lineWidth: 1))
+    }
+
+    // MARK: 筛选
+
+    private var filterBar: some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 3) {
+                ForEach(Filter.allCases, id: \.self) { f in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { filter = f }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(f.label)
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            Text(filterBadgeText(for: f))
+                                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(filter == f ? AntColors.red : AppTheme.textSecondary.opacity(0.3),
+                                            in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        }
+                        .foregroundStyle(filter == f ? AppTheme.textPrimary : AppTheme.textSecondary)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            filter == f ? AppTheme.card : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        )
+                        .shadow(color: filter == f ? .black.opacity(0.08) : .clear, radius: 1, y: 1)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(3)
+            .background(AppTheme.card.opacity(0.4), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(AntColors.borderSoft, lineWidth: 1))
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    loadedCount = filteredCache.count
+                    rebuildGroups()
+                }
+            } label: {
+                Image(systemName: "shuffle")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color(red: 242/255, green: 237/255, blue: 226/255))
+                    .frame(width: 42, height: 36)
+                    .background(AppTheme.textPrimary, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func filterBadgeText(for f: Filter) -> String {
+        switch f {
+        case .all: return "9999+"
+        case .single: return "\(singleCount)"
+        case .double: return "\(doubleCount)"
+        }
+    }
+
+    // MARK: 分组列表
+
+    private var groupList: some View {
+        VStack(spacing: 0) {
+            ForEach(groupsCache, id: \.char) { g in
+                groupSection(g)
+            }
+            if loadedCount < filteredCache.count {
+                Color.clear
+                    .frame(height: 44)
+                    .onAppear {
+                        DispatchQueue.main.async {
+                            loadedCount = min(loadedCount + pageSize, filteredCache.count)
+                            rebuildGroups()
+                        }
+                    }
+            } else if !groupsCache.isEmpty {
+                Text("已加载 \(filteredCache.count) / 9999+ 对")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .padding(.vertical, 18)
+            }
+        }
+        .padding(.top, 10)
+    }
+
+    private func groupSection(_ g: (char: String, pairs: [AntonymPair])) -> some View {
+        let left = Array(g.pairs.enumerated()).filter { $0.offset % 2 == 0 }.map { $0.element }
+        let right = Array(g.pairs.enumerated()).filter { $0.offset % 2 == 1 }.map { $0.element }
+        return VStack(spacing: 10) {
+            groupTitle(g.char, count: g.pairs.count)
+            HStack(alignment: .top, spacing: 10) {
+                LazyVStack(spacing: 10) {
+                    ForEach(left) { DominoTile(pair: $0) }
+                }
+                LazyVStack(spacing: 10) {
+                    ForEach(right) { DominoTile(pair: $0) }
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.bottom, 6)
+        .onAppear { currentGroup = (g.char, g.pairs.count) }
+    }
+
+    private func groupTitle(_ char: String, count: Int) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(char)
+                .font(.system(size: 22, weight: .black, design: .serif))
+                .foregroundStyle(AppTheme.textPrimary)
+            Rectangle()
+                .fill(AntColors.borderSoft)
+                .frame(height: 1)
+            Text("\(count) 对")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(AntColors.red)
+        }
+        .padding(.horizontal, 2)
+        .padding(.top, 14)
+        .padding(.bottom, 2)
+    }
+
+    private func stickyCapsule(_ g: (char: String, count: Int)) -> some View {
+        HStack(spacing: 8) {
+            Text("当前")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+                .tracking(1)
+            Text("「\(g.char)」")
+                .font(.system(size: 18, weight: .black, design: .serif))
+                .foregroundStyle(AppTheme.textPrimary)
+            Text("\(g.count) 对")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(AntColors.red)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(AntColors.borderSoft, lineWidth: 1))
+        .padding(.horizontal, 14)
     }
 }
 
-private struct CollectionRow: View {
+// MARK: 多米诺骨牌式词条 tile
+
+private struct DominoTile: View {
     let pair: AntonymPair
-    let index: Int
+
+    private var isSingle: Bool { pair.isSingleChar }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Text("\(index)")
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-                .frame(width: 36, alignment: .trailing)
+        if isSingle { singleBody } else { doubleBody }
+    }
 
-            Text(pair.left)
-                .font(.system(size: 18, weight: .bold, design: .serif))
-                .foregroundStyle(.white)
-                .frame(minWidth: 54)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(AntColors.red, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-            Image(systemName: "arrow.left.and.right")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(AppTheme.textSecondary)
-
-            Text(pair.right)
-                .font(.system(size: 18, weight: .bold, design: .serif))
-                .foregroundStyle(.white)
-                .frame(minWidth: 54)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(AntColors.green, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-            Spacer()
+    private var singleBody: some View {
+        HStack(spacing: 0) {
+            half(pair.left, isRed: true, compact: true)
+            Rectangle().fill(AntColors.borderSoft).frame(width: 1)
+            half(pair.right, isRed: false, compact: true)
         }
-        .padding(.vertical, 10)
-        .contentShape(Rectangle())
+        .frame(height: 62)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(AntColors.borderSoft, lineWidth: 1))
+    }
+
+    private var doubleBody: some View {
+        VStack(spacing: 0) {
+            half(pair.left, isRed: true, compact: false)
+            HStack(spacing: 6) {
+                Rectangle().fill(AntColors.borderSoft).frame(height: 1)
+                Text("↔")
+                    .font(.system(size: 10, weight: .heavy))
+                    .foregroundStyle(AppTheme.textSecondary)
+                Rectangle().fill(AntColors.borderSoft).frame(height: 1)
+            }
+            .padding(.horizontal, 8)
+            .frame(height: 16)
+            half(pair.right, isRed: false, compact: false)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(AntColors.borderSoft, lineWidth: 1))
+    }
+
+    private func half(_ word: String, isRed: Bool, compact: Bool) -> some View {
+        let bg = LinearGradient(
+            colors: isRed ? [AntColors.red, AntColors.redDark] : [AntColors.green, AntColors.greenDark],
+            startPoint: isRed ? .topLeading : .topTrailing,
+            endPoint: isRed ? .bottomTrailing : .bottomLeading
+        )
+        return ZStack {
+            Rectangle().fill(bg)
+            Text(word)
+                .font(.system(size: compact ? 22 : 20, weight: .heavy, design: .serif))
+                .foregroundStyle(.white)
+        }
     }
 }
 

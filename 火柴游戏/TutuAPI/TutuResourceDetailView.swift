@@ -18,9 +18,11 @@ struct TutuResourceDetailView: View {
     }
 
     var body: some View {
-        Group {
-            if isLoading {
-                loadingAnimation
+        VStack(spacing: 0) {
+            UnifiedNavBar(title: resource.title)
+            Group {
+                if isLoading {
+                    loadingAnimation
             } else if let detail {
                 detailContent(detail)
             } else {
@@ -44,11 +46,13 @@ struct TutuResourceDetailView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            }
         }
-        .navigationTitle(resource.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .background(AppTheme.background)
+        .enableSwipeBack()
         .overlay(alignment: .bottom) {
             if let detail, !detail.documents.isEmpty {
                 saveButton(detail)
