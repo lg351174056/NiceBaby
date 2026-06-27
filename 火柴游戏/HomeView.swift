@@ -309,7 +309,7 @@ struct HomeView: View {
                     QuickEntryView(icon: "book.fill", title: "三字经", color: AppTheme.accentBamboo) {
                         presentedGame = .sanzijing
                     }
-                    QuickEntryView(icon: "globe.asia.filled", title: "地理", color: AppTheme.accentJade) {
+                    QuickEntryView(icon: "d", title: "地理", color: AppTheme.accentJade) {
                         progress.selectedTab = 2
                     }
                 }
