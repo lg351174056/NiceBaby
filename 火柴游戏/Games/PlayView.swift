@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 益智 Tab · 墨紫色 · 灵感游戏台
+// MARK: - 益智 Tab · 演武场 · 墨韵新风
 
 struct PlayView: View {
     @EnvironmentObject private var progress: AppProgressStore
@@ -16,40 +16,13 @@ struct PlayView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(spacing: 0) {
-                HStack(alignment: .center) {
-                    Text("益智乐园")
-                        .font(.system(size: 34, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.gradientPlay)
-                    Spacer()
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    yunvuHero
+                    scrollBody
                 }
-                .padding(.horizontal, AppTheme.paddingScreen)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-                .background(AppTheme.background)
-
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 18) {
-                        statsHeroCard
-
-                        sectionHeader(title: "热门挑战", action: "查看全部")
-
-                        featuredGameCard
-
-                        sectionHeader(title: "挑战乐园", action: nil)
-
-                        gameBentoGrid
-
-                        sectionHeader(title: "工具箱", action: "更多")
-
-                        toolboxScroll
-                    }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.top, 4)
-                    .padding(.bottom, 24)
-                }
-                .background(AppTheme.background.ignoresSafeArea())
             }
+            .ignoresSafeArea(edges: .top)
             .navigationDestination(for: GameKind.self) { kind in
                 gameContainer(for: kind)
             }
@@ -65,253 +38,477 @@ struct PlayView: View {
         path = NavigationPath()
     }
 
-    // MARK: - Stats Hero Card (深紫渐变)
+    // MARK: - Hero · 演武场（墨紫夜空 + 武印 + 段位腰带）
 
-    private var statsHeroCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: AppTheme.cornerXL, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 74/255, green: 59/255, blue: 107/255),
-                            AppTheme.accentInkPurple,
-                            Color(red: 110/255, green: 93/255, blue: 160/255)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+    private var yunvuHero: some View {
+        ZStack(alignment: .bottom) {
+            // 深色渐变：墨紫夜空 → 宣纸过渡
+            LinearGradient(
+                colors: [
+                    Color(red: 31/255, green: 26/255, blue: 40/255),
+                    Color(red: 45/255, green: 36/255, blue: 65/255),
+                    AppTheme.background
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 280)
 
             VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 14) {
-                    ZStack {
-                        RingProgressView(progress: matchProgress, lineWidth: 4, size: 56, color: Color(red: 184/255, green: 169/255, blue: 212/255))
-                        Text("\(Int(matchProgress * 100))%")
-                            .font(.system(size: 14, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white)
-                    }
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("今天玩点什么？")
-                            .font(.system(size: 18, weight: .heavy, design: .serif))
-                            .foregroundStyle(.white)
-                        Text("已通关火柴 \(progress.totalMatchstickSolves) 道 · 连续学习 \(progress.streakDays) 天")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.7))
+                // 顶部标题行：kicker + 标题 + 武印
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("YǍN · WǓ · 演武修真")
+                            .font(.system(size: 10, weight: .semibold, design: .rounded))
+                            .tracking(3.4)
+                            .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.6))
+                        Text("演武场")
+                            .font(.system(size: 28, weight: .heavy, design: .serif))
+                            .tracking(1)
+                            .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
                     }
                     Spacer()
+                    wuSeal
                 }
 
-                HStack(spacing: 10) {
-                    statChip(value: Text("\(progress.totalMatchstickSolves)").font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(.white), label: "火柴通关")
-                    statChip(
-                        value: {
-                            HStack(spacing: 2) {
-                                Image(systemName: "flame.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(Color(red: 255/255, green: 184/255, blue: 77/255))
-                                Text("\(progress.streakDays)")
-                                    .font(.system(size: 20, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(.white)
-                            }
-                        }(),
-                        label: "连续打卡"
-                    )
-                    statChip(value: Text("\(progress.totalMatchstickSolves + progress.openedPoemIds.count)").font(.system(size: 20, weight: .heavy, design: .rounded)).foregroundStyle(.white), label: "今日活跃")
-                }
+                // 段位腰带
+                danBelt
             }
-            .padding(20)
+            .padding(.horizontal, AppTheme.paddingScreen)
+            .padding(.bottom, 14)
         }
+        .frame(height: 280)
     }
 
-    private func statChip(value: some View, label: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            value
-            Text(label)
-                .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.6))
+    // 武印：朱砂圆印 + 毛笔字「武」(倾斜 -4°)
+    private var wuSeal: some View {
+        ZStack {
+            Circle()
+                .fill(AppTheme.accentCinnabar)
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Circle()
+                        .strokeBorder(Color.white.opacity(0.2), lineWidth: 2)
+                )
+                .shadow(color: AppTheme.accentCinnabar.opacity(0.5), radius: 5, x: 0, y: 4)
+            Text("武")
+                .font(.system(size: 17, weight: .black, design: .serif))
+                .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
+        .rotationEffect(.degrees(-4))
+    }
+
+    // 段位腰带：6 段位记号 + 段位文案 + 功成名就 stats
+    private var danBelt: some View {
+        VStack(spacing: 10) {
+            // 记号 + 段位 + 距下一阶
+            HStack(spacing: 8) {
+                // 4 on / 6 总计
+                HStack(spacing: 4) {
+                    ForEach(0..<6, id: \.self) { i in
+                        Capsule()
+                            .fill(i < 4 ? AppTheme.accentCinnabar : Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.16))
+                            .frame(width: 14, height: 6)
+                            .shadow(color: i < 4 ? AppTheme.accentCinnabar.opacity(0.6) : .clear, radius: 3)
+                    }
+                }
+                Text("勤学 · 三品")
+                    .font(.system(size: 13, weight: .heavy, design: .serif))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
+                Spacer()
+                Text("距 精通 · 一阶")
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .tracking(1.4)
+                    .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.5))
+            }
+
+            // 顶部细光带
+            .overlay(alignment: .top) {
+                LinearGradient(
+                    colors: [.clear, AppTheme.accentCinnabar, .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(height: 1)
+                .offset(y: -12)
+            }
+
+            // 功成名就三格
+            HStack(spacing: 8) {
+                beltStat(value: "\(progress.totalMatchstickSolves)", label: "火柴通破")
+                beltStat(value: "\(progress.streakDays)", label: "连胜日")
+                beltStat(value: "\(progress.totalMatchstickSolves + progress.openedPoemIds.count)", label: "今练")
+            }
+        }
+        .padding(12)
+        .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5)
+                .fill(Color(red: 10/255, green: 8/255, blue: 16/255).opacity(0.45))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.12), lineWidth: 1)
+                )
         )
     }
 
-    // MARK: - Section Header
-
-    private func sectionHeader(title: String, action: String?) -> some View {
-        HStack {
-            Text(title)
-                .font(.system(size: 20, weight: .heavy, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
-            Spacer()
-            if let action {
-                Button {} label: {
-                    Text(action)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.accentInkPurple)
-                }
-            }
+    private func beltStat(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 14, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
+            Text(label)
+                .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                .tracking(1)
+                .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.5))
         }
-    }
-
-    // MARK: - Featured Game Card (Hero)
-
-    private var featuredGameCard: some View {
-        Button { pushGame(.matchstick) } label: {
-            VStack(alignment: .leading, spacing: 0) {
-                ZStack {
-                    LinearGradient(
-                        colors: [AppTheme.accentCinnabar, Color(red: 232/255, green: 130/255, blue: 94/255), Color(red: 242/255, green: 168/255, blue: 122/255)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .frame(height: 120)
-
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(Color.white.opacity(0.25))
-                            .frame(width: 64, height: 64)
-                        Image(systemName: "function")
-                            .font(.system(size: 30, weight: .medium))
-                            .foregroundStyle(.white)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.trailing, 20)
-
-                    Text("主推")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.25), in: Capsule())
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                        .padding(.top, 14)
-                        .padding(.leading, 16)
-                }
-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: AppTheme.cornerLarge, topTrailingRadius: AppTheme.cornerLarge))
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("火柴游戏")
-                        .font(.system(size: 20, weight: .heavy, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-                    Text("移动一根火柴，让等式成立")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-
-                    HStack(spacing: 6) {
-                        tagPill(text: "311 道题", accent: AppTheme.accentCinnabar)
-                        tagPill(text: "逻辑推理", accent: AppTheme.accentCinnabar)
-                    }
-                    .padding(.top, 4)
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 16)
-                .background(AppTheme.card)
-                .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: AppTheme.cornerLarge, bottomTrailingRadius: AppTheme.cornerLarge))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.05))
                 .overlay(
-                    UnevenRoundedRectangle(bottomLeadingRadius: AppTheme.cornerLarge, bottomTrailingRadius: AppTheme.cornerLarge)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.1), lineWidth: 0.5)
                 )
-            }
-            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .strokeBorder(AppTheme.separator, lineWidth: 1)
-            )
+        )
+    }
+
+    // MARK: - 主体（宣纸底）
+
+    private var scrollBody: some View {
+        VStack(spacing: 22) {
+            arenaSection
+            movesSection
+            toolsSection
+            colophon
         }
-        .buttonStyle(.bouncy)
-        .drawingGroup()
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 18)
+        .padding(.bottom, 30)
+        .background(AppTheme.background)
     }
 
-    private func tagPill(text: String, accent: Color) -> some View {
-        Text(text)
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
-            .foregroundStyle(accent)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(accent.opacity(0.08), in: Capsule())
+    // 段标题·带「名 · 副标题」
+    private func sectionHeader(title: String, sub: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title)
+                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .tracking(0.8)
+                .foregroundStyle(AppTheme.textPrimary)
+            Text(sub)
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .tracking(1.8)
+                .foregroundStyle(AppTheme.textSecondary.opacity(0.7))
+            Rectangle()
+                .fill(AppTheme.separator)
+                .frame(height: 0.5)
+            Spacer(minLength: 0)
+        }
     }
 
-    // MARK: - Game Bento Grid
+    // MARK: - 擂台主推（朱砂渐变 + 巨字「擂」水印）
 
-    private var gameBentoGrid: some View {
-        let columns = [
-            GridItem(.flexible(), spacing: 12),
-            GridItem(.flexible(), spacing: 12)
+    private var arenaSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "擂台 · 主推", sub: "FEATURED")
+            Button { pushGame(.matchstick) } label: {
+                arenaCard
+            }
+            .buttonStyle(.bouncy)
+        }
+    }
+
+    private var arenaCard: some View {
+        ZStack(alignment: .topTrailing) {
+            // 渐变朱砂底
+            LinearGradient(
+                colors: [
+                    Color(red: 107/255, green: 42/255, blue: 34/255),
+                    Color(red: 168/255, green: 54/255, blue: 47/255),
+                    AppTheme.accentCinnabar
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5)
+            )
+            .shadow(color: AppTheme.accentCinnabar.opacity(0.3), radius: 10, x: 0, y: 6)
+
+            // 巨字「擂」水印：右上角溢出被剪 - 关键还原点
+            Text("擂")
+                .font(.system(size: 140, weight: .black, design: .serif))
+                .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255).opacity(0.08))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .offset(x: -8, y: -22)
+                .allowsHitTesting(false)
+
+            // 文案
+            VStack(alignment: .leading, spacing: 0) {
+                Text("擂")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.18))
+                    )
+
+                Text("火柴推理")
+                    .font(.system(size: 22, weight: .heavy, design: .serif))
+                    .tracking(0.8)
+                    .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+                    .padding(.top, 10)
+
+                Text("移一根火柴，让等式成立")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.75))
+                    .padding(.top, 4)
+
+                HStack(spacing: 14) {
+                    arenaStat(value: "\(MatchstickProblemSet.count)", label: "题")
+                    arenaStat(value: "\(progress.totalMatchstickSolves)", label: "已破")
+                    arenaStat(value: "\(progress.streakDays)", label: "连胜")
+                }
+                .padding(.top, 14)
+
+                HStack(spacing: 6) {
+                    Text("入 擂")
+                        .font(.system(size: 13, weight: .heavy, design: .serif))
+                        .tracking(1)
+                        .foregroundStyle(AppTheme.accentCinnabar)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .heavy))
+                        .foregroundStyle(AppTheme.accentCinnabar)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(Color(red: 255/255, green: 248/255, blue: 238/255).opacity(0.95))
+                )
+                .padding(.top, 16)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(minHeight: 230)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func arenaStat(value: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.system(size: 18, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+            Text(label)
+                .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                .tracking(0.8)
+                .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.55))
+        }
+    }
+
+    // MARK: - 招式 · 列阵（6 招式卡 2 列网格）
+
+    private struct Move {
+        let kind: GameKind?
+        let badge: String   // 能 / 习 / 习 / 未
+        let badgeColor: Color
+        let no: String      // 壹式 / 贰式 ...
+        let name: String
+        let sub: String
+        let pct: Double
+        let progress: Double
+        let statusHint: String
+    }
+
+    private var moves: [Move] {
+        let ink = AppTheme.accentInkPurple
+        let bamboo = AppTheme.accentBamboo
+        let cinnabar = AppTheme.accentCinnabar
+        let muted = AppTheme.textSecondary
+        return [
+            Move(kind: .poetryComplete, badge: "能", badgeColor: ink,     no: "壹式", name: "诗词补全",   sub: "古诗少一句 · 四选一",       pct: 43, progress: 0.42, statusHint: "有所习"),
+            Move(kind: .surnameMatch,   badge: "习", badgeColor: bamboo,   no: "贰式", name: "百家姓闯关", sub: "看 / 听 / 选 三招式",       pct: 38, progress: 0.38, statusHint: "勤习"),
+            Move(kind: .antonymMatch,   badge: "能", badgeColor: cinnabar,  no: "叁式", name: "反义对对碰", sub: "翻乐 · 跷板 · 闯图",        pct: 56, progress: 0.56, statusHint: "精进"),
+            Move(kind: .idiomFillBlank, badge: "能", badgeColor: cinnabar,  no: "肆式", name: "成语填空",   sub: "缺一选一 · 集经史",         pct: 31, progress: 0.31, statusHint: "初习"),
+            Move(kind: .sanzijing,      badge: "能", badgeColor: bamboo,   no: "伍式", name: "三字经",     sub: "人之初 · 性本善",          pct: 88, progress: 0.88, statusHint: "近通"),
+            Move(kind: nil,             badge: "未", badgeColor: muted,    no: "续演", name: "奇妙科学",   sub: "未启 · 万物原理",          pct: 0,  progress: 0,    statusHint: "未启")
         ]
+    }
 
-        let games: [(GameKind, Bool)] = [
-            (.poetryComplete, true),
-            (.surnameMatch, false),
-            (.idiomFillBlank, false),
-            (.antonymMatch, false),
-            (.sanzijing, false)
-        ]
-
-        return LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(Array(games.enumerated()), id: \.element.0) { _, pair in
-                let (kind, isTall) = pair
-                GameBentoCard(
-                    kind: kind,
-                    bestScore: GameBestScoreStore.best(for: kind),
-                    isTall: isTall
-                ) {
-                    pushGame(kind)
+    private var movesSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "招式 · 列阵", sub: "FIVE MOVES")
+            let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(Array(moves.enumerated()), id: \.offset) { _, move in
+                    moveCard(move)
                 }
             }
         }
     }
 
-    // MARK: - Toolbox Horizontal Scroll
+    private func moveCard(_ move: Move) -> some View {
+        let locked = move.kind == nil
+        return Button {
+            if let kind = move.kind { pushGame(kind) }
+        } label: {
+            ZStack {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(move.no)
+                        .font(.system(size: 11, weight: .medium, design: .serif))
+                        .tracking(0.6)
+                        .foregroundStyle(AppTheme.textSecondary)
+                    Text(move.name)
+                        .font(.system(size: 15, weight: .heavy, design: .serif))
+                        .tracking(0.4)
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.top, 4)
+                        .lineLimit(1)
+                    Text(move.sub)
+                        .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .padding(.top, 2)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
 
-    private var toolboxScroll: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+                    GeometryReader { _ in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(AppTheme.separator)
+                                .frame(height: 3)
+                            Capsule()
+                                .fill(move.badgeColor)
+                                .frame(width: max(0, CGFloat(move.progress)) * 80, height: 3)
+                        }
+                    }
+                    .frame(height: 3)
+                    .padding(.top, 8)
+
+                    HStack {
+                        Text("\(move.pct) %")
+                            .font(.system(size: 10, weight: .medium, design: .serif))
+                            .foregroundStyle(AppTheme.textPrimary)
+                        Spacer()
+                        Text(move.statusHint)
+                            .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                            .tracking(1)
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
+                    .padding(.top, 6)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                // 右上角印章徽记
+                Text(move.badge)
+                    .font(.system(size: 10, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .fill(move.badgeColor)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppTheme.card)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    )
+            )
+            .opacity(locked ? 0.45 : 1)
+        }
+        .buttonStyle(.plain)
+        .disabled(locked)
+    }
+
+    // MARK: - 器械 · 文房三器
+
+    private var toolsSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "器械 · 文房三器", sub: "TOOLS")
             HStack(spacing: 10) {
-                toolChip(kind: .idiomDictionary, accent: AppTheme.accentInkPurple, sub: "收录 5 万+")
-                toolChip(kind: .xiehouyuDictionary, accent: AppTheme.accentBamboo, sub: "经典精选")
-                toolChip(kind: .dictionary, accent: AppTheme.accentYellow, sub: "查拼音 · 听发音")
+                toolTower(no: "壹", kind: .idiomDictionary, name: "成语大全", sub: "5万+ 海量")
+                toolTower(no: "贰", kind: .xiehouyuDictionary, name: "歇后语集", sub: "经典精选")
+                toolTower(no: "叁", kind: .dictionary, name: "汉语词典", sub: "查音 · 听读")
             }
-            .padding(.bottom, 4)
         }
     }
 
-    private func toolChip(kind: GameKind, accent: Color, sub: String) -> some View {
+    private func toolTower(no: String, kind: GameKind, name: String, sub: String) -> some View {
         Button { pushGame(kind) } label: {
-            VStack(spacing: 8) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(accent.opacity(0.1))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: kind.systemImage)
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(accent)
-                }
-
-                Text(kind.title)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-
-                Text(sub)
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(no)
+                    .font(.system(size: 10, weight: .medium, design: .serif))
+                    .tracking(0.8)
                     .foregroundStyle(AppTheme.textSecondary)
+                Text(name)
+                    .font(.system(size: 12.5, weight: .heavy, design: .serif))
+                    .tracking(0.3)
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .lineLimit(1)
+                Text(sub)
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
             }
-            .frame(width: 100)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 10)
-            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(AppTheme.card)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    )
             )
         }
         .buttonStyle(.bouncy)
     }
 
-    // MARK: - Game Container
+    // MARK: - 题跋
+
+    private var colophon: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("题 · 跋")
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .tracking(3.4)
+                .foregroundStyle(AppTheme.accentInkPurple)
+            Text("演武者，所以明理、益智、修心。每破一题则就一题之道，每通一式则进一阶之修。即所见，亦所学也。")
+                .font(.system(size: 12, weight: .regular, design: .serif))
+                .foregroundStyle(AppTheme.textSecondary)
+                .lineSpacing(4)
+            Text("演武修真 · 益智谨题")
+                .font(.system(size: 13, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.accentCinnabar)
+                .rotationEffect(.degrees(-2))
+                .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(AppTheme.accentInkPurple.opacity(0.06))
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(AppTheme.accentInkPurple)
+                        .frame(width: 2)
+                }
+        )
+    }
+
+    // MARK: - Game Container（保留原路由）
 
     @ViewBuilder
     private func gameContainer(for kind: GameKind) -> some View {
@@ -342,86 +539,6 @@ struct PlayView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-    }
-}
-
-// MARK: - Game Bento Card · 墨韵风
-
-private struct GameBentoCard: View {
-    let kind: GameKind
-    let bestScore: Int
-    let isTall: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 0) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: AppTheme.cornerMedium, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [kind.accent.opacity(0.10), kind.accent.opacity(0.02)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: isTall ? 110 : 80)
-
-                    ZStack {
-                        RoundedRectangle(cornerRadius: isTall ? 18 : 14, style: .continuous)
-                            .fill(kind.accent.opacity(0.12))
-                            .frame(width: isTall ? 48 : 40, height: isTall ? 48 : 40)
-                        Image(systemName: kind.systemImage)
-                            .font(.system(size: isTall ? 24 : 20, weight: .medium))
-                            .foregroundStyle(kind.accent)
-                    }
-
-                    Image(systemName: kind.systemImage)
-                        .font(.system(size: isTall ? 42 : 32))
-                        .foregroundStyle(kind.accent.opacity(0.06))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                        .offset(x: -6, y: 6)
-                }
-                .frame(height: isTall ? 110 : 80)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(kind.title)
-                        .font(.system(size: isTall ? 17 : 16, weight: .heavy, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(1)
-
-                    Text(kind.subtitle)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .lineLimit(2)
-                }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cornerLarge, style: .continuous)
-                    .strokeBorder(AppTheme.separator, lineWidth: 1)
-            )
-            .overlay(alignment: .topTrailing) {
-                if bestScore > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 10, weight: .bold))
-                        Text("\(bestScore)")
-                            .font(.system(size: 12, weight: .heavy, design: .rounded))
-                    }
-                    .foregroundStyle(kind.accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(kind.accent.opacity(0.08), in: Capsule())
-                    .padding(10)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .drawingGroup()
     }
 }
 
