@@ -15,19 +15,26 @@ struct PlayView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    yunvuHero
-                    scrollBody
+        ZStack {
+            // 底层全屏背景：仅保留暖白色，确保底部上拉不露白
+            AppTheme.background
+                .ignoresSafeArea()
+
+            NavigationStack(path: $path) {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        yunvuHero
+                        scrollBody
+                    }
+                }
+                .scrollContentBackground(.hidden) // 隐藏系统默认白底，让自定义背景生效
+                .ignoresSafeArea(edges: .top)
+                .navigationDestination(for: GameKind.self) { kind in
+                    gameContainer(for: kind)
                 }
             }
-            .ignoresSafeArea(edges: .top)
-            .navigationDestination(for: GameKind.self) { kind in
-                gameContainer(for: kind)
-            }
+            .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
         }
-        .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
     }
 
     private func pushGame(_ kind: GameKind) {
@@ -41,43 +48,50 @@ struct PlayView: View {
     // MARK: - Hero · 演武场（墨紫夜空 + 武印 + 段位腰带）
 
     private var yunvuHero: some View {
-        ZStack(alignment: .bottom) {
-            // 深色渐变：墨紫夜空 → 宣纸过渡
-            LinearGradient(
-                colors: [
-                    Color(red: 31/255, green: 26/255, blue: 40/255),
-                    Color(red: 45/255, green: 36/255, blue: 65/255),
-                    AppTheme.background
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 280)
-
-            VStack(alignment: .leading, spacing: 16) {
-                // 顶部标题行：kicker + 标题 + 武印
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("YǍN · WǓ · 演武修真")
-                            .font(.system(size: 10, weight: .semibold, design: .rounded))
-                            .tracking(3.4)
-                            .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.6))
-                        Text("演武场")
-                            .font(.system(size: 28, weight: .heavy, design: .serif))
-                            .tracking(1)
-                            .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
-                    }
-                    Spacer()
-                    wuSeal
+        VStack(spacing: 0) {
+            // 顶部标题行：kicker + 标题 + 武印
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("YǍN · WǓ · 演武修真")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .tracking(3.4)
+                        .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.6))
+                    Text("演武场")
+                        .font(.system(size: 28, weight: .heavy, design: .serif))
+                        .tracking(1)
+                        .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
                 }
-
-                // 段位腰带
-                danBelt
+                Spacer()
+                wuSeal
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.bottom, 14)
+            .padding(.top, 56) // 适配状态栏
+            .padding(.bottom, 20) // 缩短与腰带的间距
+
+            // 段位腰带
+            danBelt
         }
-        .frame(height: 280)
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.bottom, 25)
+        .background {
+            // 背景处理：解决下拉露白 + 保持渐变颜色准确
+            ZStack(alignment: .top) {
+                // 1. 向上无限延伸的深色块（解决下拉露深紫色）
+                Color(red: 31/255, green: 26/255, blue: 40/255)
+                    .frame(height: 1000)
+                    .offset(y: -1000)
+
+                // 2. 标准渐变底（高度与内容一致，颜色从当前顶端开始）
+                LinearGradient(
+                    colors: [
+                        Color(red: 31/255, green: 26/255, blue: 40/255),
+                        Color(red: 45/255, green: 36/255, blue: 65/255),
+                        AppTheme.background
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
     }
 
     // 武印：朱砂圆印 + 毛笔字「武」(倾斜 -4°)
@@ -100,7 +114,7 @@ struct PlayView: View {
 
     // 段位腰带：6 段位记号 + 段位文案 + 功成名就 stats
     private var danBelt: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             // 记号 + 段位 + 距下一阶
             HStack(spacing: 8) {
                 // 4 on / 6 总计
@@ -113,12 +127,12 @@ struct PlayView: View {
                     }
                 }
                 Text("勤学 · 三品")
-                    .font(.system(size: 13, weight: .heavy, design: .serif))
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
                     .tracking(1)
                     .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
                 Spacer()
                 Text("距 精通 · 一阶")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
                     .tracking(1.4)
                     .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.5))
             }
@@ -131,7 +145,7 @@ struct PlayView: View {
                     endPoint: .trailing
                 )
                 .frame(height: 1)
-                .offset(y: -12)
+                .offset(y: -16)
             }
 
             // 功成名就三格
@@ -141,7 +155,7 @@ struct PlayView: View {
                 beltStat(value: "\(progress.totalMatchstickSolves + progress.openedPoemIds.count)", label: "今练")
             }
         }
-        .padding(12)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color(red: 10/255, green: 8/255, blue: 16/255).opacity(0.45))
@@ -153,17 +167,17 @@ struct PlayView: View {
     }
 
     private func beltStat(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 3) {
             Text(value)
-                .font(.system(size: 14, weight: .heavy, design: .serif))
+                .font(.system(size: 18, weight: .heavy, design: .serif))
                 .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255))
             Text(label)
-                .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                .font(.system(size: 10, weight: .medium, design: .rounded))
                 .tracking(1)
                 .foregroundStyle(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.5))
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
+        .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .fill(Color(red: 243/255, green: 232/255, blue: 210/255).opacity(0.05))
@@ -186,7 +200,17 @@ struct PlayView: View {
         .padding(.horizontal, AppTheme.paddingScreen)
         .padding(.top, 18)
         .padding(.bottom, 30)
-        .background(AppTheme.background)
+        .background {
+            // 背景处理：解决上拉露白
+            ZStack(alignment: .bottom) {
+                AppTheme.background
+                
+                // 向下无限延伸的暖白块（确保上拉时颜色统一）
+                AppTheme.background
+                    .frame(height: 1000)
+                    .offset(y: 1000)
+            }
+        }
     }
 
     // 段标题·带「名 · 副标题」
