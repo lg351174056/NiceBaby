@@ -355,14 +355,14 @@ struct PlayView: View {
         let ink = AppTheme.accentInkPurple
         let bamboo = AppTheme.accentBamboo
         let cinnabar = AppTheme.accentCinnabar
-        let muted = AppTheme.textSecondary
         return [
             Move(kind: .poetryComplete, badge: "能", badgeColor: ink,     no: "壹式", name: "诗词补全",   sub: "古诗少一句 · 四选一",       pct: 43, progress: 0.42, statusHint: "有所习"),
             Move(kind: .surnameMatch,   badge: "习", badgeColor: bamboo,   no: "贰式", name: "百家姓闯关", sub: "看 / 听 / 选 三招式",       pct: 38, progress: 0.38, statusHint: "勤习"),
             Move(kind: .antonymMatch,   badge: "能", badgeColor: cinnabar,  no: "叁式", name: "反义对对碰", sub: "翻乐 · 跷板 · 闯图",        pct: 56, progress: 0.56, statusHint: "精进"),
             Move(kind: .idiomFillBlank, badge: "能", badgeColor: cinnabar,  no: "肆式", name: "成语填空",   sub: "缺一选一 · 集经史",         pct: 31, progress: 0.31, statusHint: "初习"),
             Move(kind: .sanzijing,      badge: "能", badgeColor: bamboo,   no: "伍式", name: "三字经",     sub: "人之初 · 性本善",          pct: 88, progress: 0.88, statusHint: "近通"),
-            Move(kind: nil,             badge: "未", badgeColor: muted,    no: "续演", name: "奇妙科学",   sub: "未启 · 万物原理",          pct: 0,  progress: 0,    statusHint: "未启")
+            Move(kind: .idiomFillLevel, badge: "新", badgeColor: cinnabar,  no: "陆式", name: "成语填空(贰)",   sub: "500关 · 看提示选对字",      pct: 0,  progress: 0,    statusHint: "新开"),
+            Move(kind: .brainTeaser,    badge: "新", badgeColor: ink,       no: "柒式", name: "脑筋急转弯", sub: "150题 · 绕弯急转有惊喜",    pct: 0,  progress: 0,    statusHint: "新开")
         ]
     }
 
@@ -560,6 +560,10 @@ struct PlayView: View {
                 DictionaryGameView(onExit: { popToRoot() })
             case .antonymMatch:
                 AntonymMatchView(onExit: { popToRoot() })
+            case .idiomFillLevel:
+                IdiomFillLevelView(onExit: { popToRoot() })
+            case .brainTeaser:
+                BrainTeaserHomeView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

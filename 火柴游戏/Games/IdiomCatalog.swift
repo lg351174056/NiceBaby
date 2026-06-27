@@ -239,7 +239,7 @@ enum IdiomCatalog {
         return result
     }
 
-    private static func isChineseChar(_ c: Character) -> Bool {
+    nonisolated private static func isChineseChar(_ c: Character) -> Bool {
         guard let scalar = c.unicodeScalars.first else { return false }
         return (0x4E00...0x9FFF).contains(scalar.value)
     }

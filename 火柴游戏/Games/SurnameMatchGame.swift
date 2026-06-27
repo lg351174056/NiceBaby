@@ -45,7 +45,7 @@ private struct SurnameQuestion: Identifiable {
 
 // MARK: - TTS 服务
 
-private final class SurnameTTS: NSObject, AVSpeechSynthesizerDelegate {
+private final class SurnameTTS: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
     static let shared = SurnameTTS()
     private let synth = AVSpeechSynthesizer()
     private let voice = AVSpeechSynthesisVoice(language: "zh-CN")

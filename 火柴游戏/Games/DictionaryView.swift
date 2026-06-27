@@ -54,7 +54,7 @@ struct DictEntry: Decodable, Identifiable, Hashable {
     }
     
     /// 拼音首字母（用于索引）
-    var pinyinInitial: Character {
+    nonisolated var pinyinInitial: Character {
         guard let first = pinyin.first else { return "#" }
         let lower = String(first).lowercased()
         if lower >= "a" && lower <= "z" { return Character(lower) }
@@ -103,16 +103,15 @@ final class DictionaryStore: ObservableObject {
             }
             
             // 构建拼音索引
-            var index: [Character: [DictEntry]] = [:]
+            var indexBuilder: [Character: [DictEntry]] = [:]
             for entry in all {
                 let key = entry.pinyinInitial
-                index[key, default: []].append(entry)
+                indexBuilder[key, default: []].append(entry)
             }
-            
-            // 排序每组内条目
-            for key in index.keys {
-                index[key]?.sort { $0.pinyin.localizedStandardCompare($1.pinyin) == .orderedAscending }
+            for key in indexBuilder.keys {
+                indexBuilder[key]?.sort { $0.pinyin.localizedStandardCompare($1.pinyin) == .orderedAscending }
             }
+            let index = indexBuilder
             
             let sortedLetters = index.keys.sorted { a, b in
                 if a == "#" { return false }
@@ -149,7 +148,7 @@ final class DictionaryStore: ObservableObject {
 
 // MARK: - 词典 TTS
 
-private final class DictTTS: NSObject, AVSpeechSynthesizerDelegate {
+private final class DictTTS: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
     static let shared = DictTTS()
     private let synth = AVSpeechSynthesizer()
     

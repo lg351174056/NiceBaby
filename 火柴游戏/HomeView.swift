@@ -309,7 +309,7 @@ struct HomeView: View {
                     QuickEntryView(icon: "book.fill", title: "三字经", color: AppTheme.accentBamboo) {
                         presentedGame = .sanzijing
                     }
-                    QuickEntryView(icon: "d", title: "地理", color: AppTheme.accentJade) {
+                    QuickEntryView(icon: "map.fill", title: "地理", color: AppTheme.accentJade) {
                         progress.selectedTab = 2
                     }
                 }
@@ -412,6 +412,10 @@ struct HomeView: View {
             DictionaryGameView(onExit: { presentedGame = nil })
         case .antonymMatch:
             AntonymMatchView(onExit: { presentedGame = nil })
+        case .idiomFillLevel:
+            IdiomFillLevelView(onExit: { presentedGame = nil })
+        case .brainTeaser:
+            BrainTeaserHomeView(onExit: { presentedGame = nil })
         }
     }
 }

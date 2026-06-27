@@ -34,8 +34,6 @@ struct ExploreView: View {
                     WallpaperGalleryView()
                 case .poetry:
                     PMMainView()
-                case .brainTeaser:
-                    BrainTeaserHomeView()
                 }
             }
         }
@@ -322,10 +320,7 @@ struct ExploreVolume: Identifiable {
                         destination: .idiomSolitaire, isLast: false),
             ExploreItem(id: "i5", seal: "伍", title: "诗词文学",
                         subtitle: "311 首 · 唐宋元明清 · 课读与释义",
-                        destination: .poetry, isLast: false),
-            ExploreItem(id: "i8", seal: "智", title: "脑筋急转弯",
-                        subtitle: "150 题 · 经典谜题 · 绕弯急转有惊喜",
-                        destination: .brainTeaser, isLast: true),
+                        destination: .poetry, isLast: true),
         ]),
         ExploreVolume(id: "v4", numLabel: "续 卷", name: "未启之篇", items: [
             ExploreItem(id: "i6", seal: "疑", title: "奇妙科学",
@@ -354,7 +349,6 @@ enum ExploreDestination: Hashable {
     case idiomSolitaire
     case wallpaper
     case poetry
-    case brainTeaser
 }
 
 private struct ExploreBounceButtonStyle: ButtonStyle {

@@ -162,9 +162,7 @@ private struct ModeSelect: View {
                     .padding(.top, 10)
 
                 // 标题：反义(红) 对(墨) 对碰(绿)
-                (Text("反义").foregroundStyle(AntColors.red)
-                    + Text("对").foregroundStyle(AppTheme.textPrimary)
-                    + Text("对碰").foregroundStyle(AntColors.green))
+                Text("\(Text("反义").foregroundStyle(AntColors.red))\(Text("对").foregroundStyle(AppTheme.textPrimary))\(Text("对碰").foregroundStyle(AntColors.green))")
                     .font(.system(size: 34, weight: .bold, design: .serif))
                     .tracking(0.02)
 

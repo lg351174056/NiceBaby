@@ -80,6 +80,7 @@ private extension Array {
 // MARK: - 入口视图（列表）
 
 struct BrainTeaserHomeView: View {
+    var onExit: (() -> Void)? = nil
     @State private var store = BrainTeaserStore()
     @State private var showGame = false
     @State private var selectedCategory: String = "全部"
@@ -95,19 +96,44 @@ struct BrainTeaserHomeView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
+        ZStack(alignment: .top) {
+            AppTheme.background.ignoresSafeArea()
             VStack(spacing: 0) {
-                headerCard
-                categoryPicker
-                questionList
+                // 自定义顶部栏（与其他游戏页一致）
+                HStack {
+                    Button(action: { onExit?() }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .frame(width: 36, height: 36)
+                            .background(AppTheme.card, in: Circle())
+                            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+                    }
+                    Spacer()
+                    Text("脑筋急转弯")
+                        .font(.system(size: 18, weight: .bold, design: .serif))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Spacer()
+                    Color.clear.frame(width: 36, height: 36)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 10)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        headerCard
+                        categoryPicker
+                        questionList
+                    }
+                    .padding(.bottom, 40)
+                }
             }
-            .padding(.bottom, 40)
         }
-        .background(AppTheme.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $showGame) {
-            BrainTeaserGameView(store: store)
+            BrainTeaserGameView(store: store, onExit: { showGame = false })
         }
-        .unifiedBackButton(title: "脑筋急转弯")
     }
 
     // MARK: Header
@@ -344,6 +370,7 @@ private struct BrainTeaserRowButtonStyle: ButtonStyle {
 
 struct BrainTeaserGameView: View {
     @Bindable var store: BrainTeaserStore
+    var onExit: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
 
     @State private var showAnswer = false
@@ -384,7 +411,7 @@ struct BrainTeaserGameView: View {
 
     private var navBar: some View {
         HStack(spacing: 14) {
-            Button { dismiss() } label: {
+            Button { onExit?() ?? dismiss() } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(AppTheme.textPrimary)

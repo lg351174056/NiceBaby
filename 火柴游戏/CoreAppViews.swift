@@ -942,7 +942,7 @@ struct LandscapeContainer<Content: View>: View {
 
     var body: some View {
         let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-        let screenBounds = windowScene?.screen.bounds ?? UIScreen.main.bounds
+        let screenBounds = windowScene?.screen.bounds ?? CGRect(x: 0, y: 0, width: 390, height: 844)
 
         let screenW = screenBounds.width
         let screenH = screenBounds.height
