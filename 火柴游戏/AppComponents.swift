@@ -130,6 +130,31 @@ struct RingProgressView: View {
 
 // MARK: - 快捷入口胶囊（墨韵风）
 
+private struct QuickEntryCardContent: View {
+    let icon: String
+    let title: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.12))
+                    .frame(width: 48, height: 48)
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(color)
+            }
+
+            Text(title)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
+                .lineLimit(1)
+        }
+        .frame(width: 64)
+    }
+}
+
 struct QuickEntryView: View {
     let icon: String
     let title: String
@@ -138,22 +163,33 @@ struct QuickEntryView: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.12))
-                        .frame(width: 48, height: 48)
-                    Image(systemName: icon)
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(color)
-                }
+            QuickEntryCardContent(icon: icon, title: title, color: color)
+        }
+        .buttonStyle(.plain)
+    }
+}
 
-                Text(title)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(1)
-            }
-            .frame(width: 64)
+struct QuickEntryLinkView<Destination: View>: View {
+    let icon: String
+    let title: String
+    let color: Color
+    let destination: Destination
+
+    init(
+        icon: String,
+        title: String,
+        color: Color,
+        @ViewBuilder destination: () -> Destination
+    ) {
+        self.icon = icon
+        self.title = title
+        self.color = color
+        self.destination = destination()
+    }
+
+    var body: some View {
+        NavigationLink(destination: destination) {
+            QuickEntryCardContent(icon: icon, title: title, color: color)
         }
         .buttonStyle(.plain)
     }

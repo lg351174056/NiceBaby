@@ -294,6 +294,12 @@ struct HomeView: View {
                     QuickEntryView(icon: "scroll.fill", title: "诗词补全", color: AppTheme.accentInkPurple) {
                         presentedGame = .poetryComplete
                     }
+                    QuickEntryLinkView(icon: "square.and.pencil", title: "作文精选", color: AppTheme.accentIndigo) {
+                        BishenEssayHomeView()
+                    }
+                    QuickEntryLinkView(icon: "doc.text.image", title: "文章精选", color: AppTheme.accentJade) {
+                        BishenFeatureArticleHomeView()
+                    }
                     QuickEntryView(icon: "square.dashed", title: "成语填空", color: AppTheme.accentCinnabar) {
                         presentedGame = .idiomFillBlank
                     }
