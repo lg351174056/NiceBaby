@@ -193,6 +193,7 @@ struct PlayView: View {
     private var scrollBody: some View {
         VStack(spacing: 22) {
             arenaSection
+            encyclopediaSection
             movesSection
             toolsSection
             colophon
@@ -325,6 +326,107 @@ struct PlayView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
+    // MARK: - 万象 · 知识百科（入口卡片）
+
+    private var encyclopediaSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "万象 · 知识百科", sub: "ATLAS")
+            Button { pushGame(.knowledgeWiki) } label: {
+                ZStack(alignment: .topTrailing) {
+                    LinearGradient(
+                        colors: [
+                            Color(red: 67/255, green: 70/255, blue: 142/255),
+                            AppTheme.accentInkPurple,
+                            AppTheme.accentJade
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+
+                    Circle()
+                        .fill(Color.white.opacity(0.08))
+                        .frame(width: 180, height: 180)
+                        .offset(x: 48, y: -18)
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("万 象")
+                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .tracking(1)
+                            .foregroundStyle(Color.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Color.white.opacity(0.16)))
+
+                        Text("知识百科")
+                            .font(.system(size: 24, weight: .heavy, design: .serif))
+                            .tracking(0.8)
+                            .foregroundStyle(Color.white)
+                            .padding(.top, 12)
+
+                        Text("86 个门类 · 29166 题\n不是照着原页复刻，而是把题库做成一座更好逛的知识园。")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.white.opacity(0.84))
+                            .lineSpacing(4)
+                            .padding(.top, 6)
+
+                        HStack(spacing: 10) {
+                            atlasStat(value: "\(KnowledgeWikiService.snapshotStatus.wiki)", label: "百科")
+                            atlasStat(value: "\(KnowledgeWikiService.snapshotStatus.iq)", label: "智力")
+                            atlasStat(value: "\(KnowledgeWikiService.snapshotStatus.brain)", label: "急转")
+                        }
+                        .padding(.top, 16)
+
+                        HStack(spacing: 6) {
+                            Text("入 园")
+                                .font(.system(size: 13, weight: .heavy, design: .serif))
+                                .tracking(1)
+                                .foregroundStyle(AppTheme.accentInkPurple)
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 11, weight: .heavy))
+                                .foregroundStyle(AppTheme.accentInkPurple)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.95))
+                        )
+                        .padding(.top, 16)
+                    }
+                    .padding(20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(minHeight: 210)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.16), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+            .buttonStyle(.bouncy)
+        }
+    }
+
+    private func atlasStat(value: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.system(size: 18, weight: .heavy, design: .serif))
+                .foregroundStyle(Color.white)
+            Text(label)
+                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .tracking(1)
+                .foregroundStyle(Color.white.opacity(0.65))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+        )
+    }
+
     private func arenaStat(value: String, label: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value)
@@ -361,8 +463,9 @@ struct PlayView: View {
             Move(kind: .antonymMatch,   badge: "能", badgeColor: cinnabar,  no: "叁式", name: "反义对对碰", sub: "翻乐 · 跷板 · 闯图",        pct: 56, progress: 0.56, statusHint: "精进"),
             Move(kind: .idiomFillBlank, badge: "能", badgeColor: cinnabar,  no: "肆式", name: "成语填空",   sub: "缺一选一 · 集经史",         pct: 31, progress: 0.31, statusHint: "初习"),
             Move(kind: .sanzijing,      badge: "能", badgeColor: bamboo,   no: "伍式", name: "三字经",     sub: "人之初 · 性本善",          pct: 88, progress: 0.88, statusHint: "近通"),
-            Move(kind: .idiomFillLevel, badge: "新", badgeColor: cinnabar,  no: "陆式", name: "成语填空(贰)",   sub: "500关 · 看提示选对字",      pct: 0,  progress: 0,    statusHint: "新开"),
-            Move(kind: .brainTeaser,    badge: "新", badgeColor: ink,       no: "柒式", name: "脑筋急转弯", sub: "150题 · 绕弯急转有惊喜",    pct: 0,  progress: 0,    statusHint: "新开")
+            Move(kind: .idiomFillLevel, badge: "新", badgeColor: cinnabar,  no: "陆式", name: "成语填空(贰)", sub: "500关 · 看提示选对字",      pct: 0,  progress: 0,    statusHint: "新开"),
+            Move(kind: .brainTeaser,    badge: "新", badgeColor: ink,       no: "柒式", name: "脑筋急转弯", sub: "150题 · 绕弯急转有惊喜",       pct: 0,  progress: 0,    statusHint: "新开"),
+            Move(kind: .funQuiz,        badge: "新", badgeColor: bamboo,    no: "捌式", name: "趣味答题",   sub: "多主题 · 图片题与冷知识漫游", pct: 0,  progress: 0,    statusHint: "新开")
         ]
     }
 
@@ -564,6 +667,10 @@ struct PlayView: View {
                 IdiomFillLevelView(onExit: { popToRoot() })
             case .brainTeaser:
                 BrainTeaserHomeView(onExit: { popToRoot() })
+            case .knowledgeWiki:
+                KnowledgeWikiHomeView()
+            case .funQuiz:
+                FunQuizHomeView()
             }
         }
         .toolbar(.hidden, for: .navigationBar)

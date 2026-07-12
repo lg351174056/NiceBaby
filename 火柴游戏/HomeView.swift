@@ -294,6 +294,9 @@ struct HomeView: View {
                     QuickEntryView(icon: "scroll.fill", title: "诗词补全", color: AppTheme.accentInkPurple) {
                         presentedGame = .poetryComplete
                     }
+                    QuickEntryLinkView(icon: "sparkles.rectangle.stack.fill", title: "知识百科", color: AppTheme.accentJade) {
+                        KnowledgeWikiHomeView()
+                    }
                     QuickEntryLinkView(icon: "square.and.pencil", title: "作文精选", color: AppTheme.accentIndigo) {
                         BishenEssayHomeView()
                     }
@@ -422,6 +425,10 @@ struct HomeView: View {
             IdiomFillLevelView(onExit: { presentedGame = nil })
         case .brainTeaser:
             BrainTeaserHomeView(onExit: { presentedGame = nil })
+        case .knowledgeWiki:
+            KnowledgeWikiHomeView()
+        case .funQuiz:
+            FunQuizHomeView()
         }
     }
 }

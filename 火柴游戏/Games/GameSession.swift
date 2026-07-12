@@ -15,6 +15,8 @@ enum GameKind: String, CaseIterable, Identifiable {
     case antonymMatch       // 反义对对碰（儿童学反义词）
     case idiomFillLevel     // 成语填字闯关（500关）
     case brainTeaser        // 脑筋急转弯
+    case knowledgeWiki      // 知识百科
+    case funQuiz            // 趣味答题
 
     var id: String { rawValue }
 
@@ -31,6 +33,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .antonymMatch:   return "反义对对碰"
         case .idiomFillLevel: return "成语填空(贰)"
         case .brainTeaser:    return "脑筋急转弯"
+        case .knowledgeWiki:  return "知识百科"
+        case .funQuiz:        return "趣味答题"
         }
     }
 
@@ -47,6 +51,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .antonymMatch:   return "翻翻乐·跷跷板·闯关地图，儿童学反义词"
         case .idiomFillLevel: return "500关 · 从选项中填对缺字"
         case .brainTeaser:    return "150题 · 经典谜题绕弯急转"
+        case .knowledgeWiki:  return "86个入口 · 海量百科题库随点随答"
+        case .funQuiz:        return "图片题 + 选择题 · 多主题趣味问答"
         }
     }
 
@@ -63,6 +69,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .antonymMatch:   return "rectangle.on.rectangle.angled"
         case .idiomFillLevel: return "square.grid.2x2.fill"
         case .brainTeaser:    return "lightbulb.fill"
+        case .knowledgeWiki:  return "sparkles.rectangle.stack.fill"
+        case .funQuiz:        return "sparkles.tv.fill"
         }
     }
 
@@ -79,6 +87,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .antonymMatch:   return (AppTheme.accentCinnabar, AppTheme.accentBamboo)
         case .idiomFillLevel: return (AppTheme.accentCinnabar, AppTheme.accentYellow)
         case .brainTeaser:    return (AppTheme.accentInkPurple, AppTheme.accentIndigo)
+        case .knowledgeWiki:  return (AppTheme.accentInkPurple, AppTheme.accentJade)
+        case .funQuiz:        return (AppTheme.accentPink, AppTheme.accentIndigo)
         }
     }
 
