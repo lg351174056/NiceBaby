@@ -247,7 +247,139 @@ struct PlayView: View {
                 mazeCard
             }
             .buttonStyle(.bouncy)
+
+            // 星云数独 · 4/6/9（迷宫下方）
+            Button { pushGame(.sudoku) } label: {
+                sudokuCard
+            }
+            .buttonStyle(.bouncy)
         }
+    }
+
+    private var sudokuCard: some View {
+        ZStack(alignment: .topTrailing) {
+            // 深蓝紫星云底
+            LinearGradient(
+                colors: [
+                    Color(red: 20/255, green: 18/255, blue: 48/255),
+                    Color(red: 36/255, green: 31/255, blue: 78/255),
+                    Color(red: 48/255, green: 40/255, blue: 96/255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.5)
+            )
+            .shadow(color: Color(red: 110/255, green: 95/255, blue: 168/255).opacity(0.4), radius: 10, x: 0, y: 6)
+
+            // 星点
+            ForEach(0..<6, id: \.self) { i in
+                Circle()
+                    .fill(Color.white.opacity(0.7))
+                    .frame(width: 2, height: 2)
+                    .offset(
+                        x: CGFloat([-40, 30, 70, -55, 10, 55][i]),
+                        y: CGFloat([-30, 10, -42, 25, 42, 5][i])
+                    )
+            }
+
+            // 金色行星水印
+            Circle()
+                .fill(RadialGradient(colors: [
+                    Color(red: 255/255, green: 233/255, blue: 168/255),
+                    Color(red: 245/255, green: 214/255, blue: 123/255).opacity(0.5),
+                    Color.clear
+                ], center: .init(x: 0.35, y: 0.3), startRadius: 4, endRadius: 60))
+                .frame(width: 110, height: 110)
+                .offset(x: 40, y: -28)
+
+            // 文案
+            VStack(alignment: .leading, spacing: 0) {
+                Text("星云数独")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 237/255, green: 232/255, blue: 255/255))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.16))
+                    )
+
+                Text("在星海深处\n破解数字的奥秘")
+                    .font(.system(size: 21, weight: .heavy, design: .serif))
+                    .tracking(0.8)
+                    .foregroundStyle(Color(red: 237/255, green: 232/255, blue: 255/255))
+                    .padding(.top, 8)
+                    .lineSpacing(2)
+
+                Text("4×4 · 6×6 · 9×9 · 每局随机生成")
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 125/255, green: 249/255, blue: 255/255).opacity(0.85))
+                    .padding(.top, 4)
+
+                HStack(spacing: 14) {
+                    sudokuStat(value: "3", label: "难度")
+                    sudokuStat(value: "\(sudokuTotalCleared)", label: "已解")
+                    sudokuStat(value: sudokuBest, label: "最快")
+                }
+                .padding(.top, 12)
+
+                HStack(spacing: 6) {
+                    Text("入 局")
+                        .font(.system(size: 13, weight: .heavy, design: .serif))
+                        .tracking(1)
+                        .foregroundStyle(Color(red: 20/255, green: 18/255, blue: 48/255))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .heavy))
+                        .foregroundStyle(Color(red: 20/255, green: 18/255, blue: 48/255))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(LinearGradient(colors: [
+                            Color(red: 245/255, green: 214/255, blue: 123/255),
+                            Color(red: 212/255, green: 168/255, blue: 75/255)
+                        ], startPoint: .leading, endPoint: .trailing))
+                )
+                .padding(.top, 16)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(minHeight: 230)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var sudokuTotalCleared: Int {
+        (4...9).filter { $0 == 4 || $0 == 6 || $0 == 9 }
+            .map { SudokuProgressStore.clearCount(size: $0) }
+            .reduce(0, +)
+    }
+
+    private var sudokuBest: String {
+        let best = [4, 6, 9]
+            .map { SudokuProgressStore.bestTime(size: $0) }
+            .filter { $0 > 0 }
+            .min() ?? 0
+        guard best > 0 else { return "--" }
+        return "\(best / 60):\(String(format: "%02d", best % 60))"
+    }
+
+    private func sudokuStat(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 237/255, green: 232/255, blue: 255/255))
+            Text(label)
+                .font(.system(size: 9, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 237/255, green: 232/255, blue: 255/255).opacity(0.6))
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var mazeCard: some View {
@@ -780,6 +912,8 @@ struct PlayView: View {
                 FunQuizHomeView()
             case .maze:
                 MazeGameView(onExit: { popToRoot() })
+            case .sudoku:
+                SudokuHomeView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)
