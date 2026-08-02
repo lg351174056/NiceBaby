@@ -429,6 +429,8 @@ struct HomeView: View {
             KnowledgeWikiHomeView()
         case .funQuiz:
             FunQuizHomeView()
+        case .maze:
+            MazeGameView(onExit: { presentedGame = nil })
         }
     }
 }

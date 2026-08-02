@@ -241,7 +241,114 @@ struct PlayView: View {
                 arenaCard
             }
             .buttonStyle(.bouncy)
+
+            // 迷宫乐园 · 儿童走迷宫（火柴推理下方）
+            Button { pushGame(.maze) } label: {
+                mazeCard
+            }
+            .buttonStyle(.bouncy)
         }
+    }
+
+    private var mazeCard: some View {
+        ZStack(alignment: .topTrailing) {
+            // 粉彩游乐场底
+            LinearGradient(
+                colors: [
+                    Color(red: 255/255, green: 186/255, blue: 208/255),
+                    Color(red: 245/255, green: 140/255, blue: 178/255),
+                    Color(red: 232/255, green: 106/255, blue: 158/255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.25), lineWidth: 0.5)
+            )
+            .shadow(color: Color(red: 232/255, green: 106/255, blue: 158/255).opacity(0.35), radius: 10, x: 0, y: 6)
+
+            // 大圆点水印
+            Circle()
+                .fill(Color.white.opacity(0.12))
+                .frame(width: 150, height: 150)
+                .offset(x: 42, y: -30)
+
+            // 文案
+            VStack(alignment: .leading, spacing: 0) {
+                Text("迷宫乐园")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.2))
+                    )
+
+                Text("走出迷宫\n找到草莓熊")
+                    .font(.system(size: 21, weight: .heavy, design: .serif))
+                    .tracking(0.8)
+                    .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+                    .padding(.top, 8)
+                    .lineSpacing(2)
+
+                Text("20 关 · 每关迷宫随机生成，越走越难")
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255).opacity(0.85))
+                    .padding(.top, 4)
+
+                HStack(spacing: 14) {
+                    mazeStat(value: "20", label: "关卡")
+                    mazeStat(value: "\(mazeClearedCount)", label: "已通关")
+                    mazeStat(value: "\(mazeBestStar)", label: "最高星")
+                }
+                .padding(.top, 12)
+
+                HStack(spacing: 6) {
+                    Text("入 迷")
+                        .font(.system(size: 13, weight: .heavy, design: .serif))
+                        .tracking(1)
+                        .foregroundStyle(Color(red: 232/255, green: 106/255, blue: 158/255))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .heavy))
+                        .foregroundStyle(Color(red: 232/255, green: 106/255, blue: 158/255))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(Color(red: 255/255, green: 248/255, blue: 238/255).opacity(0.95))
+                )
+                .padding(.top, 14)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(minHeight: 230)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var mazeClearedCount: Int {
+        (0..<20).filter { MazeProgressStore.stars(level: $0) > 0 }.count
+    }
+
+    private var mazeBestStar: Int {
+        (0..<20).map { MazeProgressStore.stars(level: $0) }.max() ?? 0
+    }
+
+    private func mazeStat(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255))
+            Text(label)
+                .font(.system(size: 9, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 255/255, green: 248/255, blue: 238/255).opacity(0.6))
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var arenaCard: some View {
@@ -671,6 +778,8 @@ struct PlayView: View {
                 KnowledgeWikiHomeView()
             case .funQuiz:
                 FunQuizHomeView()
+            case .maze:
+                MazeGameView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

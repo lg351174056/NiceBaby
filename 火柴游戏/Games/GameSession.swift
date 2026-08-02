@@ -17,6 +17,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case brainTeaser        // 脑筋急转弯
     case knowledgeWiki      // 知识百科
     case funQuiz            // 趣味答题
+    case maze               // 迷宫乐园（儿童走迷宫）
 
     var id: String { rawValue }
 
@@ -35,6 +36,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .brainTeaser:    return "脑筋急转弯"
         case .knowledgeWiki:  return "知识百科"
         case .funQuiz:        return "趣味答题"
+        case .maze:           return "迷宫乐园"
         }
     }
 
@@ -53,6 +55,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .brainTeaser:    return "150题 · 经典谜题绕弯急转"
         case .knowledgeWiki:  return "86个入口 · 海量百科题库随点随答"
         case .funQuiz:        return "图片题 + 选择题 · 多主题趣味问答"
+        case .maze:           return "50关 · 走出迷宫，找到草莓熊"
         }
     }
 
@@ -71,6 +74,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .brainTeaser:    return "lightbulb.fill"
         case .knowledgeWiki:  return "sparkles.rectangle.stack.fill"
         case .funQuiz:        return "sparkles.tv.fill"
+        case .maze:           return "circle.hexagongrid.fill"
         }
     }
 
@@ -89,6 +93,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .brainTeaser:    return (AppTheme.accentInkPurple, AppTheme.accentIndigo)
         case .knowledgeWiki:  return (AppTheme.accentInkPurple, AppTheme.accentJade)
         case .funQuiz:        return (AppTheme.accentPink, AppTheme.accentIndigo)
+        case .maze:           return (Color(red: 255/255, green: 143/255, blue: 184/255), Color(red: 232/255, green: 106/255, blue: 158/255))
         }
     }
 
