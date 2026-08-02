@@ -817,6 +817,8 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, AppTheme.paddingScreen)
 
+                    voiceSettingsLink
+
                     achievementsSection
 
                     Spacer(minLength: 40)
@@ -858,6 +860,43 @@ struct ProfileView: View {
                 .foregroundStyle(AppTheme.textSecondary)
         }
         .padding(.top, 16)
+    }
+
+    private var voiceSettingsLink: some View {
+        NavigationLink {
+            TencentTTSSettingsView()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "waveform")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(AppTheme.accentIndigo, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("语音设置")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text("切换朗读音色、语速与情感参数")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.textSecondary.opacity(0.8))
+            }
+            .padding(14)
+            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            )
+            .padding(.horizontal, AppTheme.paddingScreen)
+        }
+        .buttonStyle(.plain)
     }
 
     private var achievementsSection: some View {

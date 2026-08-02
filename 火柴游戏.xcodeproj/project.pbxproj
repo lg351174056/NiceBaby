@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4EBA08B92F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EBA08B72F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework */; };
+		4EBA08BA2F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EBA08B82F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4EBA08992F77BBB600DD79E9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +32,8 @@
 		4EBA08822F77BBB200DD79E9 /* 火柴游戏.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "火柴游戏.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EBA08982F77BBB600DD79E9 /* 火柴游戏Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "火柴游戏Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EBA08A22F77BBB600DD79E9 /* 火柴游戏UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "火柴游戏UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EBA08B72F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework"; sourceTree = "<group>"; };
+		4EBA08B82F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -65,6 +72,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4EBA08B92F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework in Frameworks */,
+				4EBA08BA2F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +100,8 @@
 				4EBA08842F77BBB200DD79E9 /* 火柴游戏 */,
 				4EBA089B2F77BBB600DD79E9 /* 火柴游戏Tests */,
 				4EBA08A52F77BBB600DD79E9 /* 火柴游戏UITests */,
+				4EBA08B72F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework */,
+				4EBA08B82F79AAA000DD79E9 /* 火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework */,
 				4EBA08832F77BBB200DD79E9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -289,7 +300,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6X89GQD8QJ;
+				DEVELOPMENT_TEAM = T2XBA7H6BZ;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework/ios-arm64_armv7",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework/ios-arm64_armv7",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework/ios-arm64_i386_x86_64-simulator",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework/ios-arm64_i386_x86_64-simulator",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "火柴游戏/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -321,7 +342,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6X89GQD8QJ;
+				DEVELOPMENT_TEAM = T2XBA7H6BZ;
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework/ios-arm64_armv7",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework/ios-arm64_armv7",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework/ios-arm64_i386_x86_64-simulator",
+					"$(PROJECT_DIR)/火柴游戏/ThirdParty/TencentCloudTTS/VoiceCommon.xcframework/ios-arm64_i386_x86_64-simulator",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "火柴游戏/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

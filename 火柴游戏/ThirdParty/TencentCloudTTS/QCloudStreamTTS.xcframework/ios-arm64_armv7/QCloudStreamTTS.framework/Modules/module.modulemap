@@ -1,0 +1,14 @@
+//
+//  QCloudStreamTTS.modulemap
+//  QCloudStreamTTS
+//
+//  Created by tbolp on 2024/10/17.
+//
+
+framework module QCloudStreamTTS {
+    header "QCloudStreamTTSConfig.h"
+    header "QCloudStreamTTSController.h"
+    header "QCloudStreamTTSListener.h"
+
+    export *
+}
