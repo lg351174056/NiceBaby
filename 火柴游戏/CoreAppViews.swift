@@ -39,25 +39,6 @@ struct DiscoverView: View {
     var body: some View {
         NavigationStack(path: $navPath) {
             VStack(spacing: 0) {
-                HStack(alignment: .center) {
-                    Text("诗库")
-                        .font(.system(size: 32, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.gradientDiscover)
-                    Spacer()
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.accentBamboo.opacity(0.12))
-                            .frame(width: 36, height: 36)
-                        Image(systemName: "book.closed.fill")
-                            .font(.system(size: 16))
-                            .foregroundStyle(AppTheme.accentBamboo)
-                    }
-                }
-                .padding(.horizontal, AppTheme.paddingScreen)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-                .background(AppTheme.background)
-
                 if !store.isReady {
                     Spacer()
                     ProgressView("正在加载诗词数据...")
@@ -65,12 +46,22 @@ struct DiscoverView: View {
                     Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 20) {
-                            poetryEncyclopediaCard
+                        LazyVStack(spacing: 0) {
+                            // 匾额
+                            libraryPlaque
 
-                            textbookCard
+                            // 今日一诗 · 案上摊开的书
+                            todayPoemScroll
+                                .padding(.top, 16)
 
-                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                            // 学段书架
+                            shelfHeader
+                            gradeShelf
+                                .padding(.horizontal, AppTheme.paddingScreen)
+
+                            // 诗集藏卷
+                            scrollsHeader
+                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                                 ForEach(PoetryLibraryItem.allItems) { item in
                                     NavigationLink(value: item) {
                                         CollectionCardView(item: item)
@@ -78,14 +69,23 @@ struct DiscoverView: View {
                                     .buttonStyle(.bouncy)
                                 }
                             }
+                            .padding(.horizontal, AppTheme.paddingScreen)
+                            .padding(.bottom, 40)
                         }
-                        .padding(.horizontal, AppTheme.paddingScreen)
-                        .padding(.top, 10)
-                        .padding(.bottom, 40)
+                        .padding(.top, 8)
                     }
                 }
             }
-            .background(AppTheme.background.ignoresSafeArea())
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(red: 246/255, green: 241/255, blue: 231/255),
+                        Color(red: 242/255, green: 236/255, blue: 222/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            )
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: PMNavigationTarget.self) { _ in
                 PMMainView()
@@ -104,6 +104,261 @@ struct DiscoverView: View {
             }
         }
         .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
+    }
+
+    // MARK: - 匾额
+
+    private var libraryPlaque: some View {
+        VStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(red: 59/255, green: 50/255, blue: 38/255))
+                    .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.35), radius: 10, y: 5)
+                    .frame(height: 86)
+                // 两侧金色圆环挂饰
+                HStack {
+                    ZStack {
+                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255), lineWidth: 2.5)
+                            .frame(width: 34, height: 34)
+                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.4), lineWidth: 1)
+                            .frame(width: 46, height: 46)
+                    }
+                    .offset(x: -14)
+                    Spacer()
+                    ZStack {
+                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255), lineWidth: 2.5)
+                            .frame(width: 34, height: 34)
+                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.4), lineWidth: 1)
+                            .frame(width: 46, height: 46)
+                    }
+                    .offset(x: 14)
+                }
+                VStack(spacing: 4) {
+                    Text("诗 库")
+                        .font(.system(size: 26, weight: .bold, design: .serif))
+                        .tracking(10)
+                        .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
+                    Text("藏 书 阁 · SHI KU")
+                        .font(.system(size: 8, weight: .semibold, design: .rounded))
+                        .tracking(4)
+                        .foregroundStyle(Color(red: 201/255, green: 184/255, blue: 138/255))
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            Text("阁中藏书三千卷，案头常开一卷诗")
+                .font(.system(size: 12, weight: .medium, design: .serif))
+                .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 8)
+    }
+
+    // MARK: - 今日一诗 · 案上摊开的书
+
+    private var todayPoemScroll: some View {
+        let poems = PoemCatalog.poems()
+        let poem = poems.isEmpty ? nil : poems[PoemCatalog.dailyPoemIndex(total: poems.count)]
+
+        return Group {
+            if let poem {
+                NavigationLink(value: poem) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("今日一诗")
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .tracking(2)
+                            .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text(poem.title)
+                                .font(.system(size: 20, weight: .bold, design: .serif))
+                                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                            Text(poem.author)
+                                .font(.system(size: 11, weight: .medium, design: .serif))
+                                .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
+                        }
+                        .padding(.top, 12)
+
+                        Text(firstLines(of: poem))
+                            .font(.system(size: 13, weight: .medium, design: .serif))
+                            .foregroundStyle(Color(red: 92/255, green: 81/255, blue: 64/255))
+                            .lineSpacing(8)
+                            .lineLimit(2)
+                            .padding(.top, 8)
+
+                        HStack {
+                            // 朱砂印章「夜」
+                            Text("夜")
+                                .font(.system(size: 12, weight: .bold, design: .serif))
+                                .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
+                                .frame(width: 26, height: 26)
+                                .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                .rotationEffect(.degrees(-5))
+                                .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 3, y: 2)
+                            Spacer()
+                            Text("展开此卷 →")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
+                        }
+                        .padding(.top, 12)
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(
+                                LinearGradient(colors: [
+                                    Color(red: 251/255, green: 246/255, blue: 234/255),
+                                    Color(red: 239/255, green: 228/255, blue: 204/255)
+                                ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
+                            .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.2), radius: 12, y: 6)
+                    )
+                    .overlay(alignment: .leading) {
+                        // 朱砂竖排线
+                        Rectangle()
+                            .fill(Color(red: 176/255, green: 58/255, blue: 46/255).opacity(0.35))
+                            .frame(width: 2)
+                            .padding(.vertical, 6)
+                            .padding(.leading, 8)
+                    }
+                    .padding(.horizontal, AppTheme.paddingScreen)
+                }
+                .buttonStyle(.bouncy)
+            }
+        }
+    }
+
+    private func firstLines(of poem: Poem) -> String {
+        poem.contents.components(separatedBy: "\n")
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .prefix(2)
+            .joined(separator: "\n")
+    }
+
+    // MARK: - 学段书架
+
+    private var shelfHeader: some View {
+        HStack(spacing: 10) {
+            Text("学")
+                .font(.system(size: 11, weight: .bold, design: .serif))
+                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
+                .frame(width: 22, height: 22)
+                .background(Color(red: 59/255, green: 50/255, blue: 38/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .rotationEffect(.degrees(-4))
+            Text("学 段 书 架")
+                .font(.system(size: 15, weight: .bold, design: .serif))
+                .tracking(3)
+                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+            Rectangle()
+                .fill(
+                    LinearGradient(colors: [Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing)
+                )
+                .frame(height: 1)
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 22)
+        .padding(.bottom, 10)
+    }
+
+    private var gradeShelf: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                ForEach(ClassicalPoetryStore.TextbookStage.allCases) { stage in
+                    NavigationLink(value: stage) {
+                        VStack(spacing: 5) {
+                            Text(stage.emoji)
+                                .font(.system(size: 19))
+                            Text(stage.rawValue)
+                                .font(.system(size: 12, weight: .bold, design: .serif))
+                                .foregroundStyle(Color(red: 92/255, green: 69/255, blue: 48/255))
+                            Text(stage == .primary ? "小学课文" : stage == .junior ? "初中课文" : "高中课文")
+                                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                                .foregroundStyle(Color(red: 138/255, green: 106/255, blue: 58/255))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .fill(
+                                    LinearGradient(colors: [
+                                        Color(red: 232/255, green: 212/255, blue: 168/255),
+                                        Color(red: 212/255, green: 184/255, blue: 126/255)
+                                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                )
+                                .shadow(color: Color(red: 40/255, green: 25/255, blue: 5/255).opacity(0.3), radius: 3, y: 3)
+                        )
+                        .overlay(alignment: .topTrailing) {
+                            if stage == .primary {
+                                Rectangle()
+                                    .fill(Color(red: 176/255, green: 58/255, blue: 46/255))
+                                    .frame(width: 8, height: 16)
+                                    .offset(x: -5, y: -4)
+                            }
+                        }
+                    }
+                    .buttonStyle(.bouncy)
+                }
+            }
+            .padding(10)
+
+            Text("— 拾级而上 · 朗朗书声 —")
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                .tracking(4)
+                .foregroundStyle(Color(red: 232/255, green: 212/255, blue: 168/255))
+                .padding(.bottom, 8)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [
+                        Color(red: 138/255, green: 106/255, blue: 62/255),
+                        Color(red: 110/255, green: 82/255, blue: 48/255)
+                    ], startPoint: .top, endPoint: .bottom)
+                )
+                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.3), radius: 10, y: 5)
+        )
+        .overlay(alignment: .bottom) {
+            // 书架底部木框
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [
+                        Color(red: 154/255, green: 122/255, blue: 74/255),
+                        Color(red: 122/255, green: 94/255, blue: 56/255)
+                    ], startPoint: .top, endPoint: .bottom)
+                )
+                .frame(height: 8)
+                .padding(.horizontal, 0)
+                .offset(y: 0)
+        }
+        .padding(.bottom, 6)
+    }
+
+    // MARK: - 诗集藏卷
+
+    private var scrollsHeader: some View {
+        HStack(spacing: 10) {
+            Text("卷")
+                .font(.system(size: 11, weight: .bold, design: .serif))
+                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
+                .frame(width: 22, height: 22)
+                .background(Color(red: 59/255, green: 50/255, blue: 38/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .rotationEffect(.degrees(-4))
+            Text("诗 集 藏 卷")
+                .font(.system(size: 15, weight: .bold, design: .serif))
+                .tracking(3)
+                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+            Rectangle()
+                .fill(
+                    LinearGradient(colors: [Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing)
+                )
+                .frame(height: 1)
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 20)
+        .padding(.bottom, 10)
     }
 
     // 诗词古文大全入口卡 · 竹青强调
@@ -234,38 +489,88 @@ struct PoetryLibraryItem: Identifiable, Hashable {
     ]
 }
 
-// MARK: - 集子卡片 · 墨韵风（宋体标题 + 轻边框）
+// MARK: - 集子卡片 · 书卷风（竖放卷轴 · 左右木轴 · 米黄底）
 
 private struct CollectionCardView: View {
     let item: PoetryLibraryItem
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(item.emoji)
-                .font(.system(size: 36))
-
-            Spacer(minLength: 4)
-
-            Text(item.title)
-                .font(.system(size: 17, weight: .heavy, design: .serif))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-
-            Text(item.subtitle)
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.8))
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
+    private var poemCount: Int {
+        let matched = ClassicalPoetryStore.shared.allCollections.filter { collection in
+            item.filePatterns.contains(where: { collection.title.contains($0) })
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 140, alignment: .leading)
+        return matched.reduce(0) { $0 + $1.poems.count }
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            // 竖放书卷：左轴 + 卷身 + 右轴
+            HStack(spacing: 0) {
+                // 左木轴
+                Rectangle()
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 110/255, green: 82/255, blue: 48/255),
+                            Color(red: 154/255, green: 122/255, blue: 74/255)
+                        ], startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(width: 5)
+                // 卷身
+                Rectangle()
+                    .fill(
+                        LinearGradient(colors: [item.colors.0, item.colors.1], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .frame(width: 26, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                    )
+                // 右木轴
+                Rectangle()
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 110/255, green: 82/255, blue: 48/255),
+                            Color(red: 154/255, green: 122/255, blue: 74/255)
+                        ], startPoint: .bottom, endPoint: .top)
+                    )
+                    .frame(width: 5)
+            }
+            .frame(height: 44)
+
+            // 信息
+            VStack(alignment: .leading, spacing: 3) {
+                Text(item.title)
+                    .font(.system(size: 14, weight: .bold, design: .serif))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                    .lineLimit(1)
+
+                Text(item.subtitle)
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
+                    .lineLimit(1)
+
+                Text("\(poemCount) 首")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
+                    .padding(.top, 1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(12)
         .background(
-            LinearGradient(colors: [item.colors.0, item.colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [
+                        Color(red: 251/255, green: 246/255, blue: 234/255),
+                        Color(red: 240/255, green: 228/255, blue: 204/255)
+                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.2), lineWidth: 1)
+                )
+                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.12), radius: 4, y: 2)
         )
     }
 }
@@ -509,8 +814,13 @@ private struct PoemCollectionContent: View {
     let colors: (Color, Color)
     let poems: [Poem]
 
+    @EnvironmentObject private var progress: AppProgressStore
+
     private let pageSize = 20
     @State private var displayedCount = 20
+    @State private var nextTarget: Poem?
+    @State private var randomTarget: Poem?
+    @State private var openRandom = false
 
     private var displayedPoems: [Poem] {
         Array(poems.prefix(displayedCount))
@@ -518,6 +828,10 @@ private struct PoemCollectionContent: View {
 
     private var hasMore: Bool {
         displayedCount < poems.count
+    }
+
+    private var readCount: Int {
+        poems.filter { progress.openedPoemIds.contains($0.id) }.count
     }
 
     var body: some View {
@@ -536,7 +850,7 @@ private struct PoemCollectionContent: View {
                 VStack(spacing: 0) {
                     collectionHero
 
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 0) {
                         ForEach(Array(displayedPoems.enumerated()), id: \.element.id) { index, poem in
                             NavigationLink(value: poem) {
                                 PoemCard(poem: poem, index: index, accentColor: colors.0)
@@ -555,45 +869,192 @@ private struct PoemCollectionContent: View {
                         }
                     }
                     .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.top, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
+
+                    // 底部操作
+                    HStack(spacing: 12) {
+                        Button {
+                            randomTarget = poems.randomElement()
+                            openRandom = true
+                        } label: {
+                            Text("随机翻卷")
+                                .font(.system(size: 13, weight: .bold, design: .serif))
+                                .tracking(2)
+                                .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 13)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), lineWidth: 1.5)
+                                )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink(value: nextTarget) {
+                            HStack(spacing: 6) {
+                                Text("继续读诗")
+                                    .font(.system(size: 13, weight: .bold, design: .serif))
+                                    .tracking(2)
+                                Text("▸")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(Color(red: 59/255, green: 50/255, blue: 38/255))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, AppTheme.paddingScreen)
                     .padding(.bottom, 40)
+                    .onAppear {
+                        if nextTarget == nil {
+                            nextTarget = poems.first(where: { !progress.openedPoemIds.contains($0.id) }) ?? poems.first
+                        }
+                    }
+                    .navigationDestination(isPresented: $openRandom) {
+                        if let randomTarget {
+                            PoetryDetailView(poem: randomTarget)
+                        }
+                    }
                 }
             }
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(red: 246/255, green: 241/255, blue: 231/255),
+                        Color(red: 243/255, green: 237/255, blue: 224/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            )
         }
     }
 
     private var collectionHero: some View {
-        VStack(spacing: 12) {
-            Text(emoji)
-                .font(.system(size: 48))
+        VStack(spacing: 0) {
+            // 上轴头
+            ScrollAxisBar()
 
-            Text(title)
-                .font(.system(size: 24, weight: .heavy, design: .serif))
-                .foregroundStyle(.white)
+            VStack(spacing: 12) {
+                Text(title)
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .tracking(5)
+                    .foregroundStyle(Color(red: 160/255, green: 138/255, blue: 106/255))
 
-            Text(subtitle + " · 共 \(poems.count) 首")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.8))
+                Text(title)
+                    .font(.system(size: 30, weight: .heavy, design: .serif))
+                    .tracking(4)
+                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+
+                // 朱砂分隔线
+                HStack(spacing: 8) {
+                    Rectangle().fill(Color.clear).frame(width: 20, height: 1)
+                    Rectangle()
+                        .fill(
+                            LinearGradient(colors: [.clear, Color(red: 176/255, green: 58/255, blue: 46/255), .clear], startPoint: .leading, endPoint: .trailing)
+                        )
+                        .frame(width: 46, height: 2)
+                    Rectangle().fill(Color.clear).frame(width: 20, height: 1)
+                }
+
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium, design: .serif))
+                    .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
+                    .lineLimit(2)
+
+                HStack(spacing: 28) {
+                    heroStat(value: "\(poems.count)", label: "收录诗篇")
+                    heroStat(value: "\(readCount)", label: "已读")
+                    heroStat(value: "\(poems.count - readCount)", label: "待读")
+                }
+                .padding(.top, 6)
+
+                // 印章
+                Text("诗")
+                    .font(.system(size: 15, weight: .bold, design: .serif))
+                    .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
+                    .frame(width: 34, height: 34)
+                    .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .rotationEffect(.degrees(-5))
+                    .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 4, y: 3)
+                    .padding(.top, 10)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 22)
+            .padding(.bottom, 24)
+
+            // 下轴头
+            ScrollAxisBar()
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
-        .padding(.bottom, 16)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .background(
-            LinearGradient(
-                colors: [colors.0, colors.1],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [
+                        Color(red: 251/255, green: 246/255, blue: 234/255),
+                        Color(red: 239/255, green: 228/255, blue: 204/255)
+                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.22), radius: 14, y: 7)
         )
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 12)
+    }
+
+    private func heroStat(value: String, label: String) -> some View {
+        VStack(spacing: 3) {
+            Text(value)
+                .font(.system(size: 17, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
+            Text(label)
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                .tracking(2)
+                .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
+        }
+    }
+
+    /// 卷轴轴头（金色渐变 + 轴心木珠）· 两端圆角由外层 clipShape 统一裁剪
+    private struct ScrollAxisBar: View {
+        var body: some View {
+            ZStack {
+                Rectangle()
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 201/255, green: 168/255, blue: 124/255),
+                            Color(red: 169/255, green: 138/255, blue: 94/255)
+                        ], startPoint: .top, endPoint: .bottom)
+                    )
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 176/255, green: 138/255, blue: 94/255),
+                            Color(red: 138/255, green: 106/255, blue: 62/255),
+                            Color(red: 176/255, green: 138/255, blue: 94/255)
+                        ], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .frame(width: 22, height: 30)
+                    .shadow(color: Color(red: 60/255, green: 40/255, blue: 10/255).opacity(0.4), radius: 3, y: 2)
+            }
+            .frame(height: 16)
+        }
     }
 }
 
-// MARK: - 诗词卡片 · 墨韵版
+// MARK: - 诗词卡片 · 卷轴行（序号 + 楷体 + 状态印章）
 
 private struct PoemCard: View, Equatable {
     let poem: Poem
     let index: Int
     let accentColor: Color
+    @EnvironmentObject private var progress: AppProgressStore
     private let firstLine: String
 
     init(poem: Poem, index: Int, accentColor: Color) {
@@ -608,45 +1069,78 @@ private struct PoemCard: View, Equatable {
         lhs.poem.id == rhs.poem.id && lhs.index == rhs.index
     }
 
+    private var isRead: Bool {
+        progress.openedPoemIds.contains(poem.id)
+    }
+
+    private var chineseNum: String {
+        let nums = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十",
+                    "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十"]
+        let i = index
+        if i < nums.count { return nums[i] }
+        let tens = i / 10, ones = i % 10
+        var s = tens > 1 ? "\(nums[tens - 1])十" : "十"
+        if ones > 0 { s += nums[ones - 1] }
+        return s
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            Text("\(index + 1)")
-                .font(.system(size: 13, weight: .heavy, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(
-                    accentColor.opacity(0.85),
-                    in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-                )
+            // 中文序号
+            Text(chineseNum)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 184/255, green: 168/255, blue: 138/255))
+                .frame(width: 24)
+                .padding(.top, 4)
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Text(poem.title)
                         .font(.system(size: 17, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
                         .lineLimit(1)
                     Spacer()
                     Text(poem.author)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(accentColor.opacity(0.8))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(accentColor.opacity(0.08), in: Capsule())
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
                 }
 
                 Text(firstLine)
-                    .font(.system(size: 13, weight: .medium, design: .serif))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 12, weight: .medium, design: .serif))
+                    .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
                     .lineLimit(1)
                     .lineSpacing(2)
             }
+
+            // 状态：已读 ✓ / 印章「读」/ 未读灰字
+            Group {
+                if isRead {
+                    Text("✓")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 124/255, green: 139/255, blue: 111/255))
+                } else if index == 2 {
+                    Text("读")
+                        .font(.system(size: 10, weight: .bold, design: .serif))
+                        .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
+                        .frame(width: 22, height: 22)
+                        .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .rotationEffect(.degrees(-6))
+                } else {
+                    Text("未读")
+                        .font(.system(size: 9, weight: .semibold, design: .rounded))
+                        .tracking(1)
+                        .foregroundStyle(Color(red: 192/255, green: 180/255, blue: 154/255))
+                }
+            }
+            .frame(width: 34)
+            .padding(.top, 3)
         }
-        .padding(14)
-        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(AppTheme.separator, lineWidth: 1)
-        )
+        .padding(.vertical, 15)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.15))
+                .frame(height: 1)
+        }
     }
 }
 
