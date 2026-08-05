@@ -106,52 +106,44 @@ struct DiscoverView: View {
         .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
     }
 
-    // MARK: - 匾额
+    // MARK: - 阁顶 · 平铺单行
 
     private var libraryPlaque: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color(red: 59/255, green: 50/255, blue: 38/255))
-                    .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.35), radius: 10, y: 5)
-                    .frame(height: 86)
-                // 两侧金色圆环挂饰
-                HStack {
-                    ZStack {
-                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255), lineWidth: 2.5)
-                            .frame(width: 34, height: 34)
-                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.4), lineWidth: 1)
-                            .frame(width: 46, height: 46)
-                    }
-                    .offset(x: -14)
-                    Spacer()
-                    ZStack {
-                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255), lineWidth: 2.5)
-                            .frame(width: 34, height: 34)
-                        Circle().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.4), lineWidth: 1)
-                            .frame(width: 46, height: 46)
-                    }
-                    .offset(x: 14)
-                }
-                VStack(spacing: 4) {
-                    Text("诗 库")
-                        .font(.system(size: 26, weight: .bold, design: .serif))
-                        .tracking(10)
-                        .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
-                    Text("藏 书 阁 · SHI KU")
-                        .font(.system(size: 8, weight: .semibold, design: .rounded))
-                        .tracking(4)
-                        .foregroundStyle(Color(red: 201/255, green: 184/255, blue: 138/255))
-                }
-            }
-            .frame(maxWidth: .infinity)
+        VStack(spacing: 0) {
+            HStack(spacing: 14) {
+                // 朱砂藏印
+                Text("藏")
+                    .font(.system(size: 15, weight: .bold, design: .serif))
+                    .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
+                    .frame(width: 30, height: 30)
+                    .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .rotationEffect(.degrees(-6))
+                    .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 4, y: 3)
 
+                // 诗库大字
+                Text("诗库")
+                    .font(.system(size: 40, weight: .bold, design: .serif))
+                    .tracking(4)
+                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                    .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.18), radius: 6, y: 3)
+
+                // 副标（底部对齐）
+                Text("SHI KU · 藏书阁")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .tracking(4)
+                    .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
+                    .padding(.top, 18)
+            }
+
+            // 问候语
             Text("阁中藏书三千卷，案头常开一卷诗")
                 .font(.system(size: 12, weight: .medium, design: .serif))
                 .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
+                .padding(.top, 14)
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 8)
+        .padding(.top, 10)
     }
 
     // MARK: - 今日一诗 · 案上摊开的书
