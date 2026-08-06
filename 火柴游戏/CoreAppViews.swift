@@ -695,6 +695,7 @@ struct PoetryCollectionListView: View {
                         .padding(.bottom, 40)
                 }
             } else {
+                // 诗集列表：自带透明导航条，隐藏系统导航栏避免双返回
                 PoemCollectionContent(
                     title: item.title,
                     subtitle: item.subtitle,
@@ -702,10 +703,10 @@ struct PoetryCollectionListView: View {
                     colors: item.colors,
                     poems: matchedPoems
                 )
+                .navigationBarBackButtonHidden()
+                .toolbar(.hidden, for: .navigationBar)
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
-        .unifiedBackButton(title: item.title)
     }
 }
 
@@ -721,8 +722,6 @@ struct PoetryPoemListView: View {
             colors: (AppTheme.accentIndigo, AppTheme.accentInkPurple),
             poems: poems
         )
-        .background(AppTheme.background.ignoresSafeArea())
-        .unifiedBackButton(title: title)
     }
 }
 
@@ -755,6 +754,34 @@ private struct PoemCollectionContent: View {
         poems.filter { progress.openedPoemIds.contains($0.id) }.count
     }
 
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedType: String? = nil
+
+    private var availableTypes: [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+        for poem in poems {
+            let t = poem.type.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !t.isEmpty, seen.insert(t).inserted {
+                result.append(t)
+            }
+        }
+        return result
+    }
+
+    private var filteredPoems: [Poem] {
+        guard let selectedType else { return displayedPoems }
+        return displayedPoems.filter { $0.type.trimmingCharacters(in: .whitespacesAndNewlines) == selectedType }
+    }
+
+    private var currentPoemID: Int? {
+        for poem in poems where !progress.openedPoemIds.contains(poem.id) {
+            return poem.id
+        }
+        return nil
+    }
+
     var body: some View {
         if poems.isEmpty {
             VStack(spacing: 16) {
@@ -767,204 +794,391 @@ private struct PoemCollectionContent: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    collectionHero
-
-                    LazyVStack(spacing: 0) {
-                        ForEach(Array(displayedPoems.enumerated()), id: \.element.id) { index, poem in
-                            NavigationLink(value: poem) {
-                                PoemCard(poem: poem, index: index, accentColor: colors.0)
-                                    .equatable()
-                            }
-                            .onAppear {
-                                if index == displayedPoems.count - 1, hasMore {
-                                    displayedCount += pageSize
-                                }
-                            }
-                        }
-
-                        if hasMore {
-                            ProgressView()
-                                .padding(.vertical, 16)
-                        }
-                    }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
-
-                    // 底部操作
-                    HStack(spacing: 12) {
-                        Button {
-                            randomTarget = poems.randomElement()
-                            openRandom = true
-                        } label: {
-                            Text("随机翻卷")
-                                .font(.system(size: 13, weight: .bold, design: .serif))
-                                .tracking(2)
-                                .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 13)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), lineWidth: 1.5)
-                                )
-                        }
-                        .buttonStyle(.plain)
-
-                        NavigationLink(value: nextTarget) {
-                            HStack(spacing: 6) {
-                                Text("继续读诗")
-                                    .font(.system(size: 13, weight: .bold, design: .serif))
-                                    .tracking(2)
-                                Text("▸")
-                                    .font(.system(size: 12, weight: .bold))
-                            }
-                            .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .background(
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .fill(Color(red: 59/255, green: 50/255, blue: 38/255))
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-                    .padding(.bottom, 40)
-                    .onAppear {
-                        if nextTarget == nil {
-                            nextTarget = poems.first(where: { !progress.openedPoemIds.contains($0.id) }) ?? poems.first
-                        }
-                    }
-                    .navigationDestination(isPresented: $openRandom) {
-                        if let randomTarget {
-                            PoetryDetailView(poem: randomTarget)
-                        }
-                    }
-                }
-            }
-            .background(
+            ZStack {
+                // 蓝天草地背景（固定）
                 LinearGradient(
                     colors: [
-                        Color(red: 246/255, green: 241/255, blue: 231/255),
-                        Color(red: 243/255, green: 237/255, blue: 224/255)
+                        Color(red: 190/255, green: 227/255, blue: 245/255),
+                        Color(red: 220/255, green: 242/255, blue: 220/255),
+                        Color(red: 207/255, green: 235/255, blue: 196/255)
                     ],
                     startPoint: .top, endPoint: .bottom
                 )
                 .ignoresSafeArea()
-            )
-        }
-    }
 
-    private var collectionHero: some View {
-        VStack(spacing: 0) {
-            // 上轴头
-            ScrollAxisBar()
+                // 太阳 + 云 + 叶片小鸟
+                poemSun
+                poemCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+                poemCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+                poemFlutter
 
-            VStack(spacing: 12) {
-                Text(title)
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                    .tracking(5)
-                    .foregroundStyle(Color(red: 160/255, green: 138/255, blue: 106/255))
+                VStack(spacing: 0) {
+                    // 透明导航条
+                    ZStack {
+                        HStack {
+                            Button { dismiss() } label: {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .frame(width: 36, height: 36)
+                                    .background(Color.white.opacity(0.9), in: Circle())
+                                    .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
+                                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
+                            }
+                            Spacer()
+                        }
+                        Text(title)
+                            .font(.system(size: 16, weight: .heavy, design: .serif))
+                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .lineLimit(1)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 6)
+                    .padding(.bottom, 6)
 
-                Text(title)
-                    .font(.system(size: 30, weight: .heavy, design: .serif))
-                    .tracking(4)
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            // 主题头
+                            poemGardenHeader
 
-                // 朱砂分隔线
-                HStack(spacing: 8) {
-                    Rectangle().fill(Color.clear).frame(width: 20, height: 1)
-                    Rectangle()
-                        .fill(
-                            LinearGradient(colors: [.clear, Color(red: 176/255, green: 58/255, blue: 46/255), .clear], startPoint: .leading, endPoint: .trailing)
-                        )
-                        .frame(width: 46, height: 2)
-                    Rectangle().fill(Color.clear).frame(width: 20, height: 1)
+                            // 体裁筛选
+                            if !availableTypes.isEmpty {
+                                typeChips
+                            }
+
+                            // 分区标题
+                            HStack(spacing: 8) {
+                                Rectangle()
+                                    .fill(Color(red: 74/255, green: 124/255, blue: 89/255))
+                                    .frame(width: 6, height: 20)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                Text("国风目录")
+                                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                Spacer()
+                                Text("\(readCount) / \(poems.count) 已读")
+                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
+                            .padding(.bottom, 10)
+
+                            // 诗叶卡片
+                            LazyVStack(spacing: 10) {
+                                ForEach(Array(filteredPoems.enumerated()), id: \.element.id) { index, poem in
+                                    NavigationLink(value: poem) {
+                                        PoemCard(poem: poem,
+                                                 index: index,
+                                                 accentColor: colors.0,
+                                                 isCurrent: poem.id == (currentPoemID ?? -1))
+                                            .equatable()
+                                    }
+                                    .onAppear {
+                                        if index == displayedPoems.count - 1, hasMore {
+                                            displayedCount += pageSize
+                                        }
+                                    }
+                                }
+
+                                if hasMore {
+                                    ProgressView()
+                                        .padding(.vertical, 16)
+                                }
+                            }
+                            .padding(.horizontal, 18)
+                            .padding(.bottom, 14)
+
+                            // 底部操作
+                            HStack(spacing: 12) {
+                                Button {
+                                    randomTarget = poems.randomElement()
+                                    openRandom = true
+                                } label: {
+                                    Text("随机翻卷")
+                                        .font(.system(size: 13, weight: .bold, design: .serif))
+                                        .tracking(2)
+                                        .foregroundStyle(Color(red: 74/255, green: 124/255, blue: 89/255))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.4), lineWidth: 2)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+
+                                NavigationLink(value: nextTarget) {
+                                    HStack(spacing: 6) {
+                                        Text("继续读诗")
+                                            .font(.system(size: 13, weight: .bold, design: .serif))
+                                            .tracking(2)
+                                        Text("▸")
+                                            .font(.system(size: 12, weight: .bold))
+                                    }
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .fill(
+                                                LinearGradient(colors: [
+                                                    Color(red: 143/255, green: 227/255, blue: 192/255),
+                                                    Color(red: 76/255, green: 175/255, blue: 125/255)
+                                                ], startPoint: .leading, endPoint: .trailing)
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                    .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2.5)
+                                            )
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.horizontal, 18)
+                            .padding(.bottom, 30)
+                            .onAppear {
+                                if nextTarget == nil {
+                                    nextTarget = poems.first(where: { !progress.openedPoemIds.contains($0.id) }) ?? poems.first
+                                }
+                            }
+                            .navigationDestination(isPresented: $openRandom) {
+                                if let randomTarget {
+                                    PoetryDetailView(poem: randomTarget)
+                                }
+                            }
+                        }
+                        .padding(.bottom, 10)
+                    }
                 }
-
-                Text(subtitle)
-                    .font(.system(size: 12, weight: .medium, design: .serif))
-                    .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
-                    .lineLimit(2)
-
-                HStack(spacing: 28) {
-                    heroStat(value: "\(poems.count)", label: "收录诗篇")
-                    heroStat(value: "\(readCount)", label: "已读")
-                    heroStat(value: "\(poems.count - readCount)", label: "待读")
-                }
-                .padding(.top, 6)
-
-                // 印章
-                Text("诗")
-                    .font(.system(size: 15, weight: .bold, design: .serif))
-                    .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                    .frame(width: 34, height: 34)
-                    .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    .rotationEffect(.degrees(-5))
-                    .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 4, y: 3)
-                    .padding(.top, 10)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 22)
-            .padding(.bottom, 24)
-
-            // 下轴头
-            ScrollAxisBar()
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(
-                    LinearGradient(colors: [
-                        Color(red: 251/255, green: 246/255, blue: 234/255),
-                        Color(red: 239/255, green: 228/255, blue: 204/255)
-                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
-                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.22), radius: 14, y: 7)
-        )
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 12)
-    }
-
-    private func heroStat(value: String, label: String) -> some View {
-        VStack(spacing: 3) {
-            Text(value)
-                .font(.system(size: 17, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
-            Text(label)
-                .font(.system(size: 9, weight: .semibold, design: .rounded))
-                .tracking(2)
-                .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
         }
     }
 
-    /// 卷轴轴头（金色渐变 + 轴心木珠）· 两端圆角由外层 clipShape 统一裁剪
-    private struct ScrollAxisBar: View {
-        var body: some View {
+    // MARK: - 主题头（书野 · 竹青系）
+
+    private var poemGardenHeader: some View {
+        HStack(spacing: 12) {
             ZStack {
-                Rectangle()
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
                         LinearGradient(colors: [
-                            Color(red: 201/255, green: 168/255, blue: 124/255),
-                            Color(red: 169/255, green: 138/255, blue: 94/255)
-                        ], startPoint: .top, endPoint: .bottom)
+                            Color(red: 200/255, green: 232/255, blue: 184/255),
+                            Color(red: 152/255, green: 200/255, blue: 136/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [
-                            Color(red: 176/255, green: 138/255, blue: 94/255),
-                            Color(red: 138/255, green: 106/255, blue: 62/255),
-                            Color(red: 176/255, green: 138/255, blue: 94/255)
-                        ], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .frame(width: 22, height: 30)
-                    .shadow(color: Color(red: 60/255, green: 40/255, blue: 10/255).opacity(0.4), radius: 3, y: 2)
+                Text(emoji)
+                    .font(.system(size: 26))
+                    .modifier(PoemBob(delay: 0))
             }
-            .frame(height: 16)
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(red: 90/255, green: 140/255, blue: 70/255).opacity(0.35), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 16, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text(subtitle)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                HStack(spacing: 12) {
+                    Text("📜 \(poems.count) 首")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 74/255, green: 124/255, blue: 89/255))
+                    Text("🔥 已读 \(readCount)")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                }
+                .padding(.top, 1)
+            }
+            Spacer()
+            // 叶片 + 小鸟动效
+            HStack(spacing: 6) {
+                Text("🍃").font(.system(size: 15)).modifier(PoemLeafSway(delay: 0))
+                Text("🐦").font(.system(size: 14)).modifier(PoemFlutter(delay: 0.9, reverse: false))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+        )
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
+    }
+
+    // 体裁筛选
+    private var typeChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Button {
+                    selectedType = nil
+                } label: {
+                    Text("全部")
+                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .foregroundStyle(selectedType == nil ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(selectedType == nil
+                                    ? Color(red: 74/255, green: 124/255, blue: 89/255)
+                                    : Color.white.opacity(0.85))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .strokeBorder(
+                                    selectedType == nil ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                        : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                    lineWidth: 2
+                                )
+                        )
+                }
+                .buttonStyle(.plain)
+
+                ForEach(availableTypes, id: \.self) { type in
+                    Button {
+                        selectedType = type
+                    } label: {
+                        Text(type)
+                            .font(.system(size: 12, weight: .heavy, design: .rounded))
+                            .foregroundStyle(selectedType == type ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(selectedType == type
+                                        ? Color(red: 74/255, green: 124/255, blue: 89/255)
+                                        : Color.white.opacity(0.85))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(
+                                        selectedType == type ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                        lineWidth: 2
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+        }
+    }
+
+    // MARK: - 背景装饰（太阳/云/叶片小鸟）
+
+    private var poemSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func poemCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // 叶片小鸟（右上）
+    private var poemFlutter: some View {
+        ZStack {
+            Text("🍃").font(.system(size: 15)).modifier(PoemLeafSway(delay: 0))
+            Text("🐦").font(.system(size: 14)).modifier(PoemFlutter(delay: 1.2, reverse: true))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.trailing, 24)
+        .padding(.top, 140)
+        .allowsHitTesting(false)
+    }
+
+    private struct PoemBob: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
+            }
+        }
+    }
+
+    private struct PoemLeafSway: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 6), anchor: .bottom)
+            }
+        }
+    }
+
+    private struct PoemFlutter: ViewModifier {
+        let delay: Double
+        let reverse: Bool
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
+                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+            }
         }
     }
 }
@@ -975,92 +1189,122 @@ private struct PoemCard: View, Equatable {
     let poem: Poem
     let index: Int
     let accentColor: Color
+    let isCurrent: Bool
     @EnvironmentObject private var progress: AppProgressStore
     private let firstLine: String
 
-    init(poem: Poem, index: Int, accentColor: Color) {
+    init(poem: Poem, index: Int, accentColor: Color, isCurrent: Bool = false) {
         self.poem = poem
         self.index = index
         self.accentColor = accentColor
+        self.isCurrent = isCurrent
         self.firstLine = poem.contents.components(separatedBy: "\n")
             .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) ?? ""
     }
 
     static func == (lhs: PoemCard, rhs: PoemCard) -> Bool {
-        lhs.poem.id == rhs.poem.id && lhs.index == rhs.index
+        lhs.poem.id == rhs.poem.id && lhs.index == rhs.index && lhs.isCurrent == rhs.isCurrent
     }
 
     private var isRead: Bool {
         progress.openedPoemIds.contains(poem.id)
     }
 
-    private var chineseNum: String {
-        let nums = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十",
-                    "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十"]
-        let i = index
-        if i < nums.count { return nums[i] }
-        let tens = i / 10, ones = i % 10
-        var s = tens > 1 ? "\(nums[tens - 1])十" : "十"
-        if ones > 0 { s += nums[ones - 1] }
-        return s
+    // 书叶图标轮换（不重复）
+    private var leafEmoji: String {
+        let leaves = ["🌿", "🍃", "🍂", "🌸", "🪷", "🐦", "🌾", "🕊", "🌙", "🏔", "🌊", "✨"]
+        return leaves[index % leaves.count]
+    }
+
+    private var tint: Color {
+        let colors: [Color] = [
+            Color(red: 232/255, green: 242/255, blue: 224/255),
+            Color(red: 240/255, green: 232/255, blue: 242/255),
+            Color(red: 232/255, green: 240/255, blue: 242/255),
+            Color(red: 242/255, green: 240/255, blue: 224/255),
+        ]
+        return colors[index % colors.count]
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            // 中文序号
-            Text(chineseNum)
-                .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 184/255, green: 168/255, blue: 138/255))
-                .frame(width: 24)
-                .padding(.top, 4)
+        HStack(spacing: 12) {
+            // 书叶图标（摇摆）
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(tint)
+                Text(leafEmoji)
+                    .font(.system(size: 17))
+                    .modifier(LeafSway(delay: Double(index % 6) * 0.3))
+            }
+            .frame(width: 42, height: 42)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(red: 90/255, green: 140/255, blue: 70/255).opacity(0.3), lineWidth: 2)
+            )
 
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Text(poem.title)
-                        .font(.system(size: 17, weight: .bold, design: .serif))
-                        .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-                        .lineLimit(1)
-                    Spacer()
-                    Text(poem.author)
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
-                }
-
-                Text(firstLine)
-                    .font(.system(size: 12, weight: .medium, design: .serif))
-                    .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(poem.title)
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     .lineLimit(1)
-                    .lineSpacing(2)
+                Text("\(poem.author) · \(poem.type)")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .lineLimit(1)
+                Text(firstLine)
+                    .font(.system(size: 11, weight: .bold, design: .serif))
+                    .foregroundStyle(Color(red: 74/255, green: 124/255, blue: 89/255))
+                    .lineLimit(1)
             }
 
-            // 状态：已读 ✓ / 印章「读」/ 未读灰字
+            Spacer(minLength: 4)
+
+            // 状态：已读 ✓ / 在读 / 未读
             Group {
                 if isRead {
                     Text("✓")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 124/255, green: 139/255, blue: 111/255))
-                } else if index == 2 {
-                    Text("读")
-                        .font(.system(size: 10, weight: .bold, design: .serif))
-                        .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                        .frame(width: 22, height: 22)
-                        .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                        .rotationEffect(.degrees(-6))
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                } else if isCurrent {
+                    Text("在读")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 74/255, green: 124/255, blue: 89/255))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color(red: 232/255, green: 242/255, blue: 224/255), in: Capsule())
                 } else {
                     Text("未读")
-                        .font(.system(size: 9, weight: .semibold, design: .rounded))
-                        .tracking(1)
-                        .foregroundStyle(Color(red: 192/255, green: 180/255, blue: 154/255))
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 192/255, green: 184/255, blue: 168/255))
                 }
             }
-            .frame(width: 34)
-            .padding(.top, 3)
+            .frame(width: 40)
         }
-        .padding(.vertical, 15)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.15))
-                .frame(height: 1)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(
+                            isCurrent
+                                ? Color(red: 74/255, green: 124/255, blue: 89/255).opacity(0.6)
+                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25),
+                            lineWidth: isCurrent ? 2.5 : 2
+                        )
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+        )
+    }
+
+    private struct LeafSway: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 4), anchor: .bottom)
+            }
         }
     }
 }
