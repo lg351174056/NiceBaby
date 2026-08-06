@@ -7,23 +7,23 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $progress.selectedTab) {
-            Tab("首页", systemImage: "house.fill", value: 0) {
+            Tab("首页", systemImage: "sun.max.fill", value: 0) {
                 HomeView()
             }
             Tab("诗库", systemImage: "book.closed.fill", value: 1) {
                 DiscoverView()
             }
-            Tab("探索", systemImage: "sparkle.magnifyingglass", value: 2) {
+            Tab("探索", systemImage: "binoculars.fill", value: 2) {
                 ExploreView()
             }
             Tab("益智", systemImage: "gamecontroller.fill", value: 3) {
                 PlayView()
             }
-            Tab("我的", systemImage: "person.crop.circle.fill", value: 4) {
+            Tab("我的", systemImage: "leaf.fill", value: 4) {
                 ProfileView()
             }
         }
-        .tint(AppTheme.accentCinnabar)
+        .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
         .onAppear { progress.refreshStreakOnActivity() }
     }
 }
