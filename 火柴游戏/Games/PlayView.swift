@@ -15,12 +15,25 @@ struct PlayView: View {
     }
 
     var body: some View {
-        ZStack {
-            // 底层全屏背景：仅保留暖白色，确保底部上拉不露白
-            AppTheme.background
+        NavigationStack(path: $path) {
+            ZStack {
+                // 蓝天草地背景（固定）
+                LinearGradient(
+                    colors: [
+                        Color(red: 190/255, green: 227/255, blue: 245/255),
+                        Color(red: 220/255, green: 242/255, blue: 220/255),
+                        Color(red: 207/255, green: 235/255, blue: 196/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
                 .ignoresSafeArea()
 
-            NavigationStack(path: $path) {
+                // 太阳 + 白云 + 风车
+                fairSun
+                fairCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+                fairCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+                windmillDecor
+
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         yunvuHero
@@ -28,10 +41,9 @@ struct PlayView: View {
                     }
                 }
                 .scrollContentBackground(.hidden) // 隐藏系统默认白底，让自定义背景生效
-                .ignoresSafeArea(edges: .top)
-                .navigationDestination(for: GameKind.self) { kind in
-                    gameContainer(for: kind)
-                }
+            }
+            .navigationDestination(for: GameKind.self) { kind in
+                gameContainer(for: kind)
             }
             .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
         }
@@ -47,135 +59,201 @@ struct PlayView: View {
 
     // MARK: - Hero · 演武场（墨紫夜空 + 武印 + 段位腰带）
 
-    // MARK: - 书院头 + 段位腰带
+    // MARK: - 背景装饰（太阳/云/风车）
 
-    private var yunvuHero: some View {
-        VStack(spacing: 0) {
-            // 顶部：学印 + 标题 + 等级章
-            HStack(spacing: 12) {
-                // 朱砂「学」印
-                Text("学")
-                    .font(.system(size: 16, weight: .bold, design: .serif))
-                    .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                    .frame(width: 36, height: 36)
-                    .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    .rotationEffect(.degrees(-5))
-                    .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 4, y: 3)
-
-                Text("益智书院")
-                    .font(.system(size: 24, weight: .bold, design: .serif))
-                    .tracking(3)
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-
-                Spacer()
-
-                // 等级章
-                Text("童生 · 三年级")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .tracking(2)
-                    .foregroundStyle(Color(red: 217/255, green: 164/255, blue: 91/255))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 5)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255), lineWidth: 1.5)
+    private var fairSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
                     )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
             }
-            .padding(.top, 56) // 适配状态栏
-            .padding(.bottom, 18)
-
-            // 段位腰带
-            shuyuanBelt
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
         }
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.bottom, 25)
-        .background {
-            ZStack(alignment: .top) {
-                Color(red: 246/255, green: 241/255, blue: 231/255)
-                    .frame(height: 1000)
-                    .offset(y: -1000)
-                LinearGradient(
-                    colors: [
-                        Color(red: 246/255, green: 241/255, blue: 231/255),
-                        Color(red: 243/255, green: 237/255, blue: 224/255),
-                        AppTheme.background
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
+        .allowsHitTesting(false)
+    }
+
+    private func fairCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // 风车（四叶旋转 + 塔身）
+    private var windmillDecor: some View {
+        ZStack {
+            // 塔身
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(
+                    LinearGradient(colors: [
+                        Color(red: 212/255, green: 168/255, blue: 126/255),
+                        Color(red: 176/255, green: 138/255, blue: 94/255)
+                    ], startPoint: .top, endPoint: .bottom)
                 )
+                .frame(width: 12, height: 40)
+                .offset(y: 18)
+            // 四叶（旋转）
+            ZStack {
+                ForEach(0..<4, id: \.self) { i in
+                    Capsule()
+                        .fill(Color.white.opacity(0.9))
+                        .overlay(Capsule().strokeBorder(Color(red: 176/255, green: 138/255, blue: 94/255), lineWidth: 1.5))
+                        .frame(width: 40, height: 7)
+                        .offset(x: 17)
+                        .rotationEffect(.degrees(Double(i) * 90))
+                }
+            }
+            .frame(width: 34, height: 34)
+            .offset(y: -4)
+            .modifier(WindmillSpin())
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.trailing, 24)
+        .padding(.top, 120)
+        .allowsHitTesting(false)
+        .opacity(0.92)
+    }
+
+    private struct WindmillSpin: ViewModifier {
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+                content
+                    .rotationEffect(.degrees((t * 60).truncatingRemainder(dividingBy: 360)))
             }
         }
     }
 
-    // 段位腰带：金色段位徽章 + 课业进度 + 功成名就 stats
-    private var shuyuanBelt: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 14) {
-                // 金色段位徽章
-                ZStack {
-                    Circle()
-                        .fill(
-                            RadialGradient(colors: [
-                                Color(red: 255/255, green: 233/255, blue: 168/255),
-                                Color(red: 212/255, green: 168/255, blue: 75/255),
-                                Color(red: 176/255, green: 138/255, blue: 62/255)
-                            ], center: .init(x: 0.35, y: 0.3), startRadius: 4, endRadius: 28)
-                        )
-                        .frame(width: 52, height: 52)
-                        .shadow(color: Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.6), radius: 10)
-                    Text("童")
-                        .font(.system(size: 15, weight: .bold, design: .serif))
-                        .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-                }
-                .modifier(GoldPulse())
+    // MARK: - 田野游乐园 · 头部 + 段位腰带
 
-                // 课业进度
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("童生 · 课业 \(Int(beltProgress * 100))%")
-                        .font(.system(size: 15, weight: .bold, design: .serif))
-                        .tracking(1)
-                        .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
-                    Text("再修 3 门课，可晋「秀才」")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255).opacity(0.55))
-                    // 经验条（动画增长）
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color(red: 240/255, green: 228/255, blue: 200/255).opacity(0.15))
-                                .frame(height: 8)
-                            Capsule()
-                                .fill(
-                                    LinearGradient(colors: [
-                                        Color(red: 217/255, green: 164/255, blue: 91/255),
-                                        Color(red: 240/255, green: 216/255, blue: 160/255)
-                                    ], startPoint: .leading, endPoint: .trailing)
-                                )
-                                .frame(width: geo.size.width * beltProgress, height: 8)
-                        }
+    private var yunvuHero: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                Text("FUN FAIR")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .tracking(5)
+                    .foregroundStyle(Color(red: 110/255, green: 138/255, blue: 90/255))
+                Text("益智")
+                    .font(.system(size: 30, weight: .heavy, design: .serif))
+                    .tracking(3)
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .padding(.top, 6)
+                Text("每一道题，都是一座小游乐设施")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 122/255, green: 138/255, blue: 110/255))
+                    .padding(.top, 6)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 6)
+            .padding(.bottom, 16)
+
+            fairBelt
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.bottom, 22)
+    }
+
+    // 段位腰带：旋转木马徽章 + 课业进度
+    private var fairBelt: some View {
+        HStack(spacing: 14) {
+            // 金色旋转木马
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 233/255, blue: 168/255),
+                            Color(red: 212/255, green: 168/255, blue: 75/255),
+                            Color(red: 176/255, green: 138/255, blue: 62/255)
+                        ], center: .init(x: 0.35, y: 0.3), startRadius: 4, endRadius: 28)
+                    )
+                    .frame(width: 52, height: 52)
+                    .shadow(color: Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.6), radius: 10)
+                Text("🎠")
+                    .font(.system(size: 24))
+                    .modifier(FairBob(delay: 0))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("小马骑士 · 课业 \(Int(beltProgress * 100))%")
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text("再玩 3 个设施，可坐大转马")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.15))
+                            .frame(height: 8)
+                        Capsule()
+                            .fill(
+                                LinearGradient(colors: [
+                                    Color(red: 217/255, green: 164/255, blue: 91/255),
+                                    Color(red: 125/255, green: 249/255, blue: 255/255)
+                                ], startPoint: .leading, endPoint: .trailing)
+                            )
+                            .frame(width: geo.size.width * beltProgress, height: 8)
                     }
-                    .frame(height: 8)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-                // 三统计
-                HStack(spacing: 12) {
-                    beltStat(value: "\(progress.totalMatchstickSolves)", label: "功课")
-                    beltStat(value: "\(beltMedalCount)", label: "勋章")
-                    beltStat(value: "\(progress.streakDays)", label: "连续")
-                }
+            HStack(spacing: 12) {
+                fairStat(value: "\(beltMedalCount)", label: "功课")
+                fairStat(value: "\(beltMedalCount)", label: "勋章")
+                fairStat(value: "\(progress.streakDays)", label: "连续")
             }
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(
-                    LinearGradient(colors: [
-                        Color(red: 59/255, green: 50/255, blue: 38/255),
-                        Color(red: 42/255, green: 36/255, blue: 28/255)
-                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 40/255, green: 30/255, blue: 15/255).opacity(0.35), radius: 12, y: 6)
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 10, y: 5)
         )
     }
 
@@ -189,33 +267,29 @@ struct PlayView: View {
         allLessons.filter { lessonState($0.kind).done }.count
     }
 
-    private struct GoldPulse: ViewModifier {
-        @State private var glowing = false
-        func body(content: Content) -> some View {
-            content
-                .shadow(
-                    color: Color(red: 245/255, green: 214/255, blue: 123/255).opacity(glowing ? 0.55 : 0.25),
-                    radius: glowing ? 14 : 8
-                )
-                .scaleEffect(glowing ? 1.04 : 1)
-                .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: glowing)
-                .onAppear { glowing = true }
-        }
-    }
-
-    private func beltStat(value: String, label: String) -> some View {
+    private func fairStat(value: String, label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 14, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
+                .font(.system(size: 13, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
             Text(label)
-                .font(.system(size: 8, weight: .medium, design: .rounded))
-                .tracking(1)
-                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255).opacity(0.5))
+                .font(.system(size: 8, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
         }
     }
 
-    // MARK: - 主体（宣纸底）
+    private struct FairBob: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
+            }
+        }
+    }
+
+    // MARK: - 主体
 
     private var scrollBody: some View {
         VStack(spacing: 20) {
@@ -228,35 +302,6 @@ struct PlayView: View {
         .padding(.horizontal, AppTheme.paddingScreen)
         .padding(.top, 18)
         .padding(.bottom, 30)
-        .background {
-            // 背景处理：解决上拉露白
-            ZStack(alignment: .bottom) {
-                AppTheme.background
-                
-                // 向下无限延伸的暖白块（确保上拉时颜色统一）
-                AppTheme.background
-                    .frame(height: 1000)
-                    .offset(y: 1000)
-            }
-        }
-    }
-
-    // 段标题·带「名 · 副标题」
-    private func sectionHeader(title: String, sub: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(title)
-                .font(.system(size: 16, weight: .heavy, design: .serif))
-                .tracking(0.8)
-                .foregroundStyle(AppTheme.textPrimary)
-            Text(sub)
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .tracking(1.8)
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.7))
-            Rectangle()
-                .fill(AppTheme.separator)
-                .frame(height: 0.5)
-            Spacer(minLength: 0)
-        }
     }
 
     // MARK: - 今日功课（每日一题 · 火柴推理）
@@ -273,85 +318,73 @@ struct PlayView: View {
 
     private var todayLessonCard: some View {
         HStack(spacing: 14) {
-            Text("📜")
-                .font(.system(size: 30))
+            Text("🎯")
+                .font(.system(size: 28))
+                .modifier(FairBob(delay: 0.3))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("每日一题")
-                    .font(.system(size: 15, weight: .bold, design: .serif))
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+            VStack(alignment: .leading, spacing: 3) {
+                Text("今日功课 · 每日一题")
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
                 Text("移动一根火柴，让等式成立")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.85))
                 HStack(spacing: 14) {
                     todayStat(value: "\(MatchstickProblemSet.count)", label: "题")
                     todayStat(value: "\(progress.totalMatchstickSolves)", label: "已破")
                     todayStat(value: "\(progress.streakDays)", label: "连胜")
                 }
-                .padding(.top, 6)
+                .padding(.top, 5)
             }
-
             Spacer()
-
-            Text("修习 →")
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
+            Text("去玩 ›")
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
                     LinearGradient(colors: [
-                        Color(red: 251/255, green: 246/255, blue: 234/255),
-                        Color(red: 239/255, green: 228/255, blue: 204/255)
+                        Color(red: 143/255, green: 227/255, blue: 192/255),
+                        Color(red: 76/255, green: 175/255, blue: 125/255)
                     ], startPoint: .topLeading, endPoint: .bottomTrailing)
                 )
-                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.18), radius: 10, y: 5)
-        )
-        .overlay(alignment: .leading) {
-            // 朱砂竖排线
-            Rectangle()
-                .fill(
-                    LinearGradient(colors: [
-                        Color(red: 176/255, green: 58/255, blue: 46/255).opacity(0.5),
-                        Color(red: 176/255, green: 58/255, blue: 46/255).opacity(0.15)
-                    ], startPoint: .top, endPoint: .bottom)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 3)
                 )
-                .frame(width: 2)
-                .padding(.vertical, 4)
-                .padding(.leading, 6)
-        }
+                .shadow(color: Color(red: 60/255, green: 80/255, blue: 50/255).opacity(0.3), radius: 10, y: 5)
+        )
     }
 
     private func todayStat(value: String, label: String) -> some View {
         HStack(spacing: 3) {
             Text(value)
                 .font(.system(size: 12, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
+                .foregroundStyle(.white)
             Text(label)
                 .font(.system(size: 9, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
+                .foregroundStyle(.white.opacity(0.8))
         }
     }
 
-    // 分组标题（朱砂小印 + 名称 + 渐变线）
+    // 分组标题（绿色竖条 + 名称 + 渐变线）
     private func subjectHeader(seal: String, title: String) -> some View {
-        HStack(spacing: 10) {
-            Text(seal)
-                .font(.system(size: 11, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
-                .frame(width: 22, height: 22)
-                .background(Color(red: 59/255, green: 50/255, blue: 38/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                .rotationEffect(.degrees(-4))
+        HStack(spacing: 8) {
+            Rectangle()
+                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .frame(width: 6, height: 20)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
             Text(title)
-                .font(.system(size: 15, weight: .bold, design: .serif))
-                .tracking(3)
-                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                .font(.system(size: 15, weight: .heavy, design: .serif))
+                .tracking(2)
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
             Rectangle()
                 .fill(
-                    LinearGradient(colors: [Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing)
+                    LinearGradient(colors: [Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
                 )
-                .frame(height: 1)
+                .frame(height: 2)
         }
         .padding(.horizontal, 2)
     }
@@ -479,19 +512,19 @@ struct PlayView: View {
 
     private var subjects: [Subject] {
         [
-            Subject(seal: "数", icon: "🧮", name: "数理课", lessons: [
+            Subject(seal: "数", icon: "🎪", name: "数理马戏团", lessons: [
                 Lesson(kind: .matchstick,     name: "火柴推理", sub: "移一根火柴，让等式成立", icon: "🧡"),
                 Lesson(kind: .sudoku,         name: "星云数独", sub: "4×4 · 6×6 · 9×9 宫格", icon: "🪐"),
                 Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
             ]),
-            Subject(seal: "文", icon: "🖌", name: "文学课", lessons: [
+            Subject(seal: "文", icon: "🎨", name: "文学杂技团", lessons: [
                 Lesson(kind: .poetryComplete, name: "诗词补全", sub: "古诗少一句 · 四选一", icon: "🍊"),
                 Lesson(kind: .idiomFillBlank, name: "成语填空", sub: "缺个字，你来填", icon: "📝"),
                 Lesson(kind: .antonymMatch,   name: "反义对对碰", sub: "找相反的好朋友", icon: "⚖️"),
                 Lesson(kind: .sanzijing,      name: "三字经", sub: "人之初，性本善", icon: "📖"),
                 Lesson(kind: .idiomFillLevel, name: "成语填字", sub: "500 关 · 看提示选对字", icon: "🀄"),
             ]),
-            Subject(seal: "智", icon: "🎲", name: "游戏课", lessons: [
+            Subject(seal: "智", icon: "🎡", name: "脑力摩天轮", lessons: [
                 Lesson(kind: .brainTeaser,    name: "脑筋急转弯", sub: "绕一绕，想一想", icon: "🤔"),
                 Lesson(kind: .surnameMatch,   name: "百家姓闯关", sub: "看字选音 · 听音选字", icon: "👪"),
                 Lesson(kind: .funQuiz,        name: "趣味答题", sub: "多主题 · 图片题与冷知识", icon: "🎯"),
@@ -516,15 +549,22 @@ struct PlayView: View {
         let doneCount = subject.lessons.filter { lessonState($0.kind).done }.count
         return VStack(spacing: 0) {
             HStack(spacing: 8) {
-                Text(subject.icon).font(.system(size: 18))
+                Text(subject.icon).font(.system(size: 20))
                 Text(subject.name)
-                    .font(.system(size: 13, weight: .bold, design: .serif))
-                    .tracking(2)
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-                Spacer()
-                Text("\(doneCount) / \(subject.lessons.count) 门")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .tracking(1)
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Rectangle()
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            .clear
+                        ], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .frame(height: 2)
+                Text("\(doneCount) / \(subject.lessons.count) 项")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
             .padding(.horizontal, 14)
             .padding(.top, 12)
@@ -539,46 +579,43 @@ struct PlayView: View {
                 .buttonStyle(LessonPressStyle())
                 if index < subject.lessons.count - 1 {
                     Rectangle()
-                        .fill(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.12))
+                        .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.12))
                         .frame(height: 1)
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 24)
                 }
             }
             .padding(.bottom, 6)
         }
         .background(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color(red: 255/255, green: 252/255, blue: 244/255).opacity(0.65))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.2), lineWidth: 1)
-                )
+                .fill(Color.clear)
         )
     }
 
     private func lessonRow(_ lesson: Lesson, index: Int) -> some View {
         let state = lessonState(lesson.kind)
         return HStack(spacing: 12) {
-            // 中文序号
-            Text(chineseNum(index))
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
-                .frame(width: 26, height: 26)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.3), lineWidth: 1.5)
-                )
+            // 设施图标块
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(rideTint(lesson.icon))
+                Text(lesson.icon)
+                    .font(.system(size: 20))
+            }
+            .frame(width: 44, height: 44)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+            )
 
             VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    Text(lesson.icon).font(.system(size: 14))
-                    Text(lesson.name)
-                        .font(.system(size: 14, weight: .bold, design: .serif))
-                        .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-                }
+                Text(lesson.name)
+                    .font(.system(size: 13, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 Text(lesson.sub)
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .lineLimit(1)
             }
 
             Spacer()
@@ -592,13 +629,34 @@ struct PlayView: View {
 
             // 状态
             Text(state.label)
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(state.done ? Color(red: 74/255, green: 124/255, blue: 89/255)
-                    : state.now ? Color(red: 176/255, green: 58/255, blue: 46/255)
-                    : Color(red: 192/255, green: 180/255, blue: 154/255))
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(state.done ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                    : state.now ? Color(red: 59/255, green: 142/255, blue: 165/255)
+                    : Color(red: 168/255, green: 184/255, blue: 154/255))
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+        )
+        .padding(.horizontal, 10)
+    }
+
+    private func rideTint(_ icon: String) -> Color {
+        switch icon {
+        case "🧡": return Color(red: 255/255, green: 238/255, blue: 216/255)
+        case "🪐": return Color(red: 227/255, green: 240/255, blue: 248/255)
+        case "🧩", "🍊": return Color(red: 232/255, green: 245/255, blue: 224/255)
+        case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
+        case "📖": return Color(red: 248/255, green: 240/255, blue: 216/255)
+        default: return Color(red: 227/255, green: 240/255, blue: 248/255)
+        }
     }
 
     // 课程状态：已修(带星级) / 修习中 / 未修
@@ -670,26 +728,27 @@ struct PlayView: View {
                 Text(no)
                     .font(.system(size: 10, weight: .medium, design: .serif))
                     .tracking(0.8)
-                    .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 Text(name)
                     .font(.system(size: 12.5, weight: .bold, design: .serif))
                     .tracking(0.3)
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     .lineLimit(1)
                 Text(sub)
                     .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(Color(red: 255/255, green: 252/255, blue: 244/255).opacity(0.65))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.9))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.2), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
                     )
+                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
             )
         }
         .buttonStyle(.bouncy)
@@ -702,26 +761,32 @@ struct PlayView: View {
             Text("题 · 跋")
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .tracking(3.4)
-                .foregroundStyle(Color(red: 74/255, green: 124/255, blue: 89/255))
+                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
             Text("修学者，所以明理、益智、进德。每破一题则就一题之道，每成一课则进一阶之修。日拱一卒，功不唐捐。")
                 .font(.system(size: 12, weight: .regular, design: .serif))
-                .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
+                .foregroundStyle(Color(red: 110/255, green: 138/255, blue: 98/255))
                 .lineSpacing(4)
-            Text("益智书院 · 谨题")
+            Text("田野游乐园 · 谨题")
                 .font(.system(size: 13, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
+                .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
                 .rotationEffect(.degrees(-2))
                 .padding(.top, 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(red: 74/255, green: 124/255, blue: 89/255).opacity(0.06))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.white.opacity(0.7))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.2), lineWidth: 1.5)
+                )
                 .overlay(alignment: .leading) {
                     Rectangle()
-                        .fill(Color(red: 74/255, green: 124/255, blue: 89/255))
-                        .frame(width: 2)
+                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .frame(width: 3)
+                        .padding(.vertical, 8)
+                        .padding(.leading, 6)
                 }
         )
     }

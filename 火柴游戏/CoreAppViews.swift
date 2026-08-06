@@ -31,36 +31,56 @@ struct MainTabView: View {
 // MARK: - 诗库 · 竹青风
 
 struct DiscoverView: View {
+    @EnvironmentObject private var progress: AppProgressStore
     @StateObject private var store = ClassicalPoetryStore.shared
     @State private var navPath = NavigationPath()
+
+    private var poems: [Poem] { PoemCatalog.poems() }
 
     private var hideTabBar: Bool { !navPath.isEmpty }
 
     var body: some View {
         NavigationStack(path: $navPath) {
-            VStack(spacing: 0) {
-                if !store.isReady {
-                    Spacer()
-                    ProgressView("正在加载诗词数据...")
-                        .controlSize(.large)
-                    Spacer()
-                } else {
-                    ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 0) {
-                            // 匾额
-                            libraryPlaque
+            ZStack {
+                // 蓝天草地背景（固定）
+                LinearGradient(
+                    colors: [
+                        Color(red: 190/255, green: 227/255, blue: 245/255),
+                        Color(red: 220/255, green: 242/255, blue: 220/255),
+                        Color(red: 207/255, green: 235/255, blue: 196/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-                            // 今日一诗 · 案上摊开的书
-                            todayPoemScroll
-                                .padding(.top, 16)
+                // 太阳 + 白云 + 书堆猫头鹰
+                fieldSun
+                fieldCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+                fieldCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+                owlBooks
 
-                            // 学段书架
-                            shelfHeader
-                            gradeShelf
-                                .padding(.horizontal, AppTheme.paddingScreen)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        if !store.isReady {
+                            Spacer()
+                            ProgressView("正在加载诗词数据...")
+                                .controlSize(.large)
+                            Spacer()
+                        } else {
+                            // 顶部 · 书野营地
+                            fieldHeader
+                                .padding(.top, 10)
 
-                            // 诗集藏卷
-                            scrollsHeader
+                            // 学段路径牌
+                            gradePath
+                                .padding(.top, 14)
+
+                            // 今日一诗横卡
+                            fieldPoemCard
+                                .padding(.top, 14)
+
+                            // 诗集书摊
+                            fieldSectionTitle(seal: "摊", title: "诗集书摊")
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                                 ForEach(PoetryLibraryItem.allItems) { item in
                                     NavigationLink(value: item) {
@@ -72,20 +92,10 @@ struct DiscoverView: View {
                             .padding(.horizontal, AppTheme.paddingScreen)
                             .padding(.bottom, 40)
                         }
-                        .padding(.top, 8)
                     }
+                    .padding(.top, 8)
                 }
             }
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color(red: 246/255, green: 241/255, blue: 231/255),
-                        Color(red: 242/255, green: 236/255, blue: 222/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            )
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: PMNavigationTarget.self) { _ in
                 PMMainView()
@@ -106,116 +116,151 @@ struct DiscoverView: View {
         .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
     }
 
-    // MARK: - 阁顶 · 平铺单行
+    // MARK: - 书野营地 · 顶部
 
-    private var libraryPlaque: some View {
+    private var fieldHeader: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 14) {
-                // 朱砂藏印
-                Text("藏")
-                    .font(.system(size: 15, weight: .bold, design: .serif))
-                    .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                    .frame(width: 30, height: 30)
-                    .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    .rotationEffect(.degrees(-6))
-                    .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 4, y: 3)
-
-                // 诗库大字
-                Text("诗库")
-                    .font(.system(size: 40, weight: .bold, design: .serif))
-                    .tracking(4)
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-                    .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.18), radius: 6, y: 3)
-
-                // 副标（底部对齐）
-                Text("SHI KU · 藏书阁")
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                    .tracking(4)
-                    .foregroundStyle(Color(red: 154/255, green: 140/255, blue: 116/255))
-                    .padding(.top, 18)
-            }
-
-            // 问候语
-            Text("阁中藏书三千卷，案头常开一卷诗")
-                .font(.system(size: 12, weight: .medium, design: .serif))
-                .foregroundStyle(Color(red: 110/255, green: 98/255, blue: 80/255))
-                .padding(.top, 14)
+            Text("BOOKS IN FIELD")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .tracking(5)
+                .foregroundStyle(Color(red: 110/255, green: 138/255, blue: 90/255))
+            Text("诗库")
+                .font(.system(size: 30, weight: .heavy, design: .serif))
+                .tracking(3)
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .padding(.top, 6)
+            Text("在草地上，翻开一本诗集")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 122/255, green: 138/255, blue: 110/255))
+                .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 10)
     }
 
-    // MARK: - 今日一诗 · 案上摊开的书
+    // 学段路径牌
+    private var gradePath: some View {
+        HStack(spacing: 10) {
+            ForEach(Array(ClassicalPoetryStore.TextbookStage.allCases.enumerated()), id: \.offset) { idx, stage in
+                NavigationLink(value: stage) {
+                    gradePathCard(stage: stage, delay: Double(idx) * 0.2)
+                }
+                .buttonStyle(.bouncy)
+            }
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+    }
 
-    private var todayPoemScroll: some View {
-        let poems = PoemCatalog.poems()
+    private func gradePathCard(stage: ClassicalPoetryStore.TextbookStage, delay: Double) -> some View {
+        VStack(spacing: 4) {
+            Text(stage.emoji)
+                .font(.system(size: 22))
+                .modifier(FieldBob(delay: delay))
+            Text(stage.rawValue)
+                .font(.system(size: 13, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            Text(stage == .primary ? "小学课文" : stage == .junior ? "初中课文" : "高中课文")
+                .font(.system(size: 8, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(gradePathBackground(active: stage == .primary))
+    }
+
+    private func gradePathBackground(active: Bool) -> some View {
+        RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(active ? Color(red: 216/255, green: 240/255, blue: 200/255).opacity(0.95)
+                : Color.white.opacity(0.88))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(
+                        active ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                        lineWidth: active ? 2.5 : 2
+                    )
+            )
+            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+    }
+
+    // 分组标题（书摊）
+    private func fieldSectionTitle(seal: String, title: String) -> some View {
+        HStack(spacing: 8) {
+            Rectangle()
+                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .frame(width: 6, height: 20)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            Text(title)
+                .font(.system(size: 15, weight: .heavy, design: .serif))
+                .tracking(2)
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            Spacer()
+            Text("\(PoetryLibraryItem.allItems.count) 卷 · 已读 \(progress.openedPoemIds.count)")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+        }
+        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.top, 16)
+        .padding(.bottom, 10)
+    }
+
+    // MARK: - 今日一诗（云蓝书本横卡）
+
+    private var fieldPoemCard: some View {
         let poem = poems.isEmpty ? nil : poems[PoemCatalog.dailyPoemIndex(total: poems.count)]
-
         return Group {
             if let poem {
                 NavigationLink(value: poem) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("今日一诗")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .tracking(2)
-                            .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                    HStack(spacing: 14) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(
+                                    LinearGradient(colors: [
+                                        Color(red: 214/255, green: 232/255, blue: 245/255),
+                                        Color(red: 168/255, green: 200/255, blue: 232/255)
+                                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                )
+                            Text("📖")
+                                .font(.system(size: 24))
+                                .modifier(FieldBob(delay: 0.2))
+                        }
+                        .frame(width: 52, height: 52)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                        )
+                        .overlay(alignment: .topTrailing) {
+                            Text("🐦")
+                                .font(.system(size: 13))
+                                .modifier(FieldBob(delay: 0.5))
+                        }
 
-                        HStack(alignment: .firstTextBaseline, spacing: 10) {
-                            Text(poem.title)
-                                .font(.system(size: 20, weight: .bold, design: .serif))
-                                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("今日一诗 · \(poem.title)")
+                                .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                             Text(poem.author)
-                                .font(.system(size: 11, weight: .medium, design: .serif))
-                                .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            Text(firstTwoLines(of: poem))
+                                .font(.system(size: 11, weight: .bold, design: .serif))
+                                .foregroundStyle(Color(red: 59/255, green: 142/255, blue: 165/255))
+                                .lineLimit(1)
                         }
-                        .padding(.top, 12)
-
-                        Text(firstLines(of: poem))
-                            .font(.system(size: 13, weight: .medium, design: .serif))
-                            .foregroundStyle(Color(red: 92/255, green: 81/255, blue: 64/255))
-                            .lineSpacing(8)
-                            .lineLimit(2)
-                            .padding(.top, 8)
-
-                        HStack {
-                            // 朱砂印章「夜」
-                            Text("夜")
-                                .font(.system(size: 12, weight: .bold, design: .serif))
-                                .foregroundStyle(Color(red: 246/255, green: 241/255, blue: 231/255))
-                                .frame(width: 26, height: 26)
-                                .background(Color(red: 176/255, green: 58/255, blue: 46/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                                .rotationEffect(.degrees(-5))
-                                .shadow(color: Color(red: 120/255, green: 40/255, blue: 30/255).opacity(0.3), radius: 3, y: 2)
-                            Spacer()
-                            Text("展开此卷 →")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
-                        }
-                        .padding(.top, 12)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
                     }
-                    .padding(20)
+                    .padding(14)
                     .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(
-                                LinearGradient(colors: [
-                                    Color(red: 251/255, green: 246/255, blue: 234/255),
-                                    Color(red: 239/255, green: 228/255, blue: 204/255)
-                                ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(Color.white.opacity(0.9))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
                             )
-                            .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.2), radius: 12, y: 6)
+                            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
                     )
-                    .overlay(alignment: .leading) {
-                        // 朱砂竖排线
-                        Rectangle()
-                            .fill(Color(red: 176/255, green: 58/255, blue: 46/255).opacity(0.35))
-                            .frame(width: 2)
-                            .padding(.vertical, 6)
-                            .padding(.leading, 8)
-                    }
                     .padding(.horizontal, AppTheme.paddingScreen)
                 }
                 .buttonStyle(.bouncy)
@@ -223,206 +268,110 @@ struct DiscoverView: View {
         }
     }
 
-    private func firstLines(of poem: Poem) -> String {
+    private func firstTwoLines(of poem: Poem) -> String {
         poem.contents.components(separatedBy: "\n")
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            .prefix(2)
+            .prefix(1)
             .joined(separator: "\n")
     }
 
-    // MARK: - 学段书架
+    // MARK: - 背景装饰（太阳/云/书堆猫头鹰）
 
-    private var shelfHeader: some View {
-        HStack(spacing: 10) {
-            Text("学")
-                .font(.system(size: 11, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
-                .frame(width: 22, height: 22)
-                .background(Color(red: 59/255, green: 50/255, blue: 38/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                .rotationEffect(.degrees(-4))
-            Text("学 段 书 架")
-                .font(.system(size: 15, weight: .bold, design: .serif))
-                .tracking(3)
-                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-            Rectangle()
-                .fill(
-                    LinearGradient(colors: [Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing)
-                )
-                .frame(height: 1)
-        }
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 22)
-        .padding(.bottom, 10)
-    }
-
-    private var gradeShelf: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 10) {
-                ForEach(ClassicalPoetryStore.TextbookStage.allCases) { stage in
-                    NavigationLink(value: stage) {
-                        VStack(spacing: 5) {
-                            Text(stage.emoji)
-                                .font(.system(size: 19))
-                            Text(stage.rawValue)
-                                .font(.system(size: 12, weight: .bold, design: .serif))
-                                .foregroundStyle(Color(red: 92/255, green: 69/255, blue: 48/255))
-                            Text(stage == .primary ? "小学课文" : stage == .junior ? "初中课文" : "高中课文")
-                                .font(.system(size: 9, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Color(red: 138/255, green: 106/255, blue: 58/255))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                .fill(
-                                    LinearGradient(colors: [
-                                        Color(red: 232/255, green: 212/255, blue: 168/255),
-                                        Color(red: 212/255, green: 184/255, blue: 126/255)
-                                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                )
-                                .shadow(color: Color(red: 40/255, green: 25/255, blue: 5/255).opacity(0.3), radius: 3, y: 3)
-                        )
-                        .overlay(alignment: .topTrailing) {
-                            if stage == .primary {
-                                Rectangle()
-                                    .fill(Color(red: 176/255, green: 58/255, blue: 46/255))
-                                    .frame(width: 8, height: 16)
-                                    .offset(x: -5, y: -4)
-                            }
-                        }
-                    }
-                    .buttonStyle(.bouncy)
-                }
+    private var fieldSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
             }
-            .padding(10)
-
-            Text("— 拾级而上 · 朗朗书声 —")
-                .font(.system(size: 9, weight: .semibold, design: .rounded))
-                .tracking(4)
-                .foregroundStyle(Color(red: 232/255, green: 212/255, blue: 168/255))
-                .padding(.bottom, 8)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(
-                    LinearGradient(colors: [
-                        Color(red: 138/255, green: 106/255, blue: 62/255),
-                        Color(red: 110/255, green: 82/255, blue: 48/255)
-                    ], startPoint: .top, endPoint: .bottom)
-                )
-                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.3), radius: 10, y: 5)
-        )
-        .overlay(alignment: .bottom) {
-            // 书架底部木框
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(
-                    LinearGradient(colors: [
-                        Color(red: 154/255, green: 122/255, blue: 74/255),
-                        Color(red: 122/255, green: 94/255, blue: 56/255)
-                    ], startPoint: .top, endPoint: .bottom)
-                )
-                .frame(height: 8)
-                .padding(.horizontal, 0)
-                .offset(y: 0)
-        }
-        .padding(.bottom, 6)
+        .allowsHitTesting(false)
     }
 
-    // MARK: - 诗集藏卷
-
-    private var scrollsHeader: some View {
-        HStack(spacing: 10) {
-            Text("卷")
-                .font(.system(size: 11, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 240/255, green: 228/255, blue: 200/255))
-                .frame(width: 22, height: 22)
-                .background(Color(red: 59/255, green: 50/255, blue: 38/255), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                .rotationEffect(.degrees(-4))
-            Text("诗 集 藏 卷")
-                .font(.system(size: 15, weight: .bold, design: .serif))
-                .tracking(3)
-                .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
-            Rectangle()
-                .fill(
-                    LinearGradient(colors: [Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing)
-                )
-                .frame(height: 1)
-        }
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.top, 20)
-        .padding(.bottom, 10)
-    }
-
-    // 诗词古文大全入口卡 · 竹青强调
-    private var poetryEncyclopediaCard: some View {
-        NavigationLink(value: PMNavigationTarget.home) {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 6) {
-                        Text("📜")
-                            .font(.system(size: 28))
-                        Text("诗词古文大全")
-                            .font(.system(size: 22, weight: .heavy, design: .serif))
-                            .foregroundStyle(.white)
-                    }
-                    Text("唐诗宋词 · 古籍经典 · 名家赏析\n海量诗文，随查随读")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .lineSpacing(4)
+    private func fieldCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
                 }
-                Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.white.opacity(0.7))
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                LinearGradient(colors: [AppTheme.accentBamboo, Color(red: 54/255, green: 100/255, blue: 70/255)], startPoint: .topLeading, endPoint: .bottomTrailing)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
-            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
         }
-        .buttonStyle(.bouncy)
+        .allowsHitTesting(false)
     }
 
-    // 教材同步横卡 · 竹青浅底
-    private var textbookCard: some View {
-        NavigationLink(value: PoetryLibraryItem.textbookPlaceholder) {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 6) {
-                        Text("📚")
-                            .font(.system(size: 28))
-                        Text("教材同步")
-                            .font(.system(size: 22, weight: .heavy, design: .serif))
-                            .foregroundStyle(.white)
-                    }
-                    Text("小学 · 初中 · 高中\n跟着课本学古诗")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .lineSpacing(4)
-                }
-                Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.white.opacity(0.7))
+    // 书堆 + 猫头鹰（右上）
+    private var owlBooks: some View {
+        VStack(spacing: 3) {
+            Text("🦉")
+                .font(.system(size: 30))
+                .modifier(OwlFlap())
+            VStack(spacing: 3) {
+                Rectangle().fill(Color(red: 232/255, green: 201/255, blue: 160/255)).frame(width: 66, height: 14).cornerRadius(3).rotationEffect(.degrees(-4))
+                Rectangle().fill(Color(red: 168/255, green: 200/255, blue: 152/255)).frame(width: 58, height: 12).cornerRadius(3).rotationEffect(.degrees(3))
+                Rectangle().fill(Color(red: 184/255, green: 216/255, blue: 240/255)).frame(width: 62, height: 13).cornerRadius(3).rotationEffect(.degrees(-2))
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                LinearGradient(colors: [AppTheme.accentSage, AppTheme.accentBamboo], startPoint: .topLeading, endPoint: .bottomTrailing)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
-            )
         }
-        .buttonStyle(.bouncy)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.trailing, 16)
+        .padding(.top, 112)
+        .allowsHitTesting(false)
+        .opacity(0.9)
+    }
+
+    private struct OwlFlap: ViewModifier {
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 5), anchor: .bottom)
+            }
+        }
+    }
+
+    private struct FieldBob: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
+            }
+        }
     }
 }
 
@@ -481,7 +430,7 @@ struct PoetryLibraryItem: Identifiable, Hashable {
     ]
 }
 
-// MARK: - 集子卡片 · 书卷风（竖放卷轴 · 左右木轴 · 米黄底）
+// MARK: - 集子卡片 · 书摊卡（书堆图标 + 标题）
 
 private struct CollectionCardView: View {
     let item: PoetryLibraryItem
@@ -493,76 +442,56 @@ private struct CollectionCardView: View {
         return matched.reduce(0) { $0 + $1.poems.count }
     }
 
+    private var tint: Color {
+        switch item.id {
+        case "tangshi": return Color(red: 255/255, green: 238/255, blue: 216/255)
+        case "songci": return Color(red: 227/255, green: 240/255, blue: 248/255)
+        case "gushi19", "shijing": return Color(red: 232/255, green: 245/255, blue: 224/255)
+        case "huajian", "nantang": return Color(red: 245/255, green: 232/255, blue: 245/255)
+        case "wyjueju", "qyjueju", "wylvshi", "qylvshi", "yuefu": return Color(red: 248/255, green: 240/255, blue: 216/255)
+        default: return Color(red: 242/255, green: 247/255, blue: 236/255)
+        }
+    }
+
     var body: some View {
-        HStack(spacing: 10) {
-            // 竖放书卷：左轴 + 卷身 + 右轴
-            HStack(spacing: 0) {
-                // 左木轴
-                Rectangle()
-                    .fill(
-                        LinearGradient(colors: [
-                            Color(red: 110/255, green: 82/255, blue: 48/255),
-                            Color(red: 154/255, green: 122/255, blue: 74/255)
-                        ], startPoint: .top, endPoint: .bottom)
-                    )
-                    .frame(width: 5)
-                // 卷身
-                Rectangle()
-                    .fill(
-                        LinearGradient(colors: [item.colors.0, item.colors.1], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .frame(width: 26, height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
-                    )
-                // 右木轴
-                Rectangle()
-                    .fill(
-                        LinearGradient(colors: [
-                            Color(red: 110/255, green: 82/255, blue: 48/255),
-                            Color(red: 154/255, green: 122/255, blue: 74/255)
-                        ], startPoint: .bottom, endPoint: .top)
-                    )
-                    .frame(width: 5)
+        HStack(spacing: 12) {
+            // 书堆图标
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(tint)
+                Text(item.emoji)
+                    .font(.system(size: 20))
             }
-            .frame(height: 44)
+            .frame(width: 44, height: 44)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+            )
 
-            // 信息
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
-                    .font(.system(size: 14, weight: .bold, design: .serif))
-                    .tracking(1)
-                    .foregroundStyle(Color(red: 59/255, green: 50/255, blue: 38/255))
+                    .font(.system(size: 13, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     .lineLimit(1)
-
-                Text(item.subtitle)
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 122/255, blue: 96/255))
-                    .lineLimit(1)
-
                 Text("\(poemCount) 首")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 176/255, green: 58/255, blue: 46/255))
-                    .padding(.top, 1)
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(
-                    LinearGradient(colors: [
-                        Color(red: 251/255, green: 246/255, blue: 234/255),
-                        Color(red: 240/255, green: 228/255, blue: 204/255)
-                    ], startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.9))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .strokeBorder(Color(red: 120/255, green: 100/255, blue: 70/255).opacity(0.2), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 45/255, blue: 25/255).opacity(0.12), radius: 4, y: 2)
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
         )
     }
 }
