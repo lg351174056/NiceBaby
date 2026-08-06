@@ -1264,141 +1264,447 @@ struct ProfileView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 22) {
-                    HStack(alignment: .center) {
-                        Text("我的")
-                            .font(.system(size: 32, weight: .bold, design: .serif))
-                            .foregroundStyle(AppTheme.gradientProfile)
-                        Spacer()
-                        ZStack {
-                            Circle()
-                                .fill(AppTheme.accentIndigo.opacity(0.1))
-                                .frame(width: 36, height: 36)
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 16))
-                                .foregroundStyle(AppTheme.accentIndigo)
+            ZStack {
+                // 蓝天草地背景（固定）
+                LinearGradient(
+                    colors: [
+                        Color(red: 190/255, green: 227/255, blue: 245/255),
+                        Color(red: 220/255, green: 242/255, blue: 220/255),
+                        Color(red: 207/255, green: 235/255, blue: 196/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
+                // 白云留在背景层，太阳放进内容坐标，明确位于成长卡 Y 方向上方
+                cloudDecor(x: 0.02, y: 0.10, scale: 1.0, delay: 0)
+                cloudDecor(x: 0.72, y: 0.16, scale: 0.72, delay: 2.5)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // 标题行
+                        HStack {
+                            Text("我的")
+                                .font(.system(size: 26, weight: .heavy, design: .serif))
+                                .tracking(2)
+                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            Spacer()
+                            Text("🍃")
+                                .font(.system(size: 17))
+                                .frame(width: 38, height: 38)
+                                .background(Color.white.opacity(0.8), in: Circle())
+                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.15), radius: 5, y: 3)
+                                .modifier(LeafSway())
                         }
+                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .padding(.top, 14)
+
+                        // 太阳：作为卡片前的独立内容行，不用 ZStack 覆盖关系定位
+                        sunDecor
+                            .frame(height: 42, alignment: .bottomTrailing)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 8)
+
+                        growCard
+                            .padding(.top, 8)
+
+                        // 花园统计
+                        HStack(spacing: 10) {
+                            gardenStat(icon: "🧡", value: "\(progress.totalMatchstickSolves)", label: "火柴解对")
+                            gardenStat(icon: "📖", value: "\(progress.openedPoemIds.count)", label: "已读诗篇")
+                            gardenStat(icon: "🔥", value: "\(progress.streakDays)天", label: "连续打卡")
+                        }
+                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .padding(.top, 14)
+
+                        voiceSettingsLink
+                            .padding(.top, 16)
+
+                        achievementsSection
+                            .padding(.top, 6)
+
+                        Spacer(minLength: 40)
                     }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-
-                    avatarBlock
-
-                    HStack(spacing: 12) {
-                        StatCard(
-                            title: "火柴游戏 解对",
-                            value: "\(progress.totalMatchstickSolves)",
-                            tint: AppTheme.accentCinnabar
-                        )
-                        StatCard(
-                            title: "已读诗篇",
-                            value: "\(progress.openedPoemIds.count)",
-                            tint: AppTheme.accentBamboo
-                        )
-                        StatCard(
-                            title: "连续打卡",
-                            value: "\(progress.streakDays) 天",
-                            tint: AppTheme.accentSage
-                        )
-                    }
-                    .padding(.horizontal, AppTheme.paddingScreen)
-
-                    voiceSettingsLink
-
-                    achievementsSection
-
-                    Spacer(minLength: 40)
+                    .padding(.bottom, 30)
                 }
-                .padding(.top, 8)
             }
-            .background(AppTheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
         }
     }
 
-    @State private var isBreathing = false
+    // MARK: - 成长卡（花盆 + 小树 + 浇水）
 
-    private var avatarBlock: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 44, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 96, height: 96)
-                .background(
-                    LinearGradient(colors: [AppTheme.accentIndigo, AppTheme.accentInkPurple], startPoint: .topLeading, endPoint: .bottomTrailing),
-                    in: Circle()
-                )
-                .overlay(
-                    Circle().strokeBorder(Color.white.opacity(0.25), lineWidth: 4)
-                )
-                .shadow(color: AppTheme.accentIndigo.opacity(0.25), radius: 10, y: 6)
-                .scaleEffect(isBreathing ? 1.05 : 0.95)
-                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isBreathing)
-                .onAppear {
-                    isBreathing = true
+    private var growCard: some View {
+        HStack(spacing: 16) {
+            // 花盆
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 214/255, green: 232/255, blue: 200/255),
+                            Color(red: 184/255, green: 216/255, blue: 168/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text(treeEmoji)
+                    .font(.system(size: 40))
+                    .modifier(TreeSway())
+            }
+            .frame(width: 76, height: 76)
+            .overlay(alignment: .bottom) {
+                Text("Lv.\(growLevel)")
+                    .font(.system(size: 9, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 2)
+                    .background(Color(red: 110/255, green: 138/255, blue: 62/255), in: Capsule())
+                    .offset(y: 6)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("学习伙伴")
+                    .font(.system(size: 18, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text(growHint)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                // 成长条（动画增长）
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.15))
+                            .frame(height: 10)
+                        Capsule()
+                            .fill(
+                                LinearGradient(colors: [
+                                    Color(red: 143/255, green: 206/255, blue: 143/255),
+                                    Color(red: 76/255, green: 175/255, blue: 125/255)
+                                ], startPoint: .leading, endPoint: .trailing)
+                            )
+                            .frame(width: geo.size.width * growProgress, height: 10)
+                    }
                 }
+                .frame(height: 10)
+                .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("学习伙伴")
-                .font(.system(size: 22, weight: .bold, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
-            Text("成就与打卡仅保存在本机")
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+            // 浇水
+            VStack(spacing: 2) {
+                Text("💧")
+                    .font(.system(size: 26))
+                    .modifier(WaterDropFloat())
+                Text("\(progress.streakDays)")
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                Text("浇水天数")
+                    .font(.system(size: 8, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
         }
-        .padding(.top, 16)
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 10, y: 5)
+        )
+        .padding(.horizontal, AppTheme.paddingScreen)
     }
+
+    // 等级：按火柴题 + 读诗总数
+    private var growLevel: Int {
+        let points = progress.totalMatchstickSolves + progress.openedPoemIds.count
+        return min(1 + points / 40, 12)
+    }
+
+    private var treeEmoji: String {
+        switch growLevel {
+        case ..<3: return "🌱"
+        case ..<6: return "🌿"
+        default:   return "🌳"
+        }
+    }
+
+    private var growHint: String {
+        switch treeEmoji {
+        case "🌱": return "小苗刚发芽 · 多读诗多解题"
+        case "🌿": return "小树正在长高 · 坚持浇水"
+        default:   return "小树已经 \(growLevel) 岁啦 · 再浇 3 次水就能结果"
+        }
+    }
+
+    private var growProgress: Double {
+        let points = progress.totalMatchstickSolves + progress.openedPoemIds.count
+        return min(Double(points % 40) / 40.0, 1.0)
+    }
+
+    // MARK: - 花园统计牌
+
+    private func gardenStat(icon: String, value: String, label: String) -> some View {
+        VStack(spacing: 4) {
+            Text(icon).font(.system(size: 16))
+            Text(value)
+                .font(.system(size: 20, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            Text(label)
+                .font(.system(size: 9, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.85))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+        )
+    }
+
+    // MARK: - 语音设置（园丁工具）
 
     private var voiceSettingsLink: some View {
         NavigationLink {
             TencentTTSSettingsView()
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "waveform")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 42, height: 42)
-                    .background(AppTheme.accentIndigo, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("语音设置")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                    Text("切换朗读音色、语速与情感参数")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            LinearGradient(colors: [
+                                Color(red: 214/255, green: 232/255, blue: 200/255),
+                                Color(red: 168/255, green: 200/255, blue: 152/255)
+                            ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                    Text("🎙")
+                        .font(.system(size: 19))
                 }
+                .frame(width: 42, height: 42)
 
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("语音设置")
+                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    Text("切换朗读音色、语速与情感参数")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                }
                 Spacer()
-
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.8))
+                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
             }
             .padding(14)
-            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.9))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                    )
+                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
             )
             .padding(.horizontal, AppTheme.paddingScreen)
         }
         .buttonStyle(.plain)
     }
 
+    // MARK: - 成就花园（开花 / 待发芽）
+
     private var achievementsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("成就")
-                .font(.system(size: 20, weight: .bold, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
-                .padding(.horizontal, AppTheme.paddingScreen)
+            HStack(spacing: 8) {
+                Rectangle()
+                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .frame(width: 6, height: 22)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                Text("成就花园")
+                    .font(.system(size: 18, weight: .heavy, design: .serif))
+                    .tracking(2)
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Spacer()
+                Text("已开花 \(unlockedCount) / \(Achievement.all.count)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
+            .padding(.horizontal, AppTheme.paddingScreen)
+            .padding(.top, 10)
+            .padding(.bottom, 4)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                ForEach(Achievement.all) { a in
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                ForEach(Array(Achievement.all.enumerated()), id: \.element.id) { index, a in
                     let unlocked = progress.unlockedAchievementIds.contains(a.id)
-                    AchievementTile(achievement: a, unlocked: unlocked)
+                    gardenFlower(index: index, achievement: a, unlocked: unlocked)
                 }
             }
             .padding(.horizontal, AppTheme.paddingScreen)
+        }
+    }
+
+    private var unlockedCount: Int {
+        Achievement.all.filter { progress.unlockedAchievementIds.contains($0.id) }.count
+    }
+
+    private let flowerEmojis = ["🌼", "🌺", "🌷", "🌸"]
+    private let seedEmojis = ["🌱", "🌿", "🍃", "🪴"]
+
+    private func gardenFlower(index: Int, achievement: Achievement, unlocked: Bool) -> some View {
+        VStack(spacing: 6) {
+            Text(unlocked ? flowerEmojis[index % flowerEmojis.count] : seedEmojis[index % seedEmojis.count])
+                .font(.system(size: 30))
+                .modifier(FlowerSway(delay: Double(index) * 0.3, enabled: unlocked))
+            Text(achievement.title)
+                .font(.system(size: 13, weight: .heavy, design: .serif))
+                .foregroundStyle(unlocked ? Color(red: 61/255, green: 74/255, blue: 54/255) : Color(red: 138/255, green: 154/255, blue: 122/255))
+            Text(achievement.subtitle + (unlocked ? "" : " · 待发芽"))
+                .font(.system(size: 9, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(unlocked
+                    ? Color(red: 248/255, green: 251/255, blue: 243/255)
+                    : Color(red: 244/255, green: 243/255, blue: 237/255))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(
+                            unlocked ? Color(red: 110/255, green: 160/255, blue: 90/255).opacity(0.45)
+                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.2),
+                            lineWidth: unlocked ? 2 : 1.5
+                        )
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+        )
+        .opacity(unlocked ? 1 : 0.75)
+    }
+
+    // MARK: - 背景装饰（太阳/白云，与探索营地同款）
+
+    private var sunDecor: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 24)
+            .padding(.top, 106)
+        }
+        .allowsHitTesting(false)
+        .zIndex(1)
+    }
+
+    private func cloudDecor(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // MARK: - 动效修饰符
+
+    /// 树轻微上下浮动
+    private struct TreeSway: ViewModifier {
+        @State private var floating = false
+        func body(content: Content) -> some View {
+            content
+                .offset(y: floating ? -4 : 0)
+                .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: floating)
+                .onAppear { floating = true }
+        }
+    }
+
+    /// 花朵摇曳（错开 delay）
+    private struct FlowerSway: ViewModifier {
+        let delay: Double
+        let enabled: Bool
+        @State private var swaying = false
+        func body(content: Content) -> some View {
+            content
+                .rotationEffect(.degrees(swaying ? 3 : -3), anchor: .bottom)
+                .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true).delay(delay), value: swaying)
+                .onAppear { if enabled { swaying = true } }
+        }
+    }
+
+    /// 顶部叶片：缓慢、轻微的自然摆动
+    private struct LeafSway: ViewModifier {
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+                content
+                    .rotationEffect(.degrees(sin(t * 1.35) * 2.0), anchor: .bottom)
+                    .offset(y: CGFloat(sin(t * 1.35 + 0.8) * 1.2))
+            }
+        }
+    }
+
+    /// 水滴只沿 Y 轴上下浮动，不使用横向位移或旋转
+    private struct WaterDropFloat: ViewModifier {
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+                content
+                    .offset(y: CGFloat(sin(t * 2.2) * 5.0))
+            }
+        }
+    }
+
+    /// 上下浮动（叶子）
+    private struct FloatUp: ViewModifier {
+        let delay: Double
+        @State private var floating = false
+        func body(content: Content) -> some View {
+            content
+                .offset(y: floating ? -6 : 0)
+                .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true).delay(delay), value: floating)
+                .onAppear { floating = true }
         }
     }
 }
