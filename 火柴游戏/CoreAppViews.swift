@@ -1282,22 +1282,32 @@ struct ProfileView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
-                        // 标题行
-                        HStack {
+                        // 顶部（与探索营地同风格：kicker + 居中标题 + 副标 + 植物元素）
+                        VStack(spacing: 0) {
+                            Text("MY GARDEN")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .tracking(5)
+                                .foregroundStyle(Color(red: 110/255, green: 138/255, blue: 90/255))
+
                             Text("我的")
-                                .font(.system(size: 26, weight: .heavy, design: .serif))
-                                .tracking(2)
+                                .font(.system(size: 32, weight: .black, design: .serif))
+                                .tracking(5)
                                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                            Spacer()
-                            Text("🍃")
-                                .font(.system(size: 17))
-                                .frame(width: 38, height: 38)
-                                .background(Color.white.opacity(0.8), in: Circle())
-                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.15), radius: 5, y: 3)
-                                .modifier(LeafSway())
+                                .padding(.top, 6)
+
+                            Text("每一滴浇水，都在让知识长大")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(red: 122/255, green: 138/255, blue: 110/255))
+                                .padding(.top, 6)
+
+                            Text("🪴")
+                                .font(.system(size: 32))
+                                .modifier(FloatUp(delay: 0))
+                                .padding(.top, 10)
                         }
-                        .padding(.horizontal, AppTheme.paddingScreen)
-                        .padding(.top, 14)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 12)
+                        .padding(.bottom, 2)
 
                         // 太阳：作为卡片前的独立内容行，不用 ZStack 覆盖关系定位
                         sunDecor
