@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct BishenEssayHomeView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var catalog: BishenAlbumsCatalog?
     @State private var selectedTag = "全部"
     @State private var selectedYear: String?
@@ -61,20 +62,45 @@ struct BishenEssayHomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            UnifiedNavBar(title: "精选文集")
+        ZStack {
+            // 蓝天草地背景（固定）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-            Group {
-                if isLoading && allAlbums.isEmpty {
-                    loadingView
-                } else if let errorMessage, allAlbums.isEmpty {
-                    errorView(message: errorMessage)
-                } else {
-                    contentView
+            gardenSun
+            gardenCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            gardenCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
+            VStack(spacing: 0) {
+                // 透明导航条：返回 + 居中标题，蓝天通屏
+                transparentNavBar
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // 写作花园主题头
+                        gardenHeader
+
+                        Group {
+                            if isLoading && allAlbums.isEmpty {
+                                loadingView
+                            } else if let errorMessage, allAlbums.isEmpty {
+                                errorView(message: errorMessage)
+                            } else {
+                                contentView
+                            }
+                        }
+                    }
+                    .padding(.bottom, 20)
                 }
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -88,107 +114,268 @@ struct BishenEssayHomeView: View {
         }
     }
 
+    // 透明导航条（返回 + 居中标题）
+    private var transparentNavBar: some View {
+        ZStack {
+            HStack {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.opacity(0.9), in: Circle())
+                        .overlay(
+                            Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                        )
+                        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
+                }
+                Spacer()
+            }
+            Text("精选文集")
+                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 6)
+        .padding(.bottom, 6)
+    }
+
+    // MARK: - 写作花园主题头（紧凑二级页头部）
+
+    private var gardenHeader: some View {
+        HStack(spacing: 12) {
+            // 向日葵（摇摆）
+            Text("🌻")
+                .font(.system(size: 34))
+                .modifier(GardenSway(delay: 0))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("写作花园")
+                    .font(.system(size: 16, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text("每篇好作文，都是开在纸上的花")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
+            Spacer()
+            // 蝴蝶蜜蜂扑翅
+            HStack(spacing: 6) {
+                Text("🦋").font(.system(size: 15)).modifier(GardenFlutter(delay: 0, reverse: false))
+                Text("🐝").font(.system(size: 15)).modifier(GardenFlutter(delay: 1.0, reverse: true))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+        )
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
+    }
+
+    // MARK: - 背景装饰（太阳/云）
+
+    private var gardenSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func gardenCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private struct GardenSway: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.4) * 5), anchor: .bottom)
+            }
+        }
+    }
+
+    private struct GardenFlutter: ViewModifier {
+        let delay: Double
+        let reverse: Bool
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
+                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+            }
+        }
+    }
+
     private var contentView: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
-                tagSelector
+        VStack(alignment: .leading, spacing: 0) {
+            tagSelector
 
-                if selectedTag == "月刊", !availableYears.isEmpty {
-                    yearSelector
-                }
+            if selectedTag == "月刊", !availableYears.isEmpty {
+                yearSelector
+            }
 
-                HStack {
-                    Text(summaryText)
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                    Spacer()
-                }
+            // 分区标题
+            HStack(spacing: 8) {
+                Rectangle()
+                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .frame(width: 6, height: 20)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                Text(selectedTag == "月刊" ? "花园月刊" : "花园花圃")
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Spacer()
+                Text(summaryText)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 10)
 
-                LazyVGrid(columns: columns, spacing: 18) {
-                    ForEach(filteredAlbums) { album in
-                        NavigationLink {
-                            BishenAlbumListView(album: album)
-                        } label: {
-                            BishenAlbumGridCard(album: album)
-                        }
-                        .buttonStyle(.plain)
+            LazyVGrid(columns: columns, spacing: 14) {
+                ForEach(filteredAlbums) { album in
+                    NavigationLink {
+                        BishenAlbumListView(album: album)
+                    } label: {
+                        BishenAlbumGridCard(album: album)
                     }
-                }
-
-                if !filteredAlbums.isEmpty {
-                    Text("已展示全部内容")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 2)
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-            .padding(.bottom, 32)
+            .padding(.horizontal, 18)
+
+            if !filteredAlbums.isEmpty {
+                Text("已展示全部内容 ✓")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 168/255, green: 184/255, blue: 154/255))
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 14)
+            }
         }
     }
 
     private var tagSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 ForEach(availableTags, id: \.self) { tag in
                     Button {
                         selectTag(tag)
                     } label: {
                         Text(tag)
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
-                            .foregroundStyle(selectedTag == tag ? .white : AppTheme.textSecondary)
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 16)
+                            .font(.system(size: 12, weight: .heavy, design: .rounded))
+                            .foregroundStyle(selectedTag == tag ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                             .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(selectedTag == tag ? AppTheme.accentYellow : AppTheme.card)
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(selectedTag == tag
+                                        ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                        : Color.white.opacity(0.85))
                             )
                             .overlay {
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(AppTheme.separator, lineWidth: selectedTag == tag ? 0 : 1)
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(
+                                        selectedTag == tag ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                        lineWidth: selectedTag == tag ? 2 : 2
+                                    )
                             }
-                            .shadow(
-                                color: selectedTag == tag ? AppTheme.accentYellow.opacity(0.25) : .black.opacity(0.04),
-                                radius: selectedTag == tag ? 12 : 6,
-                                x: 0,
-                                y: selectedTag == tag ? 8 : 4
-                            )
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 2)
-            .padding(.vertical, 2)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
         }
     }
 
     private var yearSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 ForEach(availableYears, id: \.self) { year in
                     Button {
                         selectedYear = year
                     } label: {
                         Text(year)
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
-                            .foregroundStyle(selectedYear == year ? .white : AppTheme.textSecondary)
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 8)
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(selectedYear == year ? Color(red: 240/255, green: 232/255, blue: 214/255)
+                                : Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
                             .background(
                                 Capsule()
-                                    .fill(selectedYear == year ? AppTheme.accentYellow : AppTheme.card)
+                                    .fill(selectedYear == year
+                                        ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                        : Color.white.opacity(0.7))
                             )
                             .overlay {
                                 Capsule()
-                                    .stroke(AppTheme.separator, lineWidth: selectedYear == year ? 0 : 1)
+                                    .strokeBorder(
+                                        Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.4),
+                                        style: StrokeStyle(lineWidth: 1.5, dash: selectedYear == year ? [] : [4, 3])
+                                    )
                             }
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 2)
+            .padding(.horizontal, 18)
+            .padding(.top, 4)
         }
     }
 
@@ -203,43 +390,36 @@ struct BishenEssayHomeView: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: 14) {
-            Spacer(minLength: 80)
-            ProgressView()
-                .controlSize(.large)
-                .tint(AppTheme.accentYellow)
-            Text("正在还原全部文集数据...")
+        VStack(spacing: 12) {
+            ProgressView("正在浇灌花园...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-            Spacer()
+                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 300)
     }
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
-            Spacer(minLength: 80)
-            Image(systemName: "book.closed")
-                .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary)
-            Text("文集加载失败")
+        VStack(spacing: 14) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+            Text("花园暂时打不开")
                 .font(.system(size: 20, weight: .bold, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
             Text(message)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 .multilineTextAlignment(.center)
-            Button("重新加载") {
+            Button("重新浇灌") {
                 Task { await load() }
             }
             .font(.system(size: 15, weight: .bold, design: .rounded))
             .foregroundStyle(.white)
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
-            .background(AppTheme.accentIndigo, in: Capsule())
-            Spacer()
+            .background(Color(red: 76/255, green: 175/255, blue: 125/255), in: Capsule())
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 300)
         .padding(.horizontal, AppTheme.paddingScreen)
     }
 
@@ -309,14 +489,51 @@ struct BishenAlbumListView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .top) {
-                AppTheme.background.ignoresSafeArea()
+        ZStack {
+            // 蓝天草地背景（固定）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
+            listSun
+            listCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            listCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+            listFlutter
+
+            VStack(spacing: 0) {
+                // 透明导航条
+                ZStack {
+                    HStack {
+                        Button { dismiss() } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .frame(width: 36, height: 36)
+                                .background(Color.white.opacity(0.9), in: Circle())
+                                .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
+                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
+                        }
+                        Spacer()
+                    }
+                    Text(album.title)
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
-                        albumHeader(topInset: proxy.safeAreaInsets.top)
-                        
+                        gardenSign
+
                         Group {
                             if isLoading && articles.isEmpty {
                                 loadingView
@@ -329,8 +546,6 @@ struct BishenAlbumListView: View {
                     }
                     .padding(.bottom, 20)
                 }
-
-                floatingNavigationBar(topInset: proxy.safeAreaInsets.top)
             }
         }
         .navigationBarBackButtonHidden()
@@ -346,16 +561,179 @@ struct BishenAlbumListView: View {
         }
     }
 
+    // MARK: - 背景装饰（太阳/云/蝴蝶蜜蜂）
+
+    private var listSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func listCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // 蝴蝶蜜蜂（右上）
+    private var listFlutter: some View {
+        ZStack {
+            Text("🦋").font(.system(size: 16)).modifier(GardenFlutter(delay: 0, reverse: false))
+            Text("🐝").font(.system(size: 15)).modifier(GardenFlutter(delay: 1.2, reverse: true))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.trailing, 24)
+        .padding(.top, 140)
+        .allowsHitTesting(false)
+    }
+
+    private struct GardenFlutter: ViewModifier {
+        let delay: Double
+        let reverse: Bool
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
+                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+            }
+        }
+    }
+
+    private struct GardenBloom: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 5), anchor: .bottom)
+            }
+        }
+    }
+
+    // 花园立牌头（花朵圆牌 + 标题 + meta）
+    private var gardenSign: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 248/255, green: 232/255, blue: 216/255),
+                            Color(red: 240/255, green: 200/255, blue: 168/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("🌷")
+                    .font(.system(size: 28))
+                    .modifier(GardenBloom(delay: 0))
+            }
+            .frame(width: 60, height: 60)
+            .overlay(
+                Circle().strokeBorder(Color(red: 176/255, green: 138/255, blue: 94/255).opacity(0.35), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(album.title)
+                    .font(.system(size: 17, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .lineLimit(2)
+                Text(album.desc.isEmpty ? "精选优秀小学生作文" : album.desc)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .lineLimit(2)
+                HStack(spacing: 12) {
+                    Text("🌼 \(album.count) 朵")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    if let countNew = album.countNew, countNew > 0 {
+                        Text("✨ 新开 \(countNew)")
+                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                    }
+                }
+                .padding(.top, 2)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+        )
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
+    }
+
     private var articleListView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("全部作文")
-                .font(.system(size: 20, weight: .heavy, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
-                .padding(.horizontal, 22)
-                .padding(.top, 20)
-                .padding(.bottom, 8)
+            // 分区标题
+            HStack(spacing: 8) {
+                Rectangle()
+                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .frame(width: 6, height: 20)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                Text("花园里的作文")
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Spacer()
+                Text("\(articles.count) 朵")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
 
-            VStack(spacing: 0) {
+            LazyVStack(spacing: 10) {
                 ForEach(Array(articles.enumerated()), id: \.element.id) { index, article in
                     NavigationLink {
                         BishenEssayDetailView(articleID: article.id, initialTitle: article.title)
@@ -364,131 +742,18 @@ struct BishenAlbumListView: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-
-                    if index != articles.count - 1 {
-                        Divider()
-                            .padding(.leading, 22)
-                    }
                 }
-            }
-            .padding(.bottom, 10)
-        }
-        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .offset(y: -14)
-        .padding(.horizontal, 0)
-        .padding(.bottom, 4)
-    }
-
-    private func albumHeader(topInset: CGFloat) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 0, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 70 / 255, green: 166 / 255, blue: 206 / 255),
-                            Color(red: 196 / 255, green: 210 / 255, blue: 224 / 255),
-                            Color(red: 219 / 255, green: 187 / 255, blue: 104 / 255)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            AsyncImage(url: URL(string: album.coverURL)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .blur(radius: 32)
-                    .opacity(0.48)
-            } placeholder: {
-                Color.clear
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(0.28),
-                    Color.white.opacity(0.10),
-                    Color.black.opacity(0.12)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            HStack(alignment: .center, spacing: 16) {
-                AsyncImage(url: URL(string: album.coverURL)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color.white.opacity(0.28))
-                }
-                .frame(width: 108, height: 144)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.white.opacity(0.82), lineWidth: 1.6)
-                }
-                .shadow(color: .black.opacity(0.16), radius: 14, y: 8)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(album.title)
-                        .font(.system(size: 22, weight: .heavy, design: .serif))
-                        .foregroundStyle(.white)
-                        .lineLimit(2)
-
-                    Text(album.desc)
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(0.86))
-                        .lineSpacing(5)
-                        .lineLimit(2)
-
-                    Text("共\(album.count)篇")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-
-                    if let countNew = album.countNew, countNew > 0 {
-                        Text("新增 \(countNew) 篇")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.14), in: Capsule())
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 18)
-            .padding(.top, topInset + 28)
-            .padding(.bottom, 26)
+            .padding(.bottom, 6)
         }
-        .frame(height: topInset + 224)
-    }
-
-    private func floatingNavigationBar(topInset: CGFloat) -> some View {
-        HStack(spacing: 12) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 12)
-        .padding(.top, topInset - 48)
     }
 
     private var loadingView: some View {
         VStack(spacing: 12) {
-            ProgressView("正在加载文集内容...")
+            ProgressView("正在浇灌花园...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(AppTheme.accentIndigo)
+                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }
@@ -497,14 +762,22 @@ struct BishenAlbumListView: View {
         VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(AppTheme.accentCinnabar)
-            Text("文集详情加载失败")
+                .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+            Text("花园暂时打不开")
                 .font(.system(size: 20, weight: .bold, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
             Text(message)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 .multilineTextAlignment(.center)
+            Button("重新浇灌") {
+                Task { await load() }
+            }
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+            .background(Color(red: 76/255, green: 175/255, blue: 125/255), in: Capsule())
         }
         .frame(maxWidth: .infinity, minHeight: 300)
         .padding(.horizontal, AppTheme.paddingScreen)
@@ -531,32 +804,66 @@ struct BishenEssayDetailView: View {
     @State private var detail: BishenArticleDetail?
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            UnifiedNavBar(
-                title: "作文详情",
-                trailing: AnyView(
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .frame(width: 36, height: 36)
-                        .background(AppTheme.card, in: Circle())
-                        .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-                )
+        ZStack {
+            // 蓝天草地背景（固定）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
             )
+            .ignoresSafeArea()
 
-            Group {
-                if isLoading && detail == nil {
-                    loadingView
-                } else if let detail {
-                    detailView(detail)
-                } else {
-                    errorView(message: errorMessage ?? "详情暂时加载失败")
+            detailSun
+            detailCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            detailCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+            detailFlutter
+
+            VStack(spacing: 0) {
+                // 透明导航条
+                ZStack {
+                    HStack {
+                        Button { dismiss() } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .frame(width: 36, height: 36)
+                                .background(Color.white.opacity(0.9), in: Circle())
+                                .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
+                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
+                        }
+                        Spacer()
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .frame(width: 36, height: 36)
+                            .background(Color.white.opacity(0.9), in: Circle())
+                            .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
+                    }
+                    Text("作文详情")
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
+
+                Group {
+                    if isLoading && detail == nil {
+                        loadingView
+                    } else if let detail {
+                        detailView(detail)
+                    } else {
+                        errorView(message: errorMessage ?? "详情暂时加载失败")
+                    }
                 }
             }
         }
-        .background(BishenDisplayMapper.detailBackground.ignoresSafeArea())
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -567,6 +874,90 @@ struct BishenEssayDetailView: View {
         }
         .refreshable {
             await load()
+        }
+    }
+
+    // MARK: - 背景装饰（太阳/云/蝴蝶）
+
+    private var detailSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func detailCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // 蝴蝶蜜蜂（右上）
+    private var detailFlutter: some View {
+        ZStack {
+            Text("🦋").font(.system(size: 16)).modifier(DetailFlutter(delay: 0, reverse: false))
+            Text("🐝").font(.system(size: 15)).modifier(DetailFlutter(delay: 1.2, reverse: true))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.trailing, 24)
+        .padding(.top, 140)
+        .allowsHitTesting(false)
+    }
+
+    private struct DetailFlutter: ViewModifier {
+        let delay: Double
+        let reverse: Bool
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
+                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+            }
         }
     }
 
@@ -775,48 +1166,67 @@ struct BishenEssayDetailView: View {
 private struct BishenAlbumGridCard: View {
     let album: BishenAlbum
 
+    private var flowerEmoji: String {
+        let flowers = ["🌷", "🌼", "🌹", "🌺", "🌸", "🌻"]
+        let seed = abs(album.id.hashValue)
+        return flowers[seed % flowers.count]
+    }
+
+    private var tint: Color {
+        let colors: [Color] = [
+            Color(red: 234/255, green: 246/255, blue: 228/255),
+            Color(red: 248/255, green: 232/255, blue: 240/255),
+            Color(red: 232/255, green: 240/255, blue: 248/255),
+            Color(red: 248/255, green: 240/255, blue: 224/255),
+        ]
+        return colors[abs(album.id.hashValue) % colors.count]
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            AsyncImage(url: URL(string: album.coverURL)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                LinearGradient(
-                    colors: [AppTheme.accentYellow.opacity(0.24), AppTheme.accentIndigo.opacity(0.14)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            }
-            .frame(maxWidth: .infinity)
-            .aspectRatio(0.76, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(alignment: .topTrailing) {
-                if let countNew = album.countNew, countNew > 0 {
-                    Text("+\(countNew)")
-                        .font(.system(size: 12, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(AppTheme.accentCinnabar, in: Capsule())
-                        .padding(8)
-                }
-            }
+        VStack(spacing: 5) {
+            // 花朵图标（摇摆）
+            Text(flowerEmoji)
+                .font(.system(size: 26))
+                .modifier(FlowerSway(delay: Double(abs(album.id.hashValue) % 5) * 0.2))
 
             Text(album.title)
-                .font(.system(size: 16, weight: .heavy, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(.system(size: 12, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
 
             HStack(spacing: 4) {
                 Text("共 \(album.count) 篇")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
                 if let countNew = album.countNew, countNew > 0 {
                     Text("+\(countNew)")
-                        .font(.system(size: 12, weight: .heavy, design: .rounded))
-                        .foregroundStyle(AppTheme.accentCinnabar)
+                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
                 }
+            }
+        }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+        )
+    }
+
+    private struct FlowerSway: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 4), anchor: .bottom)
             }
         }
     }
@@ -826,26 +1236,72 @@ private struct BishenArticleListCard: View {
     let article: BishenArticleSummary
     let index: Int
 
+    // 花朵图标轮换（不重复），序号对应
+    private var bloomEmoji: String {
+        let blooms = ["🌱", "🌸", "🌼", "🌷", "🌹", "🌺", "🌻", "🍀", "🦋", "🌿", "🌻", "🌷"]
+        return blooms[(index - 1) % blooms.count]
+    }
+
+    private var tint: Color {
+        let colors: [Color] = [
+            Color(red: 234/255, green: 246/255, blue: 228/255),
+            Color(red: 248/255, green: 232/255, blue: 240/255),
+            Color(red: 232/255, green: 240/255, blue: 248/255),
+            Color(red: 248/255, green: 240/255, blue: 224/255),
+        ]
+        return colors[(index - 1) % colors.count]
+    }
+
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 7) {
+        HStack(spacing: 12) {
+            // 花朵圆标（摇摆，相位错开）
+            ZStack {
+                Circle()
+                    .fill(tint)
+                Text(bloomEmoji)
+                    .font(.system(size: 17))
+                    .modifier(BloomSway(delay: Double(index % 6) * 0.3))
+            }
+            .frame(width: 42, height: 42)
+            .overlay(
+                Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
                 Text(article.title)
-                    .font(.system(size: 18, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .lineLimit(2)
                 Text(article.authorDisplayForList)
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
             Spacer(minLength: 0)
-            if index <= 3 {
-                Text("\(index)")
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(AppTheme.accentYellow)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+        )
+    }
+
+    private struct BloomSway: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 4), anchor: .bottom)
             }
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 16)
     }
 }
 
