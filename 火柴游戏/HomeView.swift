@@ -661,6 +661,8 @@ struct HomeView: View {
             MazeGameView(onExit: { presentedGame = nil })
         case .sudoku:
             SudokuHomeView(onExit: { presentedGame = nil })
+        case .arithmetic:
+            ArithmeticHomeView(onExit: { presentedGame = nil })
         }
     }
 }

@@ -118,17 +118,7 @@ struct BishenEssayHomeView: View {
     private var transparentNavBar: some View {
         ZStack {
             HStack {
-                Button { dismiss() } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                        .frame(width: 36, height: 36)
-                        .background(Color.white.opacity(0.9), in: Circle())
-                        .overlay(
-                            Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
-                        )
-                        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
-                }
+                GracefulBackButton()
                 Spacer()
             }
             Text("精选文集")
@@ -510,15 +500,7 @@ struct BishenAlbumListView: View {
                 // 透明导航条
                 ZStack {
                     HStack {
-                        Button { dismiss() } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                                .frame(width: 36, height: 36)
-                                .background(Color.white.opacity(0.9), in: Circle())
-                                .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
-                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
-                        }
+                        GracefulBackButton()
                         Spacer()
                     }
                     Text(album.title)
@@ -828,15 +810,7 @@ struct BishenEssayDetailView: View {
                 // 透明导航条
                 ZStack {
                     HStack {
-                        Button { dismiss() } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                                .frame(width: 36, height: 36)
-                                .background(Color.white.opacity(0.9), in: Circle())
-                                .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
-                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 4, y: 2)
-                        }
+                        GracefulBackButton()
                         Spacer()
                         Image(systemName: "ellipsis")
                             .font(.system(size: 16, weight: .bold))

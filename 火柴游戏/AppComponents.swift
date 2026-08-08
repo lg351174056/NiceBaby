@@ -38,6 +38,34 @@ struct UnifiedNavBar: View {
     }
 }
 
+// MARK: - 优雅返回箭头（细箭头 + 轻白圆）
+
+struct GracefulBackButton: View {
+    var action: (() -> Void)? = nil
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Button {
+            if let action {
+                action()
+            } else {
+                dismiss()
+            }
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                .frame(width: 32, height: 32)
+                .background(Color.white.opacity(0.8), in: Circle())
+                .overlay(
+                    Circle().strokeBorder(Color.white.opacity(0.7), lineWidth: 1)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 3, y: 1)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - 统一 Toolbar 返回按钮（Modifier 版）
 
 struct UnifiedBackButton: ViewModifier {

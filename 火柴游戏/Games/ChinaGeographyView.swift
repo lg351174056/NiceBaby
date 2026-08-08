@@ -296,19 +296,7 @@ struct ChinaGeographyView: View {
     
     private var topBar: some View {
         HStack {
-            Button { dismiss() } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .bold))
-                    Text("返回")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(.white, in: Capsule())
-                .shadow(color: .black.opacity(0.05), radius: 5, y: 3)
-                .foregroundStyle(AppTheme.textPrimary)
-            }
+            GracefulBackButton()
             
             Spacer()
             

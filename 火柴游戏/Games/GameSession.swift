@@ -19,6 +19,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case funQuiz            // 趣味答题
     case maze               // 迷宫乐园（儿童走迷宫）
     case sudoku             // 星云数独（4/6/9 宫格）
+    case arithmetic         // 口算摩天轮（按年级出题）
 
     var id: String { rawValue }
 
@@ -39,6 +40,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .funQuiz:        return "趣味答题"
         case .maze:           return "迷宫乐园"
         case .sudoku:         return "星云数独"
+        case .arithmetic:     return "口算摩天轮"
         }
     }
 
@@ -59,6 +61,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .funQuiz:        return "图片题 + 选择题 · 多主题趣味问答"
         case .maze:           return "50关 · 走出迷宫，找到草莓熊"
         case .sudoku:         return "4×4 / 6×6 / 9×9 · 每局随机生成"
+        case .arithmetic:     return "1-6 年级 · 看谁算得快"
         }
     }
 
@@ -79,6 +82,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .funQuiz:        return "sparkles.tv.fill"
         case .maze:           return "circle.hexagongrid.fill"
         case .sudoku:         return "square.grid.3x3.fill"
+        case .arithmetic:     return "sum"
         }
     }
 
@@ -99,6 +103,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .funQuiz:        return (AppTheme.accentPink, AppTheme.accentIndigo)
         case .maze:           return (Color(red: 255/255, green: 143/255, blue: 184/255), Color(red: 232/255, green: 106/255, blue: 158/255))
         case .sudoku:         return (Color(red: 245/255, green: 214/255, blue: 123/255), Color(red: 125/255, green: 249/255, blue: 255/255))
+        case .arithmetic:     return (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 245/255, green: 166/255, blue: 35/255))
         }
     }
 
