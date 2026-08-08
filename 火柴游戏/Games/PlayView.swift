@@ -520,6 +520,7 @@ struct PlayView: View {
             ]),
             Subject(seal: "文", icon: "🎨", name: "文学杂技团", lessons: [
                 Lesson(kind: .poetryComplete, name: "诗词补全", sub: "古诗少一句 · 四选一", icon: "🍊"),
+                Lesson(kind: .chineseHomework, name: "小老师批改屋", sub: "数学/语文 · 作业/试卷", icon: "🏫"),
                 Lesson(kind: .idiomFillBlank, name: "成语填空", sub: "缺个字，你来填", icon: "📝"),
                 Lesson(kind: .antonymMatch,   name: "反义对对碰", sub: "找相反的好朋友", icon: "⚖️"),
                 Lesson(kind: .sanzijing,      name: "三字经", sub: "人之初，性本善", icon: "📖"),
@@ -655,6 +656,7 @@ struct PlayView: View {
         case "🪐": return Color(red: 227/255, green: 240/255, blue: 248/255)
         case "🎡": return Color(red: 255/255, green: 227/255, blue: 239/255)
         case "🧩", "🍊": return Color(red: 232/255, green: 245/255, blue: 224/255)
+        case "✍️", "🏫": return Color(red: 231/255, green: 243/255, blue: 252/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
         case "📖": return Color(red: 248/255, green: 240/255, blue: 216/255)
         default: return Color(red: 227/255, green: 240/255, blue: 248/255)
@@ -685,6 +687,10 @@ struct PlayView: View {
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .arithmetic:
             let done = (1...6).contains { ArithmeticProgressStore.stars(grade: $0) > 0 }
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .chineseHomework:
+            let done = GameBestScoreStore.best(for: kind) > 0
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         default:
@@ -839,6 +845,8 @@ struct PlayView: View {
                 SudokuHomeView(onExit: { popToRoot() })
             case .arithmetic:
                 ArithmeticHomeView(onExit: { popToRoot() })
+            case .chineseHomework:
+                TeacherCorrectionHouseView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

@@ -534,6 +534,9 @@ struct HomeView: View {
                     QuickEntryView(icon: "square.dashed", title: "成语填空", color: AppTheme.accentCinnabar) {
                         presentedGame = .idiomFillBlank
                     }
+                    QuickEntryView(icon: "building.2.fill", title: "批改屋", color: AppTheme.accentBlue) {
+                        presentedGame = .chineseHomework
+                    }
                     QuickEntryView(icon: "person.2.fill", title: "百家姓", color: AppTheme.accentJade) {
                         presentedGame = .surnameMatch
                     }
@@ -663,6 +666,8 @@ struct HomeView: View {
             SudokuHomeView(onExit: { presentedGame = nil })
         case .arithmetic:
             ArithmeticHomeView(onExit: { presentedGame = nil })
+        case .chineseHomework:
+            TeacherCorrectionHouseView(onExit: { presentedGame = nil })
         }
     }
 }
