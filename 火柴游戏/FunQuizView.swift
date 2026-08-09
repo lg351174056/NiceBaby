@@ -450,18 +450,46 @@ struct FunQuizHomeView: View {
     @State private var store = FunQuizHomeStore()
 
     var body: some View {
-        VStack(spacing: 0) {
-            UnifiedNavBar(title: "趣味答题")
+        ZStack {
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-            Group {
-                if store.isLoading && store.previews.isEmpty {
-                    loadingView
-                } else {
-                    contentView
+            homeSun
+            homeCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            homeCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
+            VStack(spacing: 0) {
+                // 透明导航条
+                ZStack {
+                    HStack {
+                        GracefulBackButton()
+                        Spacer()
+                    }
+                    Text("趣味答题")
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
+
+                Group {
+                    if store.isLoading && store.previews.isEmpty {
+                        loadingView
+                    } else {
+                        contentView
+                    }
                 }
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -511,7 +539,7 @@ struct FunQuizHomeView: View {
     private var heroCard: some View {
         ZStack(alignment: .bottomTrailing) {
             LinearGradient(
-                colors: [AppTheme.accentCinnabar, AppTheme.accentPink, AppTheme.accentIndigo],
+                colors: [Color(red: 143/255, green: 227/255, blue: 192/255), Color(red: 76/255, green: 175/255, blue: 125/255), Color(red: 46/255, green: 125/255, blue: 91/255)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -626,11 +654,12 @@ struct FunQuizHomeView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(AppTheme.card)
+                .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
                 )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
         )
     }
 
@@ -664,12 +693,72 @@ struct FunQuizHomeView: View {
             Spacer(minLength: 80)
             ProgressView("正在整理趣味题库...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(AppTheme.accentPink)
+                .tint(AppTheme.accentBamboo)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+
+    // MARK: - 背景装饰（太阳/云）
+
+    private var homeSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func homeCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
 }
+
 
 // MARK: - 趣味答题 · 答题页
 
@@ -684,42 +773,59 @@ struct FunQuizPlayView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            UnifiedNavBar(
-                title: category.title,
-                trailing: AnyView(
-                    Button {
-                        Task { await store.reload() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                            .frame(width: 36, height: 36)
-                            .background(AppTheme.card, in: Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-                    }
-                    .buttonStyle(.plain)
-                )
+        ZStack {
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
             )
+            .ignoresSafeArea()
 
-            Group {
-                if store.isLoading && store.questions.isEmpty {
-                    loadingView
-                } else if let errorMessage = store.errorMessage, store.questions.isEmpty {
-                    errorView(message: errorMessage)
-                } else {
-                    contentView
+            playSun
+            playCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            playCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
+            VStack(spacing: 0) {
+                // 透明导航条
+                ZStack {
+                    HStack {
+                        GracefulBackButton()
+                        Spacer()
+                        Button {
+                            Task { await store.reload() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                .frame(width: 36, height: 36)
+                                .background(Color.white.opacity(0.9), in: Circle())
+                                .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Text(category.title)
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
+
+                Group {
+                    if store.isLoading && store.questions.isEmpty {
+                        loadingView
+                    } else if let errorMessage = store.errorMessage, store.questions.isEmpty {
+                        errorView(message: errorMessage)
+                    } else {
+                        contentView
+                    }
                 }
             }
         }
-        .background(
-            LinearGradient(
-                colors: [(category.gradient.first ?? AppTheme.accentPink).opacity(0.12), AppTheme.background, AppTheme.background],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -821,12 +927,13 @@ struct FunQuizPlayView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(AppTheme.card)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.92))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder((category.gradient.first ?? AppTheme.accentPink).opacity(0.16), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
                 )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
         )
     }
 
@@ -918,12 +1025,13 @@ struct FunQuizPlayView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(AppTheme.card)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.white.opacity(0.94))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.28), lineWidth: 2)
                 )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
         )
     }
 
@@ -957,11 +1065,11 @@ struct FunQuizPlayView: View {
             }
             .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(optionBackground(question: question, index: index))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .strokeBorder(optionBorder(question: question, index: index), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(optionBorder(question: question, index: index), lineWidth: 2)
                     )
             )
         }
@@ -1042,11 +1150,15 @@ struct FunQuizPlayView: View {
                 .padding(.vertical, 14)
                 .background(
                     LinearGradient(
-                        colors: category.gradient,
+                        colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
                         startPoint: .leading,
                         endPoint: .trailing
                     ),
                     in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2)
                 )
             }
             .buttonStyle(.plain)
@@ -1129,7 +1241,7 @@ struct FunQuizPlayView: View {
             Spacer(minLength: 80)
             ProgressView("正在装载趣味题目...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(category.gradient.first ?? AppTheme.accentPink)
+                .tint(AppTheme.accentBamboo)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1152,5 +1264,64 @@ struct FunQuizPlayView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, AppTheme.paddingScreen)
+    }
+
+    // MARK: - 背景装饰（太阳/云）
+
+    private var playSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func playCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
     }
 }

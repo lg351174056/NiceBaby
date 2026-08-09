@@ -97,28 +97,30 @@ struct BrainTeaserHomeView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            AppTheme.background.ignoresSafeArea()
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
             VStack(spacing: 0) {
-                // 自定义顶部栏（与其他游戏页一致）
-                HStack {
-                    Button(action: { onExit?() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                            .frame(width: 36, height: 36)
-                            .background(AppTheme.card, in: Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+                // 透明导航条
+                ZStack {
+                    HStack {
+                        GracefulBackButton(action: { onExit?() })
+                        Spacer()
                     }
-                    Spacer()
                     Text("脑筋急转弯")
-                        .font(.system(size: 18, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-                    Spacer()
-                    Color.clear.frame(width: 36, height: 36)
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 10)
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
@@ -144,11 +146,11 @@ struct BrainTeaserHomeView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(AppTheme.accentInkPurple)
+                        .foregroundStyle(AppTheme.accentBamboo)
                     Text("BRAIN · 脑筋急转弯")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .tracking(2)
-                        .foregroundStyle(AppTheme.accentInkPurple)
+                        .foregroundStyle(AppTheme.accentBamboo)
                 }
 
                 Text("急转弯")
@@ -160,7 +162,7 @@ struct BrainTeaserHomeView: View {
                     .foregroundStyle(AppTheme.textSecondary)
 
                 HStack(spacing: 12) {
-                    statPill("\(store.total)", "共 \(store.total) 题", AppTheme.accentInkPurple)
+                    statPill("\(store.total)", "共 \(store.total) 题", AppTheme.accentBamboo)
                     statPill("\(store.unlockedCount + 1)", "已解锁", AppTheme.accentSage)
                     Spacer()
                     Button {
@@ -176,7 +178,7 @@ struct BrainTeaserHomeView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 9)
-                        .background(AppTheme.accentInkPurple, in: Capsule())
+                        .background(AppTheme.accentBamboo, in: Capsule())
                     }
                 }
                 .padding(.top, 4)
@@ -192,15 +194,16 @@ struct BrainTeaserHomeView: View {
                 .padding(.bottom, 16)
         }
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(AppTheme.accentInkPurple.opacity(0.06))
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(AppTheme.accentInkPurple.opacity(0.15), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
                 )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
         )
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
         .padding(.bottom, 4)
     }
 
@@ -216,7 +219,7 @@ struct BrainTeaserHomeView: View {
                 p.addLine(to: .init(x: cx - r * 0.22, y: cy + r * 0.55))
                 p.closeSubpath()
             }
-            ctx.fill(bulb, with: .color(AppTheme.accentInkPurple))
+            ctx.fill(bulb, with: .color(AppTheme.accentBamboo))
             let base = Path { p in
                 p.move(to: .init(x: cx - r * 0.2, y: cy + r * 0.55))
                 p.addLine(to: .init(x: cx + r * 0.2, y: cy + r * 0.55))
@@ -224,7 +227,7 @@ struct BrainTeaserHomeView: View {
                 p.addLine(to: .init(x: cx - r * 0.15, y: cy + r * 0.75))
                 p.closeSubpath()
             }
-            ctx.fill(base, with: .color(AppTheme.accentInkPurple))
+            ctx.fill(base, with: .color(AppTheme.accentBamboo))
         }
     }
 
@@ -246,45 +249,54 @@ struct BrainTeaserHomeView: View {
             HStack(spacing: 8) {
                 ForEach(categories, id: \.self) { cat in
                     Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedCategory = cat
-                        }
+                        // 直接切换，不做整列表 spring 动画（150 行重排会卡顿）
+                        selectedCategory = cat
                     } label: {
                         Text(cat)
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(selectedCategory == cat ? .white : AppTheme.textSecondary)
+                            .font(.system(size: 13, weight: .heavy, design: .rounded))
+                            .foregroundStyle(selectedCategory == cat ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(
                                 selectedCategory == cat
-                                    ? AppTheme.accentInkPurple
-                                    : AppTheme.card,
+                                    ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    : Color.white.opacity(0.85),
                                 in: Capsule()
                             )
                             .overlay(
                                 Capsule()
                                     .strokeBorder(
                                         selectedCategory == cat
-                                            ? Color.clear
-                                            : AppTheme.separator,
-                                        lineWidth: 1
+                                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                        lineWidth: 2
                                     )
                             )
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 18)
             .padding(.vertical, 12)
         }
     }
 
-    // MARK: Question List
+    // MARK: Question List（独立卡片行 · 预构建索引避免卡顿）
+
+    /// 题目 id → 全局序号（一次性构建，避免逐行 firstIndex 的 O(n²)）
+    private var globalIndexMap: [Int: Int] {
+        var map: [Int: Int] = [:]
+        for (i, t) in store.teasers.enumerated() {
+            map[t.id] = i
+        }
+        return map
+    }
 
     private var questionList: some View {
-        LazyVStack(spacing: 0) {
+        let map = globalIndexMap
+        return LazyVStack(spacing: 10) {
             ForEach(Array(filtered.enumerated()), id: \.element.id) { idx, teaser in
-                let globalIdx = store.teasers.firstIndex(where: { $0.id == teaser.id }) ?? 0
+                let globalIdx = map[teaser.id] ?? 0
                 let isUnlocked = globalIdx <= store.unlockedCount
 
                 Button {
@@ -294,74 +306,78 @@ struct BrainTeaserHomeView: View {
                     }
                 } label: {
                     listRow(teaser: teaser, index: globalIdx, isUnlocked: isUnlocked)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(BrainTeaserRowButtonStyle())
                 .disabled(!isUnlocked)
-
-                if idx < filtered.count - 1 {
-                    Divider()
-                        .padding(.leading, 58)
-                        .padding(.horizontal, 20)
-                }
+                .id("\(selectedCategory)-\(teaser.id)")
             }
         }
-        .padding(.horizontal, 20)
-        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(AppTheme.separator, lineWidth: 1)
-        )
-        .padding(.horizontal, 20)
-        .padding(.top, 4)
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
     }
 
     private func listRow(teaser: BrainTeaser, index: Int, isUnlocked: Bool) -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
+            // 序号圆标（解锁竹青渐变 / 锁定灰）
             ZStack {
                 Circle()
                     .fill(isUnlocked
-                          ? AppTheme.accentInkPurple.opacity(0.12)
-                          : AppTheme.textSecondary.opacity(0.06))
+                        ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        : AnyShapeStyle(Color(red: 168/255, green: 184/255, blue: 154/255).opacity(0.4)))
+                    .overlay(Circle().strokeBorder(isUnlocked ? Color(red: 61/255, green: 74/255, blue: 54/255) : Color.clear, lineWidth: 2))
                 if isUnlocked {
                     Text("\(index + 1)")
-                        .font(.system(size: 13, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.accentInkPurple)
+                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
                 } else {
                     Image(systemName: "lock.fill")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 }
             }
-            .frame(width: 38, height: 38)
+            .frame(width: 36, height: 36)
+            .shadow(color: isUnlocked ? Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3) : .clear, radius: 4, y: 2)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(teaser.question)
-                    .font(.system(size: 15, weight: .semibold, design: .serif))
-                    .foregroundStyle(isUnlocked ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.5))
+                    .font(.system(size: 14, weight: .semibold, design: .serif))
+                    .foregroundStyle(isUnlocked ? Color(red: 61/255, green: 74/255, blue: 54/255) : Color(red: 138/255, green: 154/255, blue: 122/255).opacity(0.5))
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
 
                 Text(teaser.category)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.accentInkPurple.opacity(isUnlocked ? 0.7 : 0.3))
+                    .font(.system(size: 9.5, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.accentBamboo.opacity(isUnlocked ? 0.85 : 0.35))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(AppTheme.accentBamboo.opacity(isUnlocked ? 0.1 : 0.05), in: Capsule())
+                    .overlay(Capsule().strokeBorder(AppTheme.accentBamboo.opacity(isUnlocked ? 0.3 : 0.15), lineWidth: 1))
             }
 
             Spacer(minLength: 4)
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(AppTheme.textSecondary.opacity(isUnlocked ? 0.4 : 0.2))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255).opacity(isUnlocked ? 0.7 : 0.3))
         }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 4)
-        .contentShape(Rectangle())
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(isUnlocked ? 0.92 : 0.7))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(isUnlocked ? 0.28 : 0.15), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(isUnlocked ? 0.08 : 0.03), radius: 5, y: 3)
+        )
     }
 }
 
 private struct BrainTeaserRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? AppTheme.accentInkPurple.opacity(0.04) : Color.clear)
+            .background(configuration.isPressed ? AppTheme.accentBamboo.opacity(0.04) : Color.clear)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
@@ -385,7 +401,7 @@ struct BrainTeaserGameView: View {
         case none, correct, wrong
         var color: Color {
             switch self {
-            case .none: return AppTheme.accentInkPurple
+            case .none: return AppTheme.accentBamboo
             case .correct: return AppTheme.accentSage
             case .wrong: return AppTheme.accentCinnabar
             }
@@ -393,16 +409,32 @@ struct BrainTeaserGameView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            navBar
-            progressBar
-            Spacer(minLength: 0)
-            questionCard
-            Spacer(minLength: 0)
-            inputArea
-            bottomButtons
+        ZStack {
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
+            bambooSun
+            bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            bambooCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
+            VStack(spacing: 0) {
+                navBar
+                progressBar
+                Spacer(minLength: 0)
+                questionCard
+                Spacer(minLength: 0)
+                inputArea
+                bottomButtons
+            }
         }
-        .background(AppTheme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .onTapGesture { inputFocused = false }
     }
@@ -410,42 +442,91 @@ struct BrainTeaserGameView: View {
     // MARK: Nav
 
     private var navBar: some View {
-        HStack(spacing: 14) {
-            Button { onExit?() ?? dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .frame(width: 36, height: 36)
-                    .background(AppTheme.card, in: Circle())
-                    .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+        ZStack {
+            HStack(spacing: 14) {
+                GracefulBackButton(action: { onExit?() ?? dismiss() })
+                Spacer()
+                if let teaser = store.current {
+                    Text(teaser.category)
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.accentBamboo)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(AppTheme.accentBamboo.opacity(0.1), in: Capsule())
+                }
             }
-
-            Spacer()
 
             VStack(spacing: 2) {
                 Text("脑筋急转弯")
-                    .font(.system(size: 16, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 16, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 Text("第 \(store.currentIndex + 1) 关 · 共 \(store.total) 关")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
-
-            Spacer()
-
-            // 类别标签
-            if let teaser = store.current {
-                Text(teaser.category)
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.accentInkPurple)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(AppTheme.accentInkPurple.opacity(0.1), in: Capsule())
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 10)
+        .padding(.horizontal, 18)
+        .padding(.top, 6)
+        .padding(.bottom, 6)
+    }
+
+    // MARK: 背景装饰（太阳/云）
+
+    private var bambooSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func bambooCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: Progress
@@ -459,7 +540,7 @@ struct BrainTeaserGameView: View {
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: [AppTheme.accentInkPurple, AppTheme.accentInkPurple.opacity(0.6)],
+                            colors: [AppTheme.accentBamboo, AppTheme.accentBamboo.opacity(0.6)],
                             startPoint: .leading, endPoint: .trailing
                         )
                     )
@@ -479,14 +560,14 @@ struct BrainTeaserGameView: View {
             // 题号装饰
             HStack(spacing: 8) {
                 Rectangle()
-                    .fill(AppTheme.accentInkPurple.opacity(0.3))
+                    .fill(AppTheme.accentBamboo.opacity(0.3))
                     .frame(width: 24, height: 1.5)
                 Text("第 \(store.currentIndex + 1) 题")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .tracking(1.5)
-                    .foregroundStyle(AppTheme.accentInkPurple.opacity(0.7))
+                    .foregroundStyle(AppTheme.accentBamboo.opacity(0.7))
                 Rectangle()
-                    .fill(AppTheme.accentInkPurple.opacity(0.3))
+                    .fill(AppTheme.accentBamboo.opacity(0.3))
                     .frame(width: 24, height: 1.5)
             }
 
@@ -575,8 +656,8 @@ struct BrainTeaserGameView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .strokeBorder(
                                 inputFocused
-                                    ? AppTheme.accentInkPurple.opacity(0.5)
-                                    : AppTheme.separator,
+                                    ? Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.6)
+                                    : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
                                 lineWidth: 1.5
                             )
                     )
@@ -587,7 +668,10 @@ struct BrainTeaserGameView: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(width: 44, height: 44)
-                            .background(AppTheme.accentInkPurple, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .background(
+                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            )
                     }
                     .transition(.scale.combined(with: .opacity))
                 }
@@ -657,9 +741,13 @@ struct BrainTeaserGameView: View {
                 .padding(.vertical, 14)
                 .background(
                     showAnswer
-                        ? AppTheme.accentSage
-                        : AppTheme.accentInkPurple,
+                        ? AnyShapeStyle(AppTheme.accentSage)
+                        : AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing)),
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2)
                 )
             }
 

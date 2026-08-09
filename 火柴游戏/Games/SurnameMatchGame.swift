@@ -143,6 +143,12 @@ struct SurnameMatchGameView: View {
     @State private var showResult = false
     @State private var shakeWrong = false
 
+    /// 竹青主色（书野营地竹青风）
+    private let bamboo: (Color, Color) = (
+        Color(red: 76/255, green: 175/255, blue: 125/255),
+        Color(red: 126/255, green: 211/255, blue: 160/255)
+    )
+
     @Namespace private var flyNS
 
     private var current: SurnameQuestion? {
@@ -152,18 +158,43 @@ struct SurnameMatchGameView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.background.ignoresSafeArea()
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
+            bambooSun
+            bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            bambooCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
 
             VStack(spacing: 0) {
-                GameTopBar(
-                    title: kind.title,
-                    progressText: "第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)",
-                    palette: kind.palette,
-                    onExit: onExit
-                )
+                // 透明导航条
+                ZStack {
+                    HStack {
+                        GracefulBackButton(action: onExit)
+                        Spacer()
+                    }
+                    VStack(spacing: 2) {
+                        Text(kind.title)
+                            .font(.system(size: 16, weight: .heavy, design: .serif))
+                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        Text("第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
 
                 modeSelector
-                    .padding(.horizontal, AppTheme.paddingScreen)
+                    .padding(.horizontal, 18)
                     .padding(.top, 8)
                     .padding(.bottom, 4)
 
@@ -197,6 +228,65 @@ struct SurnameMatchGameView: View {
         }
     }
 
+    // MARK: - 背景装饰（太阳/云）
+
+    private var bambooSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func bambooCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
     // MARK: - 模式选择器
 
     private var modeSelector: some View {
@@ -214,15 +304,23 @@ struct SurnameMatchGameView: View {
                         Text(m.label)
                             .font(.system(size: 13, weight: .heavy, design: .rounded))
                     }
-                    .foregroundStyle(mode == m ? .white : kind.palette.0)
+                    .foregroundStyle(mode == m ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(
                         Capsule().fill(
                             mode == m
-                            ? AnyShapeStyle(LinearGradient(colors: [kind.palette.0, kind.palette.1],
+                            ? AnyShapeStyle(LinearGradient(colors: [bamboo.1, bamboo.0],
                                                            startPoint: .leading, endPoint: .trailing))
-                            : AnyShapeStyle(kind.palette.0.opacity(0.1))
+                            : AnyShapeStyle(Color.white.opacity(0.88))
+                        )
+                    )
+                    .overlay(
+                        Capsule().strokeBorder(
+                            mode == m
+                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            lineWidth: 2
                         )
                     )
                 }
@@ -277,7 +375,7 @@ struct SurnameMatchGameView: View {
                     VStack(spacing: 10) {
                         Image(systemName: "speaker.wave.3.fill")
                             .font(.system(size: 52, weight: .heavy))
-                            .foregroundStyle(kind.palette.0)
+                            .foregroundStyle(bamboo.0)
                             .symbolEffect(.variableColor.iterative, options: .repeating)
                         Text("点击重听")
                             .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -315,13 +413,17 @@ struct SurnameMatchGameView: View {
         .frame(minHeight: 160)
         .padding(.vertical, 24)
         .padding(.horizontal, 16)
-        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerLarge))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.cornerLarge)
-                .strokeBorder(
-                    isCorrect == true ? AppTheme.accentSage.opacity(0.8) : kind.palette.0.opacity(0.2),
-                    lineWidth: 2
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(
+                            isCorrect == true ? AppTheme.accentSage.opacity(0.8) : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                            lineWidth: 2
+                        )
                 )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
         )
         .modifier(CardShake(trigger: shakeWrong))
     }
@@ -338,7 +440,7 @@ struct SurnameMatchGameView: View {
                     .foregroundStyle(AppTheme.textSecondary)
             } else {
                 Image(systemName: "hand.tap.fill")
-                    .foregroundStyle(kind.palette.0)
+                    .foregroundStyle(bamboo.0)
                 Text("选出正确答案")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
@@ -365,19 +467,19 @@ struct SurnameMatchGameView: View {
         let showFeedback = (picked != nil)
 
         let bgColor: Color = {
-            if !showFeedback { return AppTheme.card }
+            if !showFeedback { return Color.white.opacity(0.92) }
             if isPicked && isCorrect == true { return AppTheme.accentSage.opacity(0.18) }
             if isPicked && isCorrect == false { return AppTheme.accentPink.opacity(0.15) }
             if showFeedback && isAnswer { return AppTheme.accentSage.opacity(0.12) }
-            return AppTheme.card
+            return Color.white.opacity(0.92)
         }()
 
         let borderColor: Color = {
-            if !showFeedback { return kind.palette.0.opacity(0.25) }
+            if !showFeedback { return Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3) }
             if isPicked && isCorrect == true { return AppTheme.accentSage }
             if isPicked && isCorrect == false { return AppTheme.accentPink }
             if showFeedback && isAnswer { return AppTheme.accentSage.opacity(0.6) }
-            return kind.palette.0.opacity(0.15)
+            return Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.15)
         }()
 
         let textColor: Color = {
@@ -396,7 +498,7 @@ struct SurnameMatchGameView: View {
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(width: 24, height: 24)
-                    .background(kind.palette.0, in: Circle())
+                    .background(bamboo.0, in: Circle())
 
                 Text(opt)
                     .font(.system(size: optFontSize(opt), weight: .heavy,
