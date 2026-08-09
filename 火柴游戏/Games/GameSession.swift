@@ -20,7 +20,8 @@ enum GameKind: String, CaseIterable, Identifiable {
     case maze               // 迷宫乐园（儿童走迷宫）
     case sudoku             // 星云数独（4/6/9 宫格）
     case arithmetic         // 口算摩天轮（按年级出题）
-    case chineseHomework    // 小老师批改屋
+    case chineseHomework    // 语文作业（田字格找错别字）
+    case mathHomework       // 数学作业（红笔圈错）
 
     var id: String { rawValue }
 
@@ -42,7 +43,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .maze:           return "迷宫乐园"
         case .sudoku:         return "星云数独"
         case .arithmetic:     return "口算摩天轮"
-        case .chineseHomework:return "小老师批改屋"
+        case .chineseHomework:return "语文批改"
+        case .mathHomework:   return "数学批改"
         }
     }
 
@@ -64,7 +66,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .maze:           return "50关 · 走出迷宫，找到草莓熊"
         case .sudoku:         return "4×4 / 6×6 / 9×9 · 每局随机生成"
         case .arithmetic:     return "1-6 年级 · 看谁算得快"
-        case .chineseHomework:return "数学/语文 · 作业/试卷批改"
+        case .chineseHomework:return "田字格找错别字 · 12 册课文"
+        case .mathHomework:   return "红笔圈错 · 1-6 年级 15 题"
         }
     }
 
@@ -87,6 +90,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .sudoku:         return "square.grid.3x3.fill"
         case .arithmetic:     return "sum"
         case .chineseHomework:return "character.book.closed.fill"
+        case .mathHomework:   return "number.circle.fill"
         }
     }
 
@@ -109,6 +113,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .sudoku:         return (Color(red: 245/255, green: 214/255, blue: 123/255), Color(red: 125/255, green: 249/255, blue: 255/255))
         case .arithmetic:     return (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 245/255, green: 166/255, blue: 35/255))
         case .chineseHomework:return (AppTheme.accentBamboo, AppTheme.accentJade)
+        case .mathHomework:   return (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 245/255, green: 166/255, blue: 35/255))
         }
     }
 

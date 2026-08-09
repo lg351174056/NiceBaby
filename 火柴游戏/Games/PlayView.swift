@@ -517,10 +517,11 @@ struct PlayView: View {
                 Lesson(kind: .sudoku,         name: "星云数独", sub: "4×4 · 6×6 · 9×9 宫格", icon: "🪐"),
                 Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
                 Lesson(kind: .arithmetic,     name: "口算摩天轮", sub: "1-6 年级 · 看谁算得快", icon: "🎡"),
+                Lesson(kind: .mathHomework,   name: "语文批改", sub: "红笔圈错 · 1-6 年级", icon: "📖"),
             ]),
             Subject(seal: "文", icon: "🎨", name: "文学杂技团", lessons: [
                 Lesson(kind: .poetryComplete, name: "诗词补全", sub: "古诗少一句 · 四选一", icon: "🍊"),
-                Lesson(kind: .chineseHomework, name: "小老师批改屋", sub: "数学/语文 · 作业/试卷", icon: "🏫"),
+                Lesson(kind: .chineseHomework, name: "语文作业", sub: "田字格找错别字", icon: "✍️"),
                 Lesson(kind: .idiomFillBlank, name: "成语填空", sub: "缺个字，你来填", icon: "📝"),
                 Lesson(kind: .antonymMatch,   name: "反义对对碰", sub: "找相反的好朋友", icon: "⚖️"),
                 Lesson(kind: .sanzijing,      name: "三字经", sub: "人之初，性本善", icon: "📖"),
@@ -655,6 +656,7 @@ struct PlayView: View {
         case "🧡": return Color(red: 255/255, green: 238/255, blue: 216/255)
         case "🪐": return Color(red: 227/255, green: 240/255, blue: 248/255)
         case "🎡": return Color(red: 255/255, green: 227/255, blue: 239/255)
+        case "📖": return Color(red: 255/255, green: 240/255, blue: 216/255)
         case "🧩", "🍊": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "✍️", "🏫": return Color(red: 231/255, green: 243/255, blue: 252/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
@@ -690,6 +692,10 @@ struct PlayView: View {
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .chineseHomework:
+            let done = GameBestScoreStore.best(for: kind) > 0
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .mathHomework:
             let done = GameBestScoreStore.best(for: kind) > 0
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
@@ -846,7 +852,9 @@ struct PlayView: View {
             case .arithmetic:
                 ArithmeticHomeView(onExit: { popToRoot() })
             case .chineseHomework:
-                TeacherCorrectionHouseView(onExit: { popToRoot() })
+                ChineseHomeworkView(onExit: { popToRoot() })
+            case .mathHomework:
+                MathHomeworkView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)
