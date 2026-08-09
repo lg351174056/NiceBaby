@@ -87,27 +87,51 @@ struct XiehouyuDictionaryView: View {
     
     var body: some View {
         ZStack {
-            AppTheme.background.ignoresSafeArea()
-            
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
+            xhSun
+            xhCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            xhCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
             VStack(spacing: 0) {
-            // 自定义 TopBar，带右上角字典入口
-            GameTopBar(
-                title: "盲盒歇后语",
-                progressText: progressText,
-                palette: kind.palette,
-                onExit: onExit,
-                trailing: AnyView(
+            // 透明导航条（右上角字典入口）
+            ZStack {
+                HStack {
+                    GracefulBackButton(action: onExit)
+                    Spacer()
                     Button(action: {
                         viewModel.isShowingDictionary = true
                     }) {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(kind.palette.0)
-                            .padding(10)
-                            .background(kind.palette.0.opacity(0.15), in: Circle())
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .frame(width: 36, height: 36)
+                            .background(Color.white.opacity(0.9), in: Circle())
+                            .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2))
                     }
-                )
-            )
+                    .buttonStyle(.plain)
+                }
+                VStack(spacing: 2) {
+                    Text("盲盒歇后语")
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    Text(progressText)
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 6)
+            .padding(.bottom, 6)
                 
                 Spacer()
                 
@@ -140,6 +164,66 @@ struct XiehouyuDictionaryView: View {
         }
     }
     
+
+    // MARK: - 背景装饰（太阳/云）
+
+    private var xhSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func xhCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
     private var progressText: String {
         if viewModel.isLoading { return "准备盲盒中..." }
         if viewModel.currentIndex == viewModel.challengeDeck.count { return "挑战完成！" }
@@ -158,7 +242,7 @@ struct XiehouyuCard: View {
             
             Image(systemName: "quote.bubble.fill")
                 .font(.system(size: 50))
-                .foregroundStyle(Color.orange.opacity(0.8))
+                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
             
             Text(item.riddle)
                 .font(.system(size: 32, weight: .heavy, design: .rounded))
@@ -169,13 +253,13 @@ struct XiehouyuCard: View {
             
             Image(systemName: "arrow.down.circle.fill")
                 .font(.system(size: 30))
-                .foregroundStyle(Color.gray.opacity(0.2))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255).opacity(0.4))
                 .padding(.vertical, 8)
             
             Text(item.answer)
                 .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(Color.red)
+                .foregroundStyle(Color(red: 232/255, green: 100/255, blue: 82/255))
                 .padding(.horizontal, 20)
             
             Spacer()
@@ -187,16 +271,15 @@ struct XiehouyuCard: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .fill(AppTheme.card)
-                .shadow(color: Color.orange.opacity(0.15), radius: 20, x: 0, y: 15)
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 5)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.white.opacity(0.94))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 14, y: 6)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .stroke(Color.white.opacity(0.5), lineWidth: 2)
-        )
-        .padding(30)
+        .padding(26)
     }
 }
 
@@ -209,7 +292,7 @@ struct ChallengeCompleteView: View {
         VStack(spacing: 24) {
             Image(systemName: "star.circle.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(.yellow)
+                .foregroundStyle(Color(red: 245/255, green: 214/255, blue: 123/255))
             
             Text("今日歇后语大师！")
                 .font(.system(size: 28, weight: .heavy, design: .rounded))
@@ -224,8 +307,12 @@ struct ChallengeCompleteView: View {
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(width: 200, height: 56)
-                    .background(Color.orange.gradient, in: Capsule())
-                    .shadow(color: .orange.opacity(0.3), radius: 10, y: 5)
+                    .background(
+                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: Capsule()
+                    )
+                    .overlay(Capsule().strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2))
+                    .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), radius: 10, y: 5)
             }
             .padding(.top, 20)
         }
@@ -257,14 +344,18 @@ struct XiehouyuSearchSheet: View {
                     }
                 }
                 .padding(12)
-                .background(Color(uiColor: .systemGray6), in: RoundedRectangle(cornerRadius: 12))
+                .background(Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                )
                 .padding()
                 
                 if viewModel.searchQuery.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "magnifyingglass.circle")
                             .font(.system(size: 60))
-                            .foregroundStyle(Color.orange.opacity(0.3))
+                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35))
                         Text("共收录 \(viewModel.totalCount) 条歇后语")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundStyle(.secondary)
@@ -281,7 +372,7 @@ struct XiehouyuSearchSheet: View {
                                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                             Text("👉 \(item.answer)")
                                 .font(.system(size: 16))
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
                         }
                         .padding(.vertical, 4)
                     }

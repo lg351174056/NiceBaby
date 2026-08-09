@@ -22,6 +22,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case arithmetic         // 口算摩天轮（按年级出题）
     case chineseHomework    // 语文作业（田字格找错别字）
     case mathHomework       // 数学作业（红笔圈错）
+    case idiomEncyclopedia  // 成语百科（释义+故事+分类）
 
     var id: String { rawValue }
 
@@ -45,6 +46,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .arithmetic:     return "口算摩天轮"
         case .chineseHomework:return "数学批改"
         case .mathHomework:   return "数学批改"
+        case .idiomEncyclopedia: return "成语百科"
         }
     }
 
@@ -68,6 +70,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .arithmetic:     return "1-6 年级 · 看谁算得快"
         case .chineseHomework:return "田字格找错别字 · 课文 / 作文 / 笔神精选"
         case .mathHomework:   return "红笔圈错 · 1-6 年级 15 题"
+        case .idiomEncyclopedia: return "29499条 · 释义+故事+分类"
         }
     }
 
@@ -91,6 +94,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .arithmetic:     return "sum"
         case .chineseHomework:return "character.book.closed.fill"
         case .mathHomework:   return "number.circle.fill"
+        case .idiomEncyclopedia: return "book.pages.fill"
         }
     }
 
@@ -114,6 +118,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .arithmetic:     return (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 245/255, green: 166/255, blue: 35/255))
         case .chineseHomework:return (AppTheme.accentBamboo, AppTheme.accentJade)
         case .mathHomework:   return (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 245/255, green: 166/255, blue: 35/255))
+        case .idiomEncyclopedia: return (AppTheme.accentCinnabar, AppTheme.accentYellow)
         }
     }
 

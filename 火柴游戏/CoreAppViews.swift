@@ -75,6 +75,13 @@ struct DiscoverView: View {
                             gradePath
                                 .padding(.top, 14)
 
+                            // AI作文大全
+                            NavigationLink(value: AIZuowenNavTarget.home) {
+                                aiZuowenBannerCard
+                            }
+                            .buttonStyle(.bouncy)
+                            .padding(.top, 14)
+
                             // 今日一诗横卡
                             fieldPoemCard
                                 .padding(.top, 14)
@@ -96,6 +103,11 @@ struct DiscoverView: View {
                             // 诗集书摊
                             fieldSectionTitle(seal: "摊", title: "诗集书摊")
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                                NavigationLink(value: XiaoxueBibeiNavTarget.home) {
+                                    xiaoxueBibeiCard
+                                }
+                                .buttonStyle(.bouncy)
+
                                 ForEach(PoetryLibraryItem.allItems) { item in
                                     NavigationLink(value: item) {
                                         CollectionCardView(item: item)
@@ -119,6 +131,12 @@ struct DiscoverView: View {
             }
             .navigationDestination(for: BishenNavTarget.self) { _ in
                 BishenListView()
+            }
+            .navigationDestination(for: AIZuowenNavTarget.self) { _ in
+                AIZuowenView()
+            }
+            .navigationDestination(for: XiaoxueBibeiNavTarget.self) { _ in
+                XiaoxueBibeiView()
             }
             .navigationDestination(for: PoetryLibraryItem.self) { item in
                 PoetryCollectionListView(item: item)
@@ -390,6 +408,92 @@ struct DiscoverView: View {
                 .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 8, y: 4)
         )
         .padding(.horizontal, AppTheme.paddingScreen)
+    }
+
+    private var aiZuowenBannerCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 232/255, green: 245/255, blue: 255/255),
+                            Color(red: 200/255, green: 228/255, blue: 255/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("✍️")
+                    .font(.system(size: 24))
+            }
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color(red: 100/255, green: 160/255, blue: 220/255).opacity(0.4), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("AI作文大全")
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text("小学1-6年级 · 按体裁字数筛选")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 160/255, blue: 152/255))
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 100/255, green: 160/255, blue: 220/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 8, y: 4)
+        )
+        .padding(.horizontal, AppTheme.paddingScreen)
+    }
+
+    private var xiaoxueBibeiCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 253/255, green: 240/255, blue: 220/255),
+                            Color(red: 245/255, green: 220/255, blue: 180/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("📒")
+                    .font(.system(size: 22))
+            }
+            .frame(width: 48, height: 48)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.4), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("小学生必背")
+                    .font(.system(size: 13, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text("26首 · 配音频视频")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 160/255, blue: 152/255))
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.3), lineWidth: 1.5))
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+        )
     }
 
     private func firstTwoLines(of poem: Poem) -> String {
@@ -846,6 +950,8 @@ struct PoetryPoemListView: View {
             colors: (AppTheme.accentIndigo, AppTheme.accentInkPurple),
             poems: poems
         )
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

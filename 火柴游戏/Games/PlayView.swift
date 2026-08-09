@@ -692,11 +692,12 @@ struct PlayView: View {
 
     private var toolsSection: some View {
         VStack(spacing: 12) {
-            subjectHeader(seal: "房", title: "文 房 三 器")
+            subjectHeader(seal: "房", title: "文 房 四 器")
             HStack(spacing: 10) {
                 toolTower(no: "壹", kind: .idiomDictionary, name: "成语大全", sub: "5万+ 海量")
-                toolTower(no: "贰", kind: .xiehouyuDictionary, name: "歇后语集", sub: "经典精选")
-                toolTower(no: "叁", kind: .dictionary, name: "汉语词典", sub: "查音 · 听读")
+                toolTower(no: "贰", kind: .idiomEncyclopedia, name: "成语百科", sub: "故事 · 分类")
+                toolTower(no: "叁", kind: .xiehouyuDictionary, name: "歇后语集", sub: "经典精选")
+                toolTower(no: "肆", kind: .dictionary, name: "汉语词典", sub: "查音 · 听读")
             }
         }
     }
@@ -816,6 +817,8 @@ struct PlayView: View {
                 ChineseHomeworkView(onExit: { popToRoot() })
             case .mathHomework:
                 MathHomeworkView(onExit: { popToRoot() })
+            case .idiomEncyclopedia:
+                IdiomEncyclopediaView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

@@ -611,6 +611,8 @@ struct HomeView: View {
             ChineseHomeworkView(onExit: { presentedGame = nil })
         case .mathHomework:
             MathHomeworkView(onExit: { presentedGame = nil })
+        case .idiomEncyclopedia:
+            IdiomEncyclopediaView(onExit: { presentedGame = nil })
         }
     }
 }

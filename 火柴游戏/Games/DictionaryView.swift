@@ -56,9 +56,23 @@ struct DictEntry: Decodable, Identifiable, Hashable {
     /// 拼音首字母（用于索引）
     nonisolated var pinyinInitial: Character {
         guard let first = pinyin.first else { return "#" }
-        let lower = String(first).lowercased()
-        if lower >= "a" && lower <= "z" { return Character(lower) }
-        return "#"
+        // 带声调的 Unicode 字母 → ASCII（ā→a，ɡ→g 等），避免被误归入 #
+        switch first {
+        case "ā", "á", "ǎ", "à": return "a"
+        case "ē", "é", "ě", "è": return "e"
+        case "ī", "í", "ǐ", "ì": return "i"
+        case "ō", "ó", "ǒ", "ò": return "o"
+        case "ū", "ú", "ǔ", "ù": return "u"
+        case "ǖ", "ǘ", "ǚ", "ǜ", "ü": return "u"
+        case "ɡ": return "g"
+        default:
+            let lower = String(first).lowercased()
+            if let scalar = lower.unicodeScalars.first,
+               scalar.value >= 97, scalar.value <= 122 {
+                return Character(lower)
+            }
+            return "#"
+        }
     }
 }
 
@@ -176,24 +190,47 @@ struct DictionaryGameView: View {
     @State private var visibleEntries: [DictEntry] = []
     
     private let kind: GameKind = .idiomDictionary
-    
+
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(red: 252/255, green: 250/255, blue: 245/255).ignoresSafeArea()
-                
+        ZStack {
+                // 蓝天草地背景（书野营地竹青风）
+                LinearGradient(
+                    colors: [
+                        Color(red: 190/255, green: 227/255, blue: 245/255),
+                        Color(red: 220/255, green: 242/255, blue: 220/255),
+                        Color(red: 207/255, green: 235/255, blue: 196/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
+                dictSun
+                dictCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+                dictCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
                 VStack(spacing: 0) {
-                    // 顶部栏
-                    GameTopBar(
-                        title: "汉语词典",
-                        progressText: "\(store.entries.count) 个汉字",
-                        palette: kind.palette,
-                        onExit: onExit
-                    )
-                    
+                    // 透明导航条
+                    ZStack {
+                        HStack {
+                            GracefulBackButton(action: onExit)
+                            Spacer()
+                        }
+                        VStack(spacing: 2) {
+                            Text("汉语词典")
+                                .font(.system(size: 16, weight: .heavy, design: .serif))
+                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            Text("\(store.entries.count) 个汉字")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 6)
+                    .padding(.bottom, 6)
+
                     // 搜索栏
                     searchBar
-                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .padding(.horizontal, 18)
                         .padding(.top, 10)
                         .padding(.bottom, 8)
                     
@@ -223,12 +260,15 @@ struct DictionaryGameView: View {
             .navigationBarHidden(true)
             .onAppear {
                 if store.entries.isEmpty { Task { await store.load() } }
+                ensureDefaultLetter()
                 refreshVisibleEntries()
             }
-            .onChange(of: store.entries.count) { _, _ in refreshVisibleEntries() }
-        }
+            .onChange(of: store.entries.count) { _, _ in
+                ensureDefaultLetter()
+                refreshVisibleEntries()
+            }
     }
-    
+
     // MARK: - 搜索栏
     
     private var searchBar: some View {
@@ -257,8 +297,12 @@ struct DictionaryGameView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 2)
+        .background(Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+        )
+        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 4, y: 2)
     }
     
     // MARK: - 拼音索引条
@@ -282,10 +326,16 @@ struct DictionaryGameView: View {
                         }
                         .frame(width: 40, height: 44)
                         .background(
-                            RoundedRectangle(cornerRadius: 12)
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .fill(selectedLetter == letter
-                                      ? AnyShapeStyle(LinearGradient(colors: [kind.palette.0, kind.palette.1], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                      : AnyShapeStyle(Color.white.opacity(0.6))
+                                      ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                      : AnyShapeStyle(Color.white.opacity(0.85)))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .strokeBorder(selectedLetter == letter
+                                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                            lineWidth: 2)
                                 )
                         )
                     }
@@ -371,6 +421,73 @@ struct DictionaryGameView: View {
         }
     }
 
+
+    // MARK: - 背景装饰（太阳/云）
+
+    private var dictSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func dictCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
+    /// 默认选中第一个索引字母（A），避免进入空页面
+    private func ensureDefaultLetter() {
+        guard selectedLetter == nil, searchText.isEmpty,
+              let first = store.indexLetters.first else { return }
+        selectedLetter = first
+    }
+
     private func refreshVisibleEntries() {
         if !searchText.isEmpty {
             visibleEntries = store.search(searchText)
@@ -392,68 +509,98 @@ private struct DictEntryRow: View, Equatable {
 
     var body: some View {
         HStack(spacing: 14) {
-            // 左：大字
-            Text(entry.word)
-                .font(.system(size: 32, weight: .heavy, design: .serif))
-                .foregroundStyle(accent)
-                .frame(width: 48, height: 48)
-                .background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-            
-            // 中：拼音 + 简要释义
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text(entry.pinyin)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
-                    
-                    if !entry.radicals.isEmpty {
-                        Text("部首: \(entry.radicals)")
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary.opacity(0.6))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(AppTheme.textSecondary.opacity(0.06), in: Capsule())
+            // 左：田字格字卡
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(0.95))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(accent.opacity(0.45), lineWidth: 2)
+                    )
+                    .overlay {
+                        // 田字格十字虚线
+                        Rectangle()
+                            .strokeBorder(accent.opacity(0.15), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                            .padding(10)
                     }
-                    
-                    Text("\(entry.strokes)画")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.6))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(AppTheme.textSecondary.opacity(0.06), in: Capsule())
-                }
-                
-                Text(entry.briefExplanation)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .lineLimit(2)
+                Text(entry.word)
+                    .font(.system(size: 30, weight: .heavy, design: .serif))
+                    .foregroundStyle(accent)
             }
-            
-            Spacer()
-            
+            .frame(width: 52, height: 52)
+            .shadow(color: accent.opacity(0.18), radius: 4, y: 2)
+
+            // 中：拼音 + 简要释义
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Text(entry.pinyin)
+                        .font(.system(size: 15, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+
+                    if !entry.radicals.isEmpty {
+                        HStack(spacing: 3) {
+                            Image(systemName: "character.book.closed")
+                                .font(.system(size: 8, weight: .bold))
+                            Text("\(entry.radicals)")
+                        }
+                        .font(.system(size: 9.5, weight: .heavy, design: .rounded))
+                        .foregroundStyle(accent)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2.5)
+                        .background(accent.opacity(0.1), in: Capsule())
+                        .overlay(Capsule().strokeBorder(accent.opacity(0.3), lineWidth: 1))
+                    }
+
+                    Text("\(entry.strokes)画")
+                        .font(.system(size: 9.5, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 176/255, green: 130/255, blue: 50/255))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2.5)
+                        .background(Color(red: 245/255, green: 214/255, blue: 123/255).opacity(0.15), in: Capsule())
+                        .overlay(Capsule().strokeBorder(Color(red: 217/255, green: 164/255, blue: 91/255).opacity(0.35), lineWidth: 1))
+                }
+
+                Text(entry.briefExplanation)
+                    .font(.system(size: 12.5, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 85/255, green: 112/255, blue: 95/255))
+                    .lineLimit(2)
+                    .lineSpacing(2)
+            }
+
+            Spacer(minLength: 0)
+
             // 右：发音按钮
             Button {
                 DictTTS.shared.speak(entry.word)
             } label: {
                 Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(accent)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
                     .frame(width: 36, height: 36)
-                    .background(accent.opacity(0.1), in: Circle())
+                    .background(
+                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: Circle()
+                    )
+                    .overlay(Circle().strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 1.5))
+                    .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), radius: 4, y: 2)
             }
             .buttonStyle(.plain)
-            
+
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.3))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
         }
         .padding(12)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(AppTheme.separator.opacity(0.9), lineWidth: 1)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.28), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
         )
-        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.horizontal, 18)
         .padding(.vertical, 6)
     }
 }
@@ -468,8 +615,21 @@ struct DictDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(red: 252/255, green: 250/255, blue: 245/255).ignoresSafeArea()
-                
+                // 蓝天草地背景（书野营地竹青风）
+                LinearGradient(
+                    colors: [
+                        Color(red: 190/255, green: 227/255, blue: 245/255),
+                        Color(red: 220/255, green: 242/255, blue: 220/255),
+                        Color(red: 207/255, green: 235/255, blue: 196/255)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
+                detailSun
+                detailCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+                detailCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
+
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         // 大字展示区
@@ -504,9 +664,16 @@ struct DictDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 28)
-                        .background(Color.white, in: RoundedRectangle(cornerRadius: 24))
-                        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
-                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(Color.white.opacity(0.92))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                                )
+                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                        )
+                        .padding(.horizontal, 18)
                         
                         // 信息徽章
                         HStack(spacing: 12) {
@@ -545,9 +712,16 @@ struct DictDetailView: View {
                         }
                         .padding(20)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white, in: RoundedRectangle(cornerRadius: 20))
-                        .shadow(color: .black.opacity(0.03), radius: 4, y: 2)
-                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(Color.white.opacity(0.92))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.28), lineWidth: 2)
+                                )
+                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                        )
+                        .padding(.horizontal, 18)
                         
                         // 更多信息（可折叠）
                         if !entry.more.isEmpty && !entry.more.contains("搜索与") {
@@ -587,10 +761,76 @@ struct DictDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.03), radius: 3, y: 1)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5)
+                )
+        )
     }
     
+
+    // MARK: - 背景装饰（太阳/云）
+
+    private var detailSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func detailCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
     @State private var showMore = false
     
     private var moreInfoSection: some View {
