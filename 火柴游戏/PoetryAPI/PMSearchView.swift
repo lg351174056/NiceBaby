@@ -24,20 +24,19 @@ struct PMSearchView: View {
                 hotKeywordsView
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
         .task {
             hotKeywords = (try? await PoetryAPIService.shared.fetchHotKeywords()) ?? []
         }
     }
 
-    // MARK: - Search Bar
+    // MARK: - Search Bar（竹青描边）
 
     private var searchBar: some View {
         HStack(spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.6))
+                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
 
                 TextField("搜索诗词、诗人...", text: $keyword)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
@@ -53,60 +52,81 @@ struct PMSearchView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 16))
-                            .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
+                            .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
                     }
                 }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .shadow(color: .black.opacity(0.04), radius: 4, y: 2)
+            .background(Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+            )
+            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 4, y: 2)
 
             if isFocused || !keyword.isEmpty {
                 Button("搜索") { performSearch() }
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.accentBlue)
+                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.horizontal, 18)
         .padding(.vertical, 10)
         .animation(.spring(response: 0.3), value: isFocused)
     }
 
-    // MARK: - Hot Keywords
+    // MARK: - Hot Keywords（琥珀金）
 
     private var hotKeywordsView: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 6) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.orange)
+                HStack(spacing: 8) {
+                    Rectangle()
+                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .frame(width: 6, height: 20)
+                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     Text("热门搜索")
-                        .font(.system(size: 15, weight: .heavy, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .font(.system(size: 15, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    Spacer()
+                    Text("实时更新")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 }
                 .padding(.top, 12)
 
                 FlowLayoutPM(spacing: 8) {
-                    ForEach(hotKeywords) { item in
+                    ForEach(Array(hotKeywords.enumerated()), id: \.element.id) { index, item in
                         Button {
                             keyword = item.keyword
                             performSearch()
                         } label: {
                             Text(item.keyword)
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.textPrimary)
+                                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                                .foregroundStyle(index < 3
+                                    ? Color(red: 176/255, green: 130/255, blue: 50/255)
+                                    : Color(red: 74/255, green: 92/255, blue: 66/255))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
-                                .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                .shadow(color: .black.opacity(0.03), radius: 3, y: 1)
+                                .background(
+                                    Color.white.opacity(0.9),
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .strokeBorder(index < 3
+                                            ? Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.5)
+                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                            lineWidth: 1.5)
+                                )
+                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.06), radius: 3, y: 1)
                         }
                     }
                 }
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
+            .padding(.horizontal, 18)
             .padding(.bottom, 40)
         }
     }
@@ -123,9 +143,13 @@ struct PMSearchView: View {
                         VStack(spacing: 6) {
                             Text(tab.rawValue)
                                 .font(.system(size: 14, weight: selectedTab == tab ? .heavy : .bold, design: .rounded))
-                                .foregroundStyle(selectedTab == tab ? AppTheme.accentBlue : AppTheme.textSecondary)
+                                .foregroundStyle(selectedTab == tab
+                                    ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    : Color(red: 138/255, green: 154/255, blue: 122/255))
                             RoundedRectangle(cornerRadius: 2)
-                                .fill(selectedTab == tab ? AppTheme.accentBlue : .clear)
+                                .fill(selectedTab == tab
+                                    ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    : .clear)
                                 .frame(height: 3).frame(width: 20)
                         }
                         .frame(maxWidth: .infinity)
@@ -133,14 +157,16 @@ struct PMSearchView: View {
                     }
                 }
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
+            .padding(.horizontal, 18)
 
-            Divider().foregroundStyle(AppTheme.separator)
+            Divider().foregroundStyle(Color(red: 30/255, green: 28/255, blue: 24/255).opacity(0.08))
 
             if isSearching {
                 VStack {
                     Spacer(minLength: 60)
-                    ProgressView().controlSize(.large)
+                    ProgressView()
+                        .controlSize(.large)
+                        .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -157,18 +183,20 @@ struct PMSearchView: View {
     }
 
     private var poetryResultsList: some View {
-        LazyVStack(spacing: 0) {
+        LazyVStack(spacing: 10) {
             if poetryResults.isEmpty {
                 emptyState
             } else {
                 ForEach(poetryResults) { poetry in
                     NavigationLink(destination: PMPoetryDetailView(poetryId: poetry.id, initialName: poetry.name)) {
                         SearchPoetryRow(poetry: poetry)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
+        .padding(.horizontal, 18)
         .padding(.top, 8)
         .padding(.bottom, 40)
     }
@@ -183,7 +211,7 @@ struct PMSearchView: View {
                 }
             }
         }
-        .padding(.horizontal, AppTheme.paddingScreen)
+        .padding(.horizontal, 18)
         .padding(.top, 12)
         .padding(.bottom, 40)
     }
@@ -193,10 +221,10 @@ struct PMSearchView: View {
             Spacer(minLength: 40)
             Image(systemName: "doc.text.magnifyingglass")
                 .font(.system(size: 36))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                .foregroundStyle(Color(red: 168/255, green: 184/255, blue: 154/255))
             Text("暂无结果")
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 40)
@@ -219,39 +247,53 @@ struct PMSearchView: View {
     }
 }
 
-// MARK: - Search Poetry Row
+// MARK: - Search Poetry Row（白卡竹绿描边）
 
 private struct SearchPoetryRow: View {
     let poetry: PMPoetry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack {
-                Text(poetry.name)
-                    .font(.system(size: 16, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
-                Spacer()
-                Text("[\(poetry.dynasty)] \(poetry.poetName)")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.1))
+                Text("📜")
+                    .font(.system(size: 15))
             }
-            Text(poetry.excerpt)
-                .font(.system(size: 13, weight: .regular))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.8))
-                .lineLimit(2)
-                .lineSpacing(3)
+            .frame(width: 36, height: 36)
+            .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 1.5))
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(poetry.name)
+                        .font(.system(size: 15, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    Spacer()
+                    Text("[\(poetry.dynasty)] \(poetry.poetName)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                }
+                Text(poetry.excerpt)
+                    .font(.system(size: 12, weight: .regular, design: .serif))
+                    .foregroundStyle(Color(red: 85/255, green: 112/255, blue: 95/255))
+                    .lineLimit(2)
+                    .lineSpacing(3)
+            }
         }
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.vertical, 12)
-        .background(AppTheme.card)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(AppTheme.separator).frame(height: 0.5)
-                .padding(.leading, AppTheme.paddingScreen)
-        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+        )
     }
 }
 
-// MARK: - Poet Row
+// MARK: - Poet Row（竹青头像渐变）
 
 private struct PoetRow: View {
     let poet: PMSearchPoet
@@ -261,7 +303,7 @@ private struct PoetRow: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [AppTheme.accentTerracotta, AppTheme.accentYellow],
+                        colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     )
                 )
@@ -276,27 +318,32 @@ private struct PoetRow: View {
                 HStack(spacing: 6) {
                     Text(poet.name)
                         .font(.system(size: 16, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     Text(poet.dynasty)
                         .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.accentBlue)
+                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(AppTheme.accentBlue.opacity(0.1), in: Capsule())
+                        .background(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.1), in: Capsule())
                 }
                 if poet.poetryCount > 0 {
                     Text("收录 \(poet.poetryCount) 首")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 }
             }
 
             Spacer()
         }
         .padding(12)
-        .background(AppTheme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: .black.opacity(0.03), radius: 4, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+        )
     }
 }
 

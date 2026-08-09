@@ -198,12 +198,12 @@ struct HomeView: View {
 
     private struct BalloonFloat: ViewModifier {
         let delay: Double
+        @State private var floating = false
         func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 5.0))
-            }
+            content
+                .offset(y: floating ? 5 : -5)
+                .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true).delay(delay), value: floating)
+                .onAppear { floating = true }
         }
     }
 
@@ -243,37 +243,11 @@ struct HomeView: View {
     // MARK: - 背景装饰（太阳/彩虹/云/风筝）
 
     private var sunDecor: some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            let breathe = 1 + 0.03 * sin(t * 1.2)
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(colors: [
-                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
-                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
-                            .clear
-                        ], center: .center, startRadius: 10, endRadius: 50)
-                    )
-                    .frame(width: 100, height: 100)
-                    .scaleEffect(breathe)
-                Circle()
-                    .fill(
-                        RadialGradient(colors: [
-                            Color(red: 255/255, green: 246/255, blue: 205/255),
-                            Color(red: 255/255, green: 214/255, blue: 100/255),
-                            Color(red: 247/255, green: 188/255, blue: 55/255)
-                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
-                    )
-                    .frame(width: 32, height: 32)
-                    .scaleEffect(breathe)
-                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
-            }
+        SunBreath()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 20)
             .padding(.top, 30)
-        }
-        .allowsHitTesting(false)
+            .allowsHitTesting(false)
     }
 
     private var rainbowDecor: some View {
@@ -304,48 +278,20 @@ struct HomeView: View {
     }
 
     private func cloudDecor(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate + delay
-            let drift = 14 * sin(t * 0.42)
-            let bob = 3 * sin(t * 0.85 + 1.2)
-            ZStack {
-                ZStack {
-                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
-                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
-                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
-                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
-                }
-                .frame(width: 52, height: 30)
-                .scaleEffect(scale)
-                .offset(x: drift, y: bob)
-            }
+        CloudDrift(scale: scale, delay: delay)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.leading, 390 * x - 10)
             .padding(.top, 390 * y)
-        }
-        .allowsHitTesting(false)
+            .allowsHitTesting(false)
     }
 
     // 风筝：摆荡 + 风筝线
     private var kiteDecor: some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            let angle = 6 * sin(t * 0.9)
-            ZStack {
-                // 风筝线
-                Rectangle()
-                    .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3))
-                    .frame(width: 1.5, height: 130)
-                Text("🪁")
-                    .font(.system(size: 22))
-                    .offset(y: -68)
-            }
-            .rotationEffect(.degrees(angle), anchor: .bottom)
+        KiteSway()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.leading, 30)
             .padding(.top, 70)
-        }
-        .allowsHitTesting(false)
+            .allowsHitTesting(false)
     }
 
     // MARK: - 每日一题（彩虹田野 · 薄荷绿大卡）
@@ -440,12 +386,12 @@ struct HomeView: View {
     }
 
     private struct SwaySoft: ViewModifier {
+        @State private var swaying = false
         func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate
-                content
-                    .rotationEffect(.degrees(sin(t * 1.6) * 4), anchor: .bottom)
-            }
+            content
+                .rotationEffect(.degrees(swaying ? 4 : -4), anchor: .bottom)
+                .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: swaying)
+                .onAppear { swaying = true }
         }
     }
 
@@ -611,14 +557,6 @@ struct HomeView: View {
             )
             .ignoresSafeArea()
 
-            SWAnimatedMeshGradient(
-                paletteA: MatchstickGameStyle.meshA,
-                paletteB: MatchstickGameStyle.meshB,
-                duration: 14
-            )
-            .opacity(0.1)
-            .ignoresSafeArea()
-
             LandscapeContainer {
                 MatchstickContentView(
                     onExit: { isGamePresented = false },
@@ -701,14 +639,6 @@ private struct MatchstickGameContainer: View {
             )
             .ignoresSafeArea()
 
-            SWAnimatedMeshGradient(
-                paletteA: MatchstickGameStyle.meshA,
-                paletteB: MatchstickGameStyle.meshB,
-                duration: 14
-            )
-            .opacity(0.1)
-            .ignoresSafeArea()
-
             LandscapeContainer {
                 MatchstickContentView(
                     onExit: onExit,
@@ -718,5 +648,74 @@ private struct MatchstickGameContainer: View {
             }
         }
         .ignoresSafeArea()
+    }
+}
+
+// MARK: - 轻量装饰动画组件（隐式动画，不用 TimelineView）
+
+private struct SunBreath: View {
+    @State private var breathing = false
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(colors: [
+                        Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                        Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                        .clear
+                    ], center: .center, startRadius: 10, endRadius: 50)
+                )
+                .frame(width: 100, height: 100)
+                .scaleEffect(breathing ? 1.03 : 0.97)
+            Circle()
+                .fill(
+                    RadialGradient(colors: [
+                        Color(red: 255/255, green: 246/255, blue: 205/255),
+                        Color(red: 255/255, green: 214/255, blue: 100/255),
+                        Color(red: 247/255, green: 188/255, blue: 55/255)
+                    ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                )
+                .frame(width: 32, height: 32)
+                .scaleEffect(breathing ? 1.03 : 0.97)
+                .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+        }
+        .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathing)
+        .onAppear { breathing = true }
+    }
+}
+
+private struct CloudDrift: View {
+    let scale: CGFloat
+    let delay: Double
+    @State private var drifting = false
+    var body: some View {
+        ZStack {
+            Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+            Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+        }
+        .frame(width: 52, height: 30)
+        .scaleEffect(scale)
+        .offset(x: drifting ? 14 : -14, y: drifting ? 3 : -3)
+        .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true).delay(delay), value: drifting)
+        .onAppear { drifting = true }
+    }
+}
+
+private struct KiteSway: View {
+    @State private var swaying = false
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3))
+                .frame(width: 1.5, height: 130)
+            Text("🪁")
+                .font(.system(size: 22))
+                .offset(y: -68)
+        }
+        .rotationEffect(.degrees(swaying ? 6 : -6), anchor: .bottom)
+        .animation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true), value: swaying)
+        .onAppear { swaying = true }
     }
 }

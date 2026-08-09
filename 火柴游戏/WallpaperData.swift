@@ -9,7 +9,18 @@ struct WallpaperMedia: Identifiable, Hashable, Codable {
     var id = UUID()
     let url: String
     let type: MediaType
-    
+
+    /// 原图 URL（去掉 !thumbnail 后缀）
+    var fullURL: String {
+        if url.contains("!thumbnail") {
+            return url.replacingOccurrences(of: "!thumbnail", with: "")
+        }
+        return url
+    }
+
+    /// 是否为动态壁纸（视频）
+    var isLive: Bool { type == .video }
+
     enum CodingKeys: String, CodingKey {
         case url
         case type

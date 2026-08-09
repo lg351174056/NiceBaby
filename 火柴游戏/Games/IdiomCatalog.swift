@@ -87,6 +87,171 @@ enum IdiomCatalog {
         return pool.randomElement() ?? all.randomElement()!
     }
 
+    /// 基于识字率的开局：从指定难度词池中随机选一个可玩的开局。
+    static func randomStarter(difficulty: Difficulty) -> ChineseIdiom {
+        let byFirst = difficulty.poolByFirstChar
+        let pool = difficulty.pool.filter { (byFirst[$0.last]?.count ?? 0) >= 3 }
+        return pool.randomElement() ?? difficulty.pool.randomElement() ?? randomStarter()
+    }
+
+    // MARK: - 五档难度系统
+
+    enum Difficulty: Int, CaseIterable, Identifiable {
+        case qimeng = 0    // 启蒙（1-2年级识字）
+        case rumen  = 1    // 入门（1-3年级识字）
+        case jinjie = 2    // 进阶（1-4年级识字）
+        case kunnan = 3    // 困难（1-5年级识字）
+        case juesha = 4    // 绝杀（不限）
+
+        var id: Int { rawValue }
+
+        var label: String {
+            switch self {
+            case .qimeng: return "启蒙"
+            case .rumen:  return "入门"
+            case .jinjie: return "进阶"
+            case .kunnan: return "困难"
+            case .juesha: return "绝杀"
+            }
+        }
+
+        var subtitle: String {
+            switch self {
+            case .qimeng: return "1-2年级"
+            case .rumen:  return "1-3年级"
+            case .jinjie: return "1-4年级"
+            case .kunnan: return "1-5年级"
+            case .juesha: return "不限"
+            }
+        }
+
+        var hintLimit: Int? {
+            switch self {
+            case .qimeng: return nil   // 无限 + 自动展示候选
+            case .rumen:  return nil   // 无限
+            case .jinjie: return 5
+            case .kunnan: return 2
+            case .juesha: return 0     // 无提示
+            }
+        }
+
+        /// 是否自动展示候选供点选（启蒙档）
+        var showAutoHints: Bool { self == .qimeng }
+
+        /// 玩家输入是否也受识字集限制（启蒙/入门档）
+        var restrictPlayerInput: Bool { self == .qimeng || self == .rumen }
+
+        /// 该档位的可用成语子池（预计算缓存）
+        var pool: [ChineseIdiom] { DifficultyPools.shared.pool(for: self) }
+
+        /// 该档位的首字索引
+        var poolByFirstChar: [Character: [ChineseIdiom]] { DifficultyPools.shared.byFirstChar(for: self) }
+
+        /// AI 从候选中选词的策略
+        func aiPick(from candidates: [ChineseIdiom]) -> ChineseIdiom? {
+            guard !candidates.isEmpty else { return nil }
+            switch self {
+            case .qimeng:
+                // 选尾字在本池中可接数最多的，给玩家留最大活路
+                return candidates.max { a, b in
+                    nextCountInPool(a.last) < nextCountInPool(b.last)
+                }
+            case .rumen:
+                // 偏容易：前60%区间随机
+                let sorted = candidates.sorted { nextCountInPool($0.last) > nextCountInPool($1.last) }
+                let cutoff = max(1, sorted.count * 60 / 100)
+                return sorted.prefix(cutoff).randomElement()
+            case .jinjie:
+                // 随机
+                return candidates.randomElement()
+            case .kunnan:
+                // 偏难：后30%区间随机
+                let sorted = candidates.sorted { nextCountInPool($0.last) < nextCountInPool($1.last) }
+                let cutoff = max(1, sorted.count * 30 / 100)
+                return sorted.prefix(cutoff).randomElement()
+            case .juesha:
+                // 专选可接数最少的绝杀
+                return candidates.min { a, b in
+                    let na = nextCountInPool(a.last)
+                    let nb = nextCountInPool(b.last)
+                    if na != nb { return na < nb }
+                    return Bool.random()
+                }
+            }
+        }
+
+        private func nextCountInPool(_ char: Character) -> Int {
+            poolByFirstChar[char]?.count ?? 0
+        }
+    }
+
+    // MARK: - 难度词池预计算
+
+    final class DifficultyPools {
+        static let shared = DifficultyPools()
+
+        private let pools: [Difficulty: [ChineseIdiom]]
+        private let firstCharIndexes: [Difficulty: [Character: [ChineseIdiom]]]
+
+        private init() {
+            let charSets = Self.buildGradeCharSets()
+            var pools: [Difficulty: [ChineseIdiom]] = [:]
+            var indexes: [Difficulty: [Character: [ChineseIdiom]]] = [:]
+
+            for diff in Difficulty.allCases {
+                let filtered: [ChineseIdiom]
+                if diff == .juesha {
+                    filtered = IdiomCatalog.all
+                } else {
+                    let chars = charSets[diff.rawValue]
+                    filtered = IdiomCatalog.all.filter { idiom in
+                        idiom.text.allSatisfy { chars.contains($0) }
+                    }
+                }
+                pools[diff] = filtered
+                var idx: [Character: [ChineseIdiom]] = [:]
+                for i in filtered { idx[i.first, default: []].append(i) }
+                indexes[diff] = idx
+            }
+
+            self.pools = pools
+            self.firstCharIndexes = indexes
+        }
+
+        func pool(for diff: Difficulty) -> [ChineseIdiom] { pools[diff] ?? [] }
+        func byFirstChar(for diff: Difficulty) -> [Character: [ChineseIdiom]] { firstCharIndexes[diff] ?? [:] }
+
+        /// 从语文课本JSON提取各档位累积识字集
+        private static func buildGradeCharSets() -> [Set<Character>] {
+            let gradeFiles: [[String]] = [
+                ["一年级上册", "一年级下册", "二年级上册", "二年级下册"],           // 启蒙: 1-2年级
+                ["一年级上册", "一年级下册", "二年级上册", "二年级下册",
+                 "三年级上册", "三年级下册"],                                     // 入门: 1-3年级
+                ["一年级上册", "一年级下册", "二年级上册", "二年级下册",
+                 "三年级上册", "三年级下册", "四年级上册", "四年级下册"],           // 进阶: 1-4年级
+                ["一年级上册", "一年级下册", "二年级上册", "二年级下册",
+                 "三年级上册", "三年级下册", "四年级上册", "四年级下册",
+                 "五年级上册", "五年级下册"],                                     // 困难: 1-5年级
+            ]
+
+            return gradeFiles.map { files in
+                var chars = Set<Character>()
+                for name in files {
+                    guard let url = Bundle.main.url(forResource: name, withExtension: "json"),
+                          let data = try? Data(contentsOf: url),
+                          let arr = try? JSONDecoder().decode([[String: String]].self, from: data) else { continue }
+                    for item in arr {
+                        let text = item["content"] ?? ""
+                        for ch in text where ch.unicodeScalars.first.map({ (0x4E00...0x9FFF).contains($0.value) }) ?? false {
+                            chars.insert(ch)
+                        }
+                    }
+                }
+                return chars
+            }
+        }
+    }
+
     // MARK: - 释义补充索引（懒加载，仅供详情卡使用）
 
     /// 富信息成语（来自《成语大全.json》：含拼音/释义/出处/例句）。
@@ -160,20 +325,21 @@ enum IdiomCatalog {
         let options: [Character]   // 6 个候选（含正确，已打乱）
     }
 
-    /// 抽 N 道填空题。
-    /// - 候选字干扰来源：从其它成语的字里随机挑，要求与原成语 4 字均不重复，且候选互不重复。
-    static func makeFillBlankQuestions(count: Int, optionCount: Int = 6) -> [FillBlankQuestion] {
-        guard !all.isEmpty else { return [] }
+    /// 抽 N 道填空题（支持难度分级）。
+    /// - 候选字干扰来源：从词池的字里随机挑，要求与原成语 4 字均不重复，且候选互不重复。
+    static func makeFillBlankQuestions(count: Int, difficulty: Difficulty? = nil, optionCount: Int = 6) -> [FillBlankQuestion] {
+        let source = difficulty?.pool ?? all
+        guard !source.isEmpty else { return [] }
 
-        // 字符候选池：所有成语的所有字（去重）
+        // 字符候选池：词池中所有字（去重）
         var charPool = Set<Character>()
-        for i in all {
+        for i in source {
             for c in i.text { charPool.insert(c) }
         }
         let charPoolArr = Array(charPool)
 
         var qs: [FillBlankQuestion] = []
-        for idiom in all.shuffled() {
+        for idiom in source.shuffled() {
             if qs.count >= count { break }
             let chars = Array(idiom.text)
             guard chars.count == 4 else { continue }
@@ -190,7 +356,6 @@ enum IdiomCatalog {
                 }
                 safety += 1
             }
-            // 如果干扰字仍不足，跳过这题
             guard distractors.count == (optionCount - 1) else { continue }
 
             var options = Array(distractors)
@@ -220,10 +385,34 @@ enum IdiomCatalog {
     // MARK: - 加载
 
     private static func build() -> [ChineseIdiom] {
+        if let loaded = loadFromRichJSON(), !loaded.isEmpty {
+            return loaded
+        }
         if let loaded = loadFromBundleJSON(), !loaded.isEmpty {
             return loaded
         }
         return dedupAndFilter(fallbackRawList)
+    }
+
+    /// 从《成语大全.json》加载全量成语（~30000条），作为接龙主数据源。
+    private static func loadFromRichJSON() -> [ChineseIdiom]? {
+        guard let url = Bundle.main.url(forResource: "成语大全", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        struct Entry: Decodable {
+            let word: String?
+            let explanation: String?
+            let example: String?
+        }
+        guard let arr = try? JSONDecoder().decode([Entry].self, from: data) else { return nil }
+        var seen = Set<String>()
+        var result: [ChineseIdiom] = []
+        for e in arr {
+            guard let w = e.word, w.count == 4, w.allSatisfy(isChineseChar) else { continue }
+            if seen.insert(w).inserted {
+                result.append(ChineseIdiom(text: w, explanation: e.explanation, example: e.example))
+            }
+        }
+        return result
     }
 
     /// 仅保留 4 字 + 全部为汉字的成语，并按 text 去重。

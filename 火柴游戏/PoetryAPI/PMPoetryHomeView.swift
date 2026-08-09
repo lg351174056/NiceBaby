@@ -31,7 +31,6 @@ struct PMPoetryHomeView: View {
                 .padding(.bottom, 40)
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
         .task {
             await loadInitialData()
         }
@@ -43,12 +42,12 @@ struct PMPoetryHomeView: View {
         }
     }
 
-    // MARK: - Filter Bar
+    // MARK: - Filter Bar（竹青 chips）
 
     private var filterBar: some View {
         VStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     ForEach(PMGenreFilter.allCases) { genre in
                         FilterChip(
                             title: genre.displayName,
@@ -60,42 +59,42 @@ struct PMPoetryHomeView: View {
                         }
                     }
 
-                    Divider()
-                        .frame(height: 20)
-                        .padding(.horizontal, 4)
-
                     Button {
                         showDynastyPicker = true
                     } label: {
                         HStack(spacing: 4) {
                             Text(selectedDynasty.displayName)
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .font(.system(size: 12, weight: .heavy, design: .rounded))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 10, weight: .bold))
                         }
-                        .foregroundStyle(selectedDynasty == .all ? AppTheme.textSecondary : .white)
+                        .foregroundStyle(selectedDynasty == .all ? Color(red: 176/255, green: 130/255, blue: 50/255) : .white)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 7)
                         .background(
                             selectedDynasty == .all
-                                ? AnyShapeStyle(AppTheme.card.opacity(0.8))
+                                ? AnyShapeStyle(Color.white.opacity(0.85))
                                 : AnyShapeStyle(LinearGradient(
-                                    colors: [Color(red: 0.95, green: 0.55, blue: 0.1), Color(red: 0.98, green: 0.7, blue: 0.2)],
+                                    colors: [Color(red: 245/255, green: 200/255, blue: 107/255), Color(red: 232/255, green: 168/255, blue: 62/255)],
                                     startPoint: .leading, endPoint: .trailing
                                 ))
                         )
                         .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.06), radius: 3, y: 2)
+                        .overlay(
+                            Capsule().strokeBorder(
+                                selectedDynasty == .all
+                                    ? Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.45)
+                                    : Color(red: 217/255, green: 164/255, blue: 91/255),
+                                lineWidth: 2
+                            )
+                        )
+                        .shadow(color: Color(red: 120/255, green: 90/255, blue: 30/255).opacity(0.1), radius: 4, y: 2)
                     }
                 }
-                .padding(.horizontal, AppTheme.paddingScreen)
+                .padding(.horizontal, 18)
                 .padding(.vertical, 10)
             }
-
-            Divider()
-                .foregroundStyle(AppTheme.separator)
         }
-        .background(AppTheme.background.opacity(0.95))
         .sheet(isPresented: $showDynastyPicker) {
             DynastyPickerSheet(selected: $selectedDynasty)
                 .presentationDetents([.medium])
@@ -103,20 +102,25 @@ struct PMPoetryHomeView: View {
         }
     }
 
-    // MARK: - Daily Section
+    // MARK: - Daily Section（每日推荐 · 琥珀金横卡）
 
     private var dailySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(AppTheme.accentTerracotta)
+                Rectangle()
+                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .frame(width: 6, height: 20)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 Text("每日推荐")
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Spacer()
+                Text("每日更新")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 16)
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -127,7 +131,7 @@ struct PMPoetryHomeView: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, AppTheme.paddingScreen)
+                .padding(.horizontal, 18)
             }
         }
         .padding(.bottom, 16)
@@ -136,21 +140,22 @@ struct PMPoetryHomeView: View {
     // MARK: - Poetry Section
 
     private var poetrySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             if !dailyRecommends.isEmpty && selectedGenre == .all && selectedDynasty == .all {
                 HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .fill(AppTheme.accentBlue)
-                        .frame(width: 4, height: 18)
+                    Rectangle()
+                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .frame(width: 6, height: 20)
+                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     Text("诗词文库")
-                        .font(.system(size: 16, weight: .heavy, design: .rounded))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .font(.system(size: 15, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     Spacer()
                     Text("\(poetryList.count) 首")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 }
-                .padding(.horizontal, AppTheme.paddingScreen)
+                .padding(.horizontal, 18)
             }
 
             ForEach(Array(poetryList.enumerated()), id: \.element.id) { index, poetry in
@@ -178,9 +183,10 @@ struct PMPoetryHomeView: View {
         HStack(spacing: 8) {
             ProgressView()
                 .controlSize(.small)
+                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
             Text("加载中...")
                 .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
         }
         .padding(.vertical, 20)
     }
@@ -225,19 +231,19 @@ struct PMPoetryHomeView: View {
     }
 }
 
-// MARK: - Daily Recommend Card
+// MARK: - Daily Recommend Card（书野竹青 · 墨韵色板）
 
 private struct DailyRecommendCard: View {
     let item: PMDailyRecommend
     let index: Int
 
     private let cardColors: [(Color, Color)] = [
-        (Color(red: 0.95, green: 0.35, blue: 0.25), Color(red: 0.98, green: 0.55, blue: 0.35)),
-        (Color(red: 0.3, green: 0.2, blue: 0.7), Color(red: 0.55, green: 0.4, blue: 0.9)),
-        (Color(red: 0.1, green: 0.6, blue: 0.5), Color(red: 0.2, green: 0.8, blue: 0.6)),
-        (Color(red: 0.85, green: 0.5, blue: 0.1), Color(red: 0.95, green: 0.7, blue: 0.2)),
-        (Color(red: 0.2, green: 0.4, blue: 0.8), Color(red: 0.4, green: 0.6, blue: 0.95)),
-        (Color(red: 0.7, green: 0.2, blue: 0.5), Color(red: 0.9, green: 0.4, blue: 0.6)),
+        (Color(red: 76/255, green: 175/255, blue: 125/255), Color(red: 46/255, green: 125/255, blue: 91/255)),
+        (Color(red: 217/255, green: 164/255, blue: 91/255), Color(red: 176/255, green: 138/255, blue: 62/255)),
+        (Color(red: 74/255, green: 111/255, blue: 165/255), Color(red: 59/255, green: 142/255, blue: 165/255)),
+        (Color(red: 92/255, green: 75/255, blue: 138/255), Color(red: 140/255, green: 115/255, blue: 195/255)),
+        (Color(red: 201/255, green: 100/255, blue: 66/255), Color(red: 168/255, green: 72/255, blue: 50/255)),
+        (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 186/255, green: 80/255, blue: 100/255)),
     ]
 
     private var colors: (Color, Color) {
@@ -249,7 +255,7 @@ private struct DailyRecommendCard: View {
             HStack(spacing: 4) {
                 Text(item.genre)
                     .font(.system(size: 10, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(.white.opacity(0.85))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(.white.opacity(0.2), in: Capsule())
@@ -282,43 +288,54 @@ private struct DailyRecommendCard: View {
         .shadow(color: colors.0.opacity(0.3), radius: 8, x: 0, y: 5)
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(.white.opacity(0.2), lineWidth: 1)
+                .stroke(Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.3), lineWidth: 2)
         )
     }
 }
 
-// MARK: - Poetry List Card
+// MARK: - Poetry List Card（白卡竹绿描边）
 
 private struct PoetryListCard: View {
     let poetry: PMPoetry
     let index: Int
 
     private let accentColors: [Color] = [
-        AppTheme.accentBlue,
-        AppTheme.accentPurple,
-        AppTheme.accentMint,
-        AppTheme.accentTerracotta,
-        AppTheme.accentPink,
+        Color(red: 76/255, green: 175/255, blue: 125/255),
+        Color(red: 176/255, green: 138/255, blue: 62/255),
+        Color(red: 74/255, green: 111/255, blue: 165/255),
+        Color(red: 201/255, green: 100/255, blue: 66/255),
+        Color(red: 186/255, green: 80/255, blue: 100/255),
     ]
 
     private var accent: Color { accentColors[index % accentColors.count] }
 
-    var body: some View {
-        HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(accent.gradient)
-                .frame(width: 4, height: 44)
+    private var emoji: String {
+        let emojis = ["🏮", "🌙", "🎋", "🌸", "🍃"]
+        return emojis[index % emojis.count]
+    }
 
-            VStack(alignment: .leading, spacing: 5) {
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(accent.opacity(0.1))
+                Text(emoji)
+                    .font(.system(size: 16))
+                    .modifier(Sway(delay: Double(index % 5) * 0.2))
+            }
+            .frame(width: 40, height: 40)
+            .overlay(Circle().strokeBorder(accent.opacity(0.3), lineWidth: 1.5))
+
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(poetry.name)
-                        .font(.system(size: 16, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
+                        .font(.system(size: 15, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                         .lineLimit(1)
 
                     if !poetry.genre.isEmpty {
                         Text(poetry.genre)
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .font(.system(size: 9.5, weight: .heavy, design: .rounded))
                             .foregroundStyle(accent)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
@@ -327,12 +344,12 @@ private struct PoetryListCard: View {
                 }
 
                 Text("[\(poetry.dynasty)] \(poetry.poetName)")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
 
                 Text(poetry.excerpt)
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.8))
+                    .font(.system(size: 12, weight: .regular, design: .serif))
+                    .foregroundStyle(Color(red: 85/255, green: 112/255, blue: 95/255))
                     .lineLimit(2)
                     .lineSpacing(2)
             }
@@ -345,22 +362,35 @@ private struct PoetryListCard: View {
                     .foregroundStyle(accent.opacity(0.5))
                 Text("\(poetry.upCount)")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
         }
-        .padding(.horizontal, AppTheme.paddingScreen)
-        .padding(.vertical, 12)
-        .background(AppTheme.card)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(AppTheme.separator)
-                .frame(height: 0.5)
-                .padding(.leading, AppTheme.paddingScreen + 18)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+        )
+        .padding(.horizontal, 18)
+    }
+
+    private struct Sway: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .rotationEffect(.degrees(sin(t * 2.6) * 4), anchor: .bottom)
+            }
         }
     }
 }
 
-// MARK: - Filter Chip
+// MARK: - Filter Chip（竹青选中）
 
 private struct FilterChip: View {
     let title: String
@@ -370,25 +400,31 @@ private struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(isSelected ? .white : AppTheme.textSecondary)
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .foregroundStyle(isSelected ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
                 .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.vertical, 7)
                 .background(
                     isSelected
-                        ? AnyShapeStyle(LinearGradient(
-                            colors: [AppTheme.accentInkPurple, AppTheme.accentIndigo],
-                            startPoint: .leading, endPoint: .trailing
-                        ))
-                        : AnyShapeStyle(AppTheme.card.opacity(0.8))
+                        ? AnyShapeStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        : AnyShapeStyle(Color.white.opacity(0.85))
                 )
                 .clipShape(Capsule())
-                .shadow(color: isSelected ? AppTheme.accentBlue.opacity(0.3) : .clear, radius: 4, y: 2)
+                .overlay(
+                    Capsule().strokeBorder(
+                        isSelected
+                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                        lineWidth: 2
+                    )
+                )
+                .shadow(color: isSelected ? Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3) : .clear, radius: 4, y: 2)
         }
+        .buttonStyle(.plain)
     }
 }
 
-// MARK: - Dynasty Picker Sheet
+// MARK: - Dynasty Picker Sheet（竹青选中）
 
 private struct DynastyPickerSheet: View {
     @Binding var selected: PMDynastyFilter
@@ -427,10 +463,7 @@ private struct DynastyPickerSheet: View {
                             .padding(.vertical, 10)
                             .background(
                                 selected == dynasty
-                                    ? AnyShapeStyle(LinearGradient(
-                                        colors: [Color(red: 0.95, green: 0.55, blue: 0.1), Color(red: 0.98, green: 0.7, blue: 0.2)],
-                                        startPoint: .leading, endPoint: .trailing
-                                    ))
+                                    ? AnyShapeStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
                                     : AnyShapeStyle(AppTheme.background)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))

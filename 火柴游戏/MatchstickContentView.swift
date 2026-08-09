@@ -839,14 +839,6 @@ struct MatchstickBackgroundView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-
-            SWAnimatedMeshGradient(
-                paletteA: MatchstickGameStyle.meshA,
-                paletteB: MatchstickGameStyle.meshB,
-                duration: 14
-            )
-            .opacity(0.1)
-            .clipped()
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)

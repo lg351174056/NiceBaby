@@ -11,6 +11,8 @@
 	</dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>保存学习资料图片到相册</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>保存学习资料图片和视频到相册</string>
 	<key>CFBundleDisplayName</key>
 	<string>NiceBaby</string>
 	<key>CFBundleName</key>

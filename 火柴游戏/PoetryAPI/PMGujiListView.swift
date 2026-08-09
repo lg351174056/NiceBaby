@@ -8,10 +8,11 @@ struct PMGujiListView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 14) {
+            LazyVStack(spacing: 10) {
                 ForEach(Array(gujiList.enumerated()), id: \.element.id) { index, guji in
                     NavigationLink(destination: PMGujiChapterListView(gujiId: guji.id, gujiName: guji.name)) {
                         GujiCard(guji: guji, index: index)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -27,19 +28,20 @@ struct PMGujiListView: View {
 
                 if isLoading {
                     HStack(spacing: 8) {
-                        ProgressView().controlSize(.small)
+                        ProgressView()
+                            .controlSize(.small)
+                            .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
                         Text("加载中...")
                             .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary)
+                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                     }
                     .padding(.vertical, 20)
                 }
             }
-            .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 16)
+            .padding(.horizontal, 18)
+            .padding(.top, 12)
             .padding(.bottom, 40)
         }
-        .background(AppTheme.background.ignoresSafeArea())
         .task {
             await loadInitial()
         }
@@ -66,56 +68,63 @@ struct PMGujiListView: View {
     }
 }
 
-// MARK: - Guji Card
+// MARK: - Guji Card（书脊卡 · 书野竹青）
 
 private struct GujiCard: View, Equatable {
     let guji: PMGuji
     let index: Int
 
     private let bookColors: [(Color, Color)] = [
-        (Color(red: 0.55, green: 0.27, blue: 0.07), Color(red: 0.8, green: 0.5, blue: 0.2)),
-        (Color(red: 0.15, green: 0.35, blue: 0.25), Color(red: 0.25, green: 0.55, blue: 0.4)),
-        (Color(red: 0.25, green: 0.2, blue: 0.5), Color(red: 0.45, green: 0.35, blue: 0.7)),
-        (Color(red: 0.5, green: 0.15, blue: 0.2), Color(red: 0.75, green: 0.3, blue: 0.35)),
-        (Color(red: 0.1, green: 0.3, blue: 0.5), Color(red: 0.2, green: 0.5, blue: 0.7)),
+        (Color(red: 217/255, green: 164/255, blue: 91/255), Color(red: 168/255, green: 122/255, blue: 48/255)),
+        (Color(red: 92/255, green: 156/255, blue: 102/255), Color(red: 74/255, green: 124/255, blue: 89/255)),
+        (Color(red: 74/255, green: 111/255, blue: 165/255), Color(red: 59/255, green: 142/255, blue: 165/255)),
+        (Color(red: 201/255, green: 100/255, blue: 66/255), Color(red: 168/255, green: 72/255, blue: 50/255)),
+        (Color(red: 92/255, green: 75/255, blue: 138/255), Color(red: 140/255, green: 115/255, blue: 195/255)),
     ]
 
     private var colors: (Color, Color) { bookColors[index % bookColors.count] }
-
-    private let bookIcons = ["book.closed.fill", "text.book.closed.fill", "books.vertical.fill", "scroll.fill", "book.pages.fill"]
-    private var icon: String { bookIcons[index % bookIcons.count] }
 
     static func == (lhs: GujiCard, rhs: GujiCard) -> Bool {
         lhs.guji.id == rhs.guji.id && lhs.index == rhs.index
     }
 
-    var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
-                    .frame(width: 54, height: 54)
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundStyle(.white.opacity(0.9))
-            }
+    private var spineText: String {
+        let name = guji.name
+        if name.count >= 2 { return String(name.prefix(2)) }
+        return name
+    }
 
-            VStack(alignment: .leading, spacing: 5) {
+    var body: some View {
+        HStack(spacing: 12) {
+            // 书脊
+            Text(spineText)
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 56)
+                .background(
+                    LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: colors.0.opacity(0.35), radius: 4, y: 2)
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(guji.name)
-                    .font(.system(size: 17, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     .lineLimit(1)
 
                 Text(guji.poetName)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
 
                 if !guji.excerpt.isEmpty {
                     Text(guji.excerpt)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.7))
+                        .font(.system(size: 12, weight: .regular, design: .serif))
+                        .foregroundStyle(Color(red: 85/255, green: 112/255, blue: 95/255))
                         .lineLimit(2)
                         .lineSpacing(2)
                 }
@@ -126,22 +135,25 @@ private struct GujiCard: View, Equatable {
             VStack(spacing: 4) {
                 Image(systemName: "eye.fill")
                     .font(.system(size: 10))
-                    .foregroundStyle(AppTheme.textSecondary.opacity(0.5))
+                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
                 Text("\(guji.viewCount)")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.4))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
         }
-        .padding(14)
-        .background(AppTheme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(AppTheme.separator.opacity(0.9), lineWidth: 1)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
         )
     }
 }

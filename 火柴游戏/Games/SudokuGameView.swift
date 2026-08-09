@@ -141,25 +141,28 @@ enum SudokuGen {
 // MARK: - 星云主题
 
 private enum SudokuTheme {
-    static let ink = Color(red: 237/255, green: 232/255, blue: 255/255)
-    static let gold = Color(red: 245/255, green: 214/255, blue: 123/255)
-    static let cyan = Color(red: 125/255, green: 249/255, blue: 255/255)
-    static let purple = Color(red: 155/255, green: 126/255, blue: 222/255)
+    // 夜空墨韵：宣纸白格 + 琥珀金点缀 + 墨蓝夜空
+    static let ink = Color(red: 245/255, green: 242/255, blue: 230/255)        // 米白（主文字）
+    static let inkDark = Color(red: 58/255, green: 58/255, blue: 80/255)       // 墨蓝黑（填入数字）
+    static let givenNum = Color(red: 176/255, green: 120/255, blue: 48/255)   // 琥珀棕（题目数字）
+    static let gold = Color(red: 245/255, green: 214/255, blue: 123/255)      // 琥珀金
+    static let cyan = Color(red: 232/255, green: 200/255, blue: 120/255)      // 淡金（高亮，替代原青色）
+    static let purple = Color(red: 155/255, green: 126/255, blue: 222/255)    // 兼容旧引用（不再使用）
     static let err = Color(red: 255/255, green: 107/255, blue: 122/255)
-    static let stroke = Color(red: 110/255, green: 95/255, blue: 168/255)
-    static let cellBg = Color(red: 34/255, green: 30/255, blue: 74/255)
-    static let cellHl = Color(red: 58/255, green: 52/255, blue: 112/255)
-    static let cellPeer = Color(red: 46/255, green: 42/255, blue: 92/255)
-    static let cellSame = Color(red: 74/255, green: 63/255, blue: 138/255)
-    static let cellSel = Color(red: 85/255, green: 74/255, blue: 158/255)
-    static let thickLine = Color(red: 90/255, green: 78/255, blue: 150/255)
-    static let thinLine = Color(red: 55/255, green: 49/255, blue: 107/255)
+    static let stroke = Color(red: 90/255, green: 92/255, blue: 140/255)      // 墨蓝描边
+    static let cellBg = Color(red: 250/255, green: 249/255, blue: 244/255)    // 宣纸白格
+    static let cellHl = Color(red: 250/255, green: 249/255, blue: 244/255)
+    static let cellPeer = Color(red: 240/255, green: 246/255, blue: 235/255)  // 同行列宫：淡竹绿
+    static let cellSame = Color(red: 230/255, green: 240/255, blue: 222/255)  // 同数字：竹绿浅
+    static let cellSel = Color(red: 253/255, green: 243/255, blue: 216/255)   // 选中：琥珀金浅
+    static let thickLine = Color(red: 163/255, green: 175/255, blue: 205/255)  // 宫格粗线：淡墨蓝（与细线同色系）
+    static let thinLine = Color(red: 180/255, green: 190/255, blue: 215/255)  // 细线：淡墨蓝
 
     static let bgGradient = LinearGradient(
         colors: [
-            Color(red: 20/255, green: 18/255, blue: 48/255),
-            Color(red: 27/255, green: 24/255, blue: 64/255),
-            Color(red: 34/255, green: 31/255, blue: 78/255)
+            Color(red: 35/255, green: 42/255, blue: 74/255),
+            Color(red: 46/255, green: 53/255, blue: 96/255),
+            Color(red: 58/255, green: 68/255, blue: 120/255)
         ],
         startPoint: .top, endPoint: .bottom
     )
@@ -272,12 +275,12 @@ struct SudokuHomeView: View {
                 levelCard(icon: "🌠", name: "流星进阶 · 6×6",
                           desc: "适合 7 岁+ · 数字 1-6",
                           meta: "已完成 \(SudokuProgressStore.clearCount(size: 6)) 局" + best(6),
-                          colors: (Color(red: 125/255, green: 249/255, blue: 255/255), Color(red: 74/255, green: 159/255, blue: 216/255)),
+                          colors: (Color(red: 59/255, green: 142/255, blue: 165/255), Color(red: 74/255, green: 111/255, blue: 165/255)),
                           size: 6)
                 levelCard(icon: "🌀", name: "黑洞大师 · 9×9",
                           desc: "适合 10 岁+ · 数字 1-9",
                           meta: "已完成 \(SudokuProgressStore.clearCount(size: 9)) 局" + best(9),
-                          colors: (Color(red: 255/255, green: 178/255, blue: 107/255), Color(red: 232/255, green: 106/255, blue: 158/255)),
+                          colors: (Color(red: 245/255, green: 214/255, blue: 123/255), Color(red: 212/255, green: 168/255, blue: 75/255)),
                           size: 9)
             }
             .padding(.horizontal, 20)
@@ -573,7 +576,7 @@ struct SudokuGameView: View {
                 }
             }
             .frame(width: boardSide, height: boardSide)
-            .background(Color(red: 42/255, green: 36/255, blue: 80/255))
+            .background(Color(red: 46/255, green: 53/255, blue: 96/255))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -631,7 +634,7 @@ struct SudokuGameView: View {
                                 let v = nr * boxC + nc + 1
                                 Text(notes[i].contains(v) ? "\(v)" : " ")
                                     .font(.system(size: cell * 0.16, weight: .bold, design: .rounded))
-                                    .foregroundStyle(SudokuTheme.cyan.opacity(0.75))
+                                    .foregroundStyle(SudokuTheme.inkDark.opacity(0.55))
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                             }
                         }
@@ -644,7 +647,7 @@ struct SudokuGameView: View {
             if value != 0 {
                 Text("\(value)")
                     .font(.system(size: cell * 0.46, weight: .heavy, design: .serif))
-                    .foregroundStyle(isGiven ? SudokuTheme.gold : SudokuTheme.ink)
+                    .foregroundStyle(isGiven ? SudokuTheme.givenNum : SudokuTheme.inkDark)
                     .shadow(color: isGiven ? SudokuTheme.gold.opacity(0.35) : .clear, radius: 8)
                     .scaleEffect(popCell == i ? 1.15 : 1)
                     .animation(.spring(response: 0.2, dampingFraction: 0.6), value: popCell)
@@ -670,12 +673,11 @@ struct SudokuGameView: View {
     }
 
     private func lineColor(r: Int, c: Int) -> Color {
-        (r % boxR == 0 || c % boxC == 0 || r == size - 1 || c == size - 1)
-            ? SudokuTheme.thickLine : SudokuTheme.thinLine
+        SudokuTheme.thinLine
     }
 
     private func lineWidth(r: Int, c: Int) -> CGFloat {
-        (r % boxR == 0 || c % boxC == 0) ? 2.5 : 1
+        (r % boxR == 0 || c % boxC == 0) ? 1.5 : 1.5
     }
 
     // MARK: - 工具行
@@ -863,7 +865,7 @@ struct SudokuGameView: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 24)
                     .background(
-                        LinearGradient(colors: [Color(red: 42/255, green: 36/255, blue: 80/255), Color(red: 30/255, green: 27/255, blue: 66/255)],
+                        LinearGradient(colors: [Color(red: 46/255, green: 53/255, blue: 96/255), Color(red: 35/255, green: 42/255, blue: 74/255)],
                                        startPoint: .top, endPoint: .bottom),
                         in: RoundedRectangle(cornerRadius: 26, style: .continuous)
                     )
@@ -891,7 +893,7 @@ struct SudokuGameView: View {
                         } label: {
                             Text("返回选择 ➜")
                                 .font(.system(size: 13, weight: .heavy, design: .rounded))
-                                .foregroundStyle(Color(red: 27/255, green: 24/255, blue: 64/255))
+                                .foregroundStyle(Color(red: 46/255, green: 53/255, blue: 96/255))
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 12)
                                 .background(

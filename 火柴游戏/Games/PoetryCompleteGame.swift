@@ -404,6 +404,11 @@ struct PoetryCompleteGameView: View {
 
     private let totalQuestions = 10
     private let kind: GameKind = .poetryComplete
+    /// 竹青主色（书野营地竹青风，替代墨紫 palette）
+    private let bamboo: (Color, Color) = (
+        Color(red: 76/255, green: 175/255, blue: 125/255),
+        Color(red: 126/255, green: 211/255, blue: 160/255)
+    )
 
     private var current: PoetryCompleteCatalog.Question? {
         guard !questions.isEmpty, currentIndex < questions.count else { return nil }
@@ -412,15 +417,40 @@ struct PoetryCompleteGameView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.background.ignoresSafeArea()
+            // 蓝天草地背景（书野营地竹青风）
+            LinearGradient(
+                colors: [
+                    Color(red: 190/255, green: 227/255, blue: 245/255),
+                    Color(red: 220/255, green: 242/255, blue: 220/255),
+                    Color(red: 207/255, green: 235/255, blue: 196/255)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
+            bambooSun
+            bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
+            bambooCloud(x: 0.72, y: 0.17, scale: 0.72, delay: 2.5)
 
             VStack(spacing: 0) {
-                GameTopBar(
-                    title: kind.title,
-                    progressText: "第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)",
-                    palette: kind.palette,
-                    onExit: onExit
-                )
+                // 透明导航条（书野竹青风：圆形返回 + 居中衬线标题）
+                ZStack {
+                    HStack {
+                        GracefulBackButton(action: onExit)
+                        Spacer()
+                    }
+                    VStack(spacing: 2) {
+                        Text(kind.title)
+                            .font(.system(size: 16, weight: .heavy, design: .serif))
+                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        Text("第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
 
                 gradePicker
                     .padding(.horizontal, AppTheme.paddingScreen)
@@ -457,6 +487,65 @@ struct PoetryCompleteGameView: View {
         .onChange(of: selection.cumulative) { _, _ in reloadQuestions() }
     }
 
+    // MARK: - 背景装饰（太阳/云）
+
+    private var bambooSun: some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            let breathe = 1 + 0.03 * sin(t * 1.2)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                            .clear
+                        ], center: .center, startRadius: 10, endRadius: 50)
+                    )
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(breathe)
+                Circle()
+                    .fill(
+                        RadialGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 205/255),
+                            Color(red: 255/255, green: 214/255, blue: 100/255),
+                            Color(red: 247/255, green: 188/255, blue: 55/255)
+                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                    )
+                    .frame(width: 32, height: 32)
+                    .scaleEffect(breathe)
+                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 20)
+            .padding(.top, 30)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func bambooCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            let drift = 14 * sin(t * 0.42)
+            let bob = 3 * sin(t * 0.85 + 1.2)
+            ZStack {
+                ZStack {
+                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+                }
+                .frame(width: 52, height: 30)
+                .scaleEffect(scale)
+                .offset(x: drift, y: bob)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 390 * x - 10)
+            .padding(.top, 390 * y)
+        }
+        .allowsHitTesting(false)
+    }
+
     // MARK: - 顶部学段 + 年级选择条
 
     private var gradePicker: some View {
@@ -470,15 +559,15 @@ struct PoetryCompleteGameView: View {
                     } label: {
                         Text(s.displayName)
                             .font(.system(size: 14, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selection.stage == s ? .white : kind.palette.0)
+                            .foregroundStyle(selection.stage == s ? .white : bamboo.0)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(
                                 Capsule().fill(
                                     selection.stage == s
-                                    ? AnyShapeStyle(LinearGradient(colors: [kind.palette.0, kind.palette.1],
+                                    ? AnyShapeStyle(LinearGradient(colors: [bamboo.0, bamboo.1],
                                                                    startPoint: .leading, endPoint: .trailing))
-                                    : AnyShapeStyle(kind.palette.0.opacity(0.12))
+                                    : AnyShapeStyle(bamboo.0.opacity(0.12))
                                 )
                             )
                     }
@@ -496,7 +585,7 @@ struct PoetryCompleteGameView: View {
                 }
                 .toggleStyle(.switch)
                 .labelsHidden()
-                .tint(kind.palette.0)
+                .tint(bamboo.0)
                 .scaleEffect(0.78)
                 .frame(width: 52)
                 Text(selection.cumulative ? "累积" : "仅本册")
@@ -521,13 +610,13 @@ struct PoetryCompleteGameView: View {
                                 .background(
                                     Capsule().fill(
                                         selected
-                                        ? AnyShapeStyle(kind.palette.0)
+                                        ? AnyShapeStyle(bamboo.0)
                                         : AnyShapeStyle(AppTheme.card)
                                     )
                                 )
                                 .overlay(
                                     Capsule().strokeBorder(
-                                        selected ? Color.clear : kind.palette.0.opacity(0.25),
+                                        selected ? Color.clear : bamboo.0.opacity(0.25),
                                         lineWidth: 1.5
                                     )
                                 )
@@ -557,7 +646,7 @@ struct PoetryCompleteGameView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .background(Capsule().fill(kind.palette.0))
+                        .background(Capsule().fill(bamboo.0))
                 }
                 .buttonStyle(.plain)
             }
@@ -613,7 +702,7 @@ struct PoetryCompleteGameView: View {
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.cornerLarge)
                 .strokeBorder(
-                    isCorrect == true ? AppTheme.accentSage : kind.palette.0.opacity(0.25),
+                    isCorrect == true ? AppTheme.accentSage : bamboo.0.opacity(0.25),
                     lineWidth: 2
                 )
         )
@@ -692,10 +781,10 @@ struct PoetryCompleteGameView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: AppTheme.cornerSmall)
                     .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
-                    .foregroundStyle(kind.palette.0.opacity(0.65))
+                    .foregroundStyle(bamboo.0.opacity(0.65))
                 Image(systemName: "questionmark")
                     .font(.system(size: 22, weight: .heavy))
-                    .foregroundStyle(kind.palette.0.opacity(0.55))
+                    .foregroundStyle(bamboo.0.opacity(0.55))
             }
             .frame(maxWidth: .infinity)
             .frame(height: 44)
@@ -708,7 +797,7 @@ struct PoetryCompleteGameView: View {
                               : (isCorrect == false ? "xmark.circle.fill" : "hand.tap.fill"))
                 .foregroundStyle(
                     isCorrect == true ? AppTheme.accentSage
-                    : (isCorrect == false ? AppTheme.accentPink : kind.palette.0)
+                    : (isCorrect == false ? AppTheme.accentPink : bamboo.0)
                 )
             Text(
                 isCorrect == true ? "答对了！"
@@ -742,7 +831,7 @@ struct PoetryCompleteGameView: View {
                         .font(.system(size: 14, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
                         .frame(width: 28, height: 28)
-                        .background(kind.palette.0, in: Circle())
+                        .background(bamboo.0, in: Circle())
                     Text(line)
                         .font(.system(size: 20, weight: .heavy, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
@@ -754,7 +843,7 @@ struct PoetryCompleteGameView: View {
                 .background(AppTheme.card, in: RoundedRectangle(cornerRadius: AppTheme.cornerMedium))
                 .overlay(
                     RoundedRectangle(cornerRadius: AppTheme.cornerMedium)
-                        .strokeBorder(kind.palette.0.opacity(0.25), lineWidth: 2)
+                        .strokeBorder(bamboo.0.opacity(0.25), lineWidth: 2)
                 )
                 .shadow(color: AppTheme.textPrimary.opacity(0.06), radius: 4, y: 2)
             }

@@ -62,60 +62,19 @@ struct PlayView: View {
     // MARK: - 背景装饰（太阳/云/风车）
 
     private var fairSun: some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            let breathe = 1 + 0.03 * sin(t * 1.2)
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(colors: [
-                            Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
-                            Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
-                            .clear
-                        ], center: .center, startRadius: 10, endRadius: 50)
-                    )
-                    .frame(width: 100, height: 100)
-                    .scaleEffect(breathe)
-                Circle()
-                    .fill(
-                        RadialGradient(colors: [
-                            Color(red: 255/255, green: 246/255, blue: 205/255),
-                            Color(red: 255/255, green: 214/255, blue: 100/255),
-                            Color(red: 247/255, green: 188/255, blue: 55/255)
-                        ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
-                    )
-                    .frame(width: 32, height: 32)
-                    .scaleEffect(breathe)
-                    .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
-            }
+        SunBreathPlay()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 20)
             .padding(.top, 30)
-        }
-        .allowsHitTesting(false)
+            .allowsHitTesting(false)
     }
 
     private func fairCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate + delay
-            let drift = 14 * sin(t * 0.42)
-            let bob = 3 * sin(t * 0.85 + 1.2)
-            ZStack {
-                ZStack {
-                    Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
-                    Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
-                    Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
-                    Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
-                }
-                .frame(width: 52, height: 30)
-                .scaleEffect(scale)
-                .offset(x: drift, y: bob)
-            }
+        CloudDriftPlay(scale: scale, delay: delay)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.leading, 390 * x - 10)
             .padding(.top, 390 * y)
-        }
-        .allowsHitTesting(false)
+            .allowsHitTesting(false)
     }
 
     // 风车（四叶旋转 + 塔身）
@@ -154,12 +113,15 @@ struct PlayView: View {
     }
 
     private struct WindmillSpin: ViewModifier {
+        @State private var angle: Double = 0
         func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate
-                content
-                    .rotationEffect(.degrees((t * 60).truncatingRemainder(dividingBy: 360)))
-            }
+            content
+                .rotationEffect(.degrees(angle))
+                .onAppear {
+                    withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
+                        angle = 360
+                    }
+                }
         }
     }
 
@@ -280,12 +242,12 @@ struct PlayView: View {
 
     private struct FairBob: ViewModifier {
         let delay: Double
+        @State private var floating = false
         func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
+            content
+                .offset(y: floating ? 4 : -4)
+                .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true).delay(delay), value: floating)
+                .onAppear { floating = true }
         }
     }
 
@@ -884,14 +846,6 @@ private struct MatchstickGameContainer: View {
             )
             .ignoresSafeArea()
 
-            SWAnimatedMeshGradient(
-                paletteA: MatchstickGameStyle.meshA,
-                paletteB: MatchstickGameStyle.meshB,
-                duration: 14
-            )
-            .opacity(0.1)
-            .ignoresSafeArea()
-
             LandscapeContainer {
                 MatchstickContentView(
                     onExit: onExit,
@@ -901,6 +855,58 @@ private struct MatchstickGameContainer: View {
             }
         }
         .ignoresSafeArea()
+    }
+}
+
+// MARK: - 轻量装饰动画（隐式动画，不用 TimelineView）
+
+private struct SunBreathPlay: View {
+    @State private var breathing = false
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(colors: [
+                        Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
+                        Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
+                        .clear
+                    ], center: .center, startRadius: 10, endRadius: 50)
+                )
+                .frame(width: 100, height: 100)
+                .scaleEffect(breathing ? 1.03 : 0.97)
+            Circle()
+                .fill(
+                    RadialGradient(colors: [
+                        Color(red: 255/255, green: 246/255, blue: 205/255),
+                        Color(red: 255/255, green: 214/255, blue: 100/255),
+                        Color(red: 247/255, green: 188/255, blue: 55/255)
+                    ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                )
+                .frame(width: 32, height: 32)
+                .scaleEffect(breathing ? 1.03 : 0.97)
+                .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
+        }
+        .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathing)
+        .onAppear { breathing = true }
+    }
+}
+
+private struct CloudDriftPlay: View {
+    let scale: CGFloat
+    let delay: Double
+    @State private var drifting = false
+    var body: some View {
+        ZStack {
+            Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+            Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+        }
+        .frame(width: 52, height: 30)
+        .scaleEffect(scale)
+        .offset(x: drifting ? 14 : -14, y: drifting ? 3 : -3)
+        .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true).delay(delay), value: drifting)
+        .onAppear { drifting = true }
     }
 }
 
