@@ -43,7 +43,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .maze:           return "迷宫乐园"
         case .sudoku:         return "星云数独"
         case .arithmetic:     return "口算摩天轮"
-        case .chineseHomework:return "语文批改"
+        case .chineseHomework:return "数学批改"
         case .mathHomework:   return "数学批改"
         }
     }
@@ -66,7 +66,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .maze:           return "50关 · 走出迷宫，找到草莓熊"
         case .sudoku:         return "4×4 / 6×6 / 9×9 · 每局随机生成"
         case .arithmetic:     return "1-6 年级 · 看谁算得快"
-        case .chineseHomework:return "田字格找错别字 · 12 册课文"
+        case .chineseHomework:return "田字格找错别字 · 课文 / 作文 / 笔神精选"
         case .mathHomework:   return "红笔圈错 · 1-6 年级 15 题"
         }
     }

@@ -534,10 +534,10 @@ struct HomeView: View {
                     QuickEntryView(icon: "square.dashed", title: "成语填空", color: AppTheme.accentCinnabar) {
                         presentedGame = .idiomFillBlank
                     }
-                    QuickEntryView(icon: "character.book.closed.fill", title: "语文作业", color: AppTheme.accentBlue) {
+                    QuickEntryView(icon: "character.book.closed.fill", title: "作文批改王", color: AppTheme.accentBlue) {
                         presentedGame = .chineseHomework
                     }
-                    QuickEntryView(icon: "number.circle.fill", title: "语文批改", color: AppTheme.accentTerracotta) {
+                    QuickEntryView(icon: "number.circle.fill", title: "数学批改", color: AppTheme.accentTerracotta) {
                         presentedGame = .mathHomework
                     }
                     QuickEntryView(icon: "person.2.fill", title: "百家姓", color: AppTheme.accentJade) {

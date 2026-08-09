@@ -140,19 +140,41 @@ struct YwTextbook: Decodable {
 }
 
 enum ChineseHomeworkStore {
-    /// 12 册教材文件名
-    static let gradeNames: [String] = [
-        "一年级上册", "一年级下册", "二年级上册", "二年级下册", "三年级上册", "三年级下册",
-        "四年级上册", "四年级下册", "五年级上册", "五年级下册", "六年级上册", "六年级下册"
-    ]
+    struct SourceGroup {
+        let label: String
+        let emoji: String
+        let items: [String]
+    }
+
+    static var sourceGroups: [SourceGroup] {
+        let bishenItems = BishenStore.loadAll().map { $0.name }
+        return [
+            SourceGroup(label: "课本课文", emoji: "📖", items: [
+                "一年级上册", "一年级下册", "二年级上册", "二年级下册", "三年级上册", "三年级下册",
+                "四年级上册", "四年级下册", "五年级上册", "五年级下册", "六年级上册", "六年级下册"
+            ]),
+            SourceGroup(label: "作文精选", emoji: "✍️", items: [
+                "一年级作文", "二年级作文", "三年级作文", "四年级作文", "五年级作文", "六年级作文"
+            ]),
+            SourceGroup(label: "笔神精选", emoji: "🖋", items: bishenItems)
+        ]
+    }
+
+    static let gradeNames: [String] = sourceGroups.flatMap { $0.items }
 
     static func loadTextbooks(grade: String) -> [YwTextbook] {
-        guard let url = Bundle.main.url(forResource: grade, withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let arr = try? JSONDecoder().decode([YwTextbook].self, from: data) else {
-            return []
+        if let url = Bundle.main.url(forResource: grade, withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let arr = try? JSONDecoder().decode([YwTextbook].self, from: data) {
+            return arr
         }
-        return arr
+        // 笔神精选：按子分类名取好句，拼成一篇文章
+        if let sub = BishenStore.loadAll().first(where: { $0.name == grade }),
+           !sub.lines.isEmpty {
+            let content = sub.lines.map(\.content).joined(separator: "。")
+            return [YwTextbook(title: sub.name, content: content)]
+        }
+        return []
     }
 
     /// 错别字数量：最少 5 个，最多 30 个，随文章长度自适应
@@ -919,35 +941,60 @@ struct ChineseHomeworkGameView: View {
         .animation(.easeInOut(duration: 0.3), value: result != nil)
         .onAppear { setupGame() }
         .sheet(isPresented: $showGradePicker) {
-            VStack(spacing: 12) {
-                Text("选择年级")
-                    .font(.system(size: 15, weight: .heavy, design: .rounded))
-                    .padding(.top, 18)
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    ForEach(gradeNames, id: \.self) { g in
-                        Button {
-                            grade = g
-                            showGradePicker = false
-                        } label: {
-                            Text(g)
-                                .font(.system(size: 13, weight: .heavy, design: .rounded))
-                                .foregroundStyle(grade == g ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        .fill(grade == g
-                                            ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                                            : Color(red: 240/255, green: 245/255, blue: 235/255))
-                                )
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("选择文本来源")
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 22)
+
+                    ForEach(Array(ChineseHomeworkStore.sourceGroups.enumerated()), id: \.offset) { _, group in
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(spacing: 6) {
+                                Text(group.emoji)
+                                    .font(.system(size: 16))
+                                Text(group.label)
+                                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            }
+                            .padding(.leading, 4)
+
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                                ForEach(group.items, id: \.self) { item in
+                                    Button {
+                                        grade = item
+                                        showGradePicker = false
+                                    } label: {
+                                        Text(item)
+                                            .font(.system(size: 12, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(grade == item ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 11)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                    .fill(grade == item
+                                                        ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                                        : Color(red: 244/255, green: 248/255, blue: 238/255))
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                            .strokeBorder(grade == item
+                                                                ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                                                lineWidth: 1.5)
+                                                    )
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
                         }
-                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.horizontal, 18)
+                .padding(.bottom, 24)
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -1025,12 +1072,6 @@ struct ChineseHomeworkGameView: View {
                 cellStates[index] = .found
             }
             foundCount += 1
-            let wrongCh: Character
-            if case .char(let ch, _, _, _) = (session.tokenByIndex[index]?.kind ?? .punct("？")) {
-                wrongCh = ch
-            } else {
-                wrongCh = "？"
-            }
 // 找对：直接格子上做动画，不再中央弹框
             if foundCount == session.totalWrong {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {

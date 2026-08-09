@@ -10,7 +10,7 @@ struct MainTabView: View {
             Tab("首页", systemImage: "sun.max.fill", value: 0) {
                 HomeView()
             }
-            Tab("诗库", systemImage: "book.closed.fill", value: 1) {
+            Tab("诗文", systemImage: "book.closed.fill", value: 1) {
                 DiscoverView()
             }
             Tab("探索", systemImage: "binoculars.fill", value: 2) {
@@ -79,6 +79,20 @@ struct DiscoverView: View {
                             fieldPoemCard
                                 .padding(.top, 14)
 
+                            // 小学作文精选
+                            NavigationLink(value: EssayNavTarget.list) {
+                                essayBannerCard
+                            }
+                            .buttonStyle(.bouncy)
+                            .padding(.top, 14)
+
+                            // 笔神精选
+                            NavigationLink(value: BishenNavTarget.list) {
+                                bishenBannerCard
+                            }
+                            .buttonStyle(.bouncy)
+                            .padding(.top, 10)
+
                             // 诗集书摊
                             fieldSectionTitle(seal: "摊", title: "诗集书摊")
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
@@ -99,6 +113,12 @@ struct DiscoverView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: PMNavigationTarget.self) { _ in
                 PMMainView()
+            }
+            .navigationDestination(for: EssayNavTarget.self) { _ in
+                BishenEssayHomeView()
+            }
+            .navigationDestination(for: BishenNavTarget.self) { _ in
+                BishenListView()
             }
             .navigationDestination(for: PoetryLibraryItem.self) { item in
                 PoetryCollectionListView(item: item)
@@ -124,7 +144,7 @@ struct DiscoverView: View {
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .tracking(5)
                 .foregroundStyle(Color(red: 110/255, green: 138/255, blue: 90/255))
-            Text("诗库")
+            Text("诗文")
                 .font(.system(size: 30, weight: .heavy, design: .serif))
                 .tracking(3)
                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
@@ -266,6 +286,110 @@ struct DiscoverView: View {
                 .buttonStyle(.bouncy)
             }
         }
+    }
+
+    // MARK: - 小学作文精选横卡
+
+    private var essayBannerCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 255/255, green: 235/255, blue: 210/255),
+                            Color(red: 245/255, green: 200/255, blue: 150/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("✍️")
+                    .font(.system(size: 24))
+                    .modifier(FieldBob(delay: 0.3))
+            }
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.4), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("小学作文精选")
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text("1~6 年级 · 480 篇范文")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                Text("好词好句，学会写作的第一步")
+                    .font(.system(size: 11, weight: .bold, design: .serif))
+                    .foregroundStyle(Color(red: 180/255, green: 130/255, blue: 50/255))
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 120/255, green: 90/255, blue: 30/255).opacity(0.1), radius: 8, y: 4)
+        )
+        .padding(.horizontal, AppTheme.paddingScreen)
+    }
+
+    // MARK: - 笔神精选横卡
+
+    private var bishenBannerCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 227/255, green: 242/255, blue: 234/255),
+                            Color(red: 189/255, green: 232/255, blue: 211/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("🖋")
+                    .font(.system(size: 24))
+                    .modifier(FieldBob(delay: 0.4))
+            }
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("笔神精选")
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                Text("每天一篇好文章 · 妙笔生花")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                Text("积累素材，让作文有话可说")
+                    .font(.system(size: 11, weight: .bold, design: .serif))
+                    .foregroundStyle(Color(red: 63/255, green: 143/255, blue: 104/255))
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 8, y: 4)
+        )
+        .padding(.horizontal, AppTheme.paddingScreen)
     }
 
     private func firstTwoLines(of poem: Poem) -> String {

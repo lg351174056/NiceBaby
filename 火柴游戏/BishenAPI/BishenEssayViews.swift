@@ -1,14 +1,15 @@
 import SwiftUI
 
+// MARK: - 小学作文精选 · L1 精选文集主页（书野学堂）
+
 struct BishenEssayHomeView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var catalog: BishenAlbumsCatalog?
+    @State private var dailyArticle: BishenArticleSummary?
     @State private var selectedTag = "全部"
     @State private var selectedYear: String?
     @State private var isLoading = true
     @State private var errorMessage: String?
-
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 14), count: 3)
 
     private var allAlbums: [BishenAlbum] {
         catalog?.albums ?? []
@@ -61,6 +62,9 @@ struct BishenEssayHomeView: View {
         }
     }
 
+    // 本月精选已移除：与全部文集是包含关系，会导致分类重复出现
+    // 统一只展示全部文集，用封面大卡让页面更饱满
+
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
@@ -84,8 +88,12 @@ struct BishenEssayHomeView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
-                        // 写作花园主题头
-                        gardenHeader
+                        heroHeader
+
+                        if let dailyArticle {
+                            dailyCard(dailyArticle)
+                                .padding(.top, 12)
+                        }
 
                         Group {
                             if isLoading && allAlbums.isEmpty {
@@ -121,7 +129,7 @@ struct BishenEssayHomeView: View {
                 GracefulBackButton()
                 Spacer()
             }
-            Text("精选文集")
+            Text("小学作文精选")
                 .font(.system(size: 16, weight: .heavy, design: .serif))
                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
         }
@@ -130,42 +138,124 @@ struct BishenEssayHomeView: View {
         .padding(.bottom, 6)
     }
 
-    // MARK: - 写作花园主题头（紧凑二级页头部）
+    // MARK: - 主题头（书野学堂）
 
-    private var gardenHeader: some View {
-        HStack(spacing: 12) {
-            // 向日葵（摇摆）
-            Text("🌻")
-                .font(.system(size: 34))
-                .modifier(GardenSway(delay: 0))
+    private var heroHeader: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 255/255, green: 235/255, blue: 210/255),
+                            Color(red: 245/255, green: 200/255, blue: 150/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("✍️")
+                    .font(.system(size: 24))
+                    .modifier(FieldBob(delay: 0.3))
+            }
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.4), lineWidth: 2)
+            )
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("写作花园")
-                    .font(.system(size: 16, weight: .heavy, design: .serif))
+                Text("小学作文精选")
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
                     .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                Text("每篇好作文，都是开在纸上的花")
+                Text("1~6 年级 · 好词好句，学会写作的第一步")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                HStack(spacing: 12) {
+                    Text("📚 \(allAlbums.count) 册文集")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    Text("✨ 每日更新")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                }
+                .padding(.top, 1)
             }
             Spacer()
-            // 蝴蝶蜜蜂扑翅
+            // 叶片 + 蝴蝶动效
             HStack(spacing: 6) {
-                Text("🦋").font(.system(size: 15)).modifier(GardenFlutter(delay: 0, reverse: false))
-                Text("🐝").font(.system(size: 15)).modifier(GardenFlutter(delay: 1.0, reverse: true))
+                Text("🍃").font(.system(size: 15)).modifier(FieldBob(delay: 0))
+                Text("🦋").font(.system(size: 14)).modifier(FieldFlutter(delay: 0.9))
             }
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.white.opacity(0.9))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: Color(red: 120/255, green: 90/255, blue: 30/255).opacity(0.1), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 10)
+    }
+
+    // MARK: - 每日一文横卡
+
+    private func dailyCard(_ article: BishenArticleSummary) -> some View {
+        NavigationLink {
+            BishenEssayDetailView(articleID: article.id, initialTitle: article.title)
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            LinearGradient(colors: [
+                                Color(red: 255/255, green: 217/255, blue: 122/255),
+                                Color(red: 245/255, green: 166/255, blue: 35/255)
+                            ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                    Text("🌞")
+                        .font(.system(size: 21))
+                        .modifier(FieldBob(delay: 0.2))
+                }
+                .frame(width: 44, height: 44)
+                .shadow(color: Color(red: 245/255, green: 166/255, blue: 35/255).opacity(0.4), radius: 6, y: 3)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("每日一文 · \(BishenDisplayMapper.currentDayText())")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 176/255, green: 130/255, blue: 50/255))
+                    Text("《\(article.title)》")
+                        .font(.system(size: 14, weight: .heavy, design: .serif))
+                        .foregroundStyle(Color(red: 92/255, green: 74/255, blue: 38/255))
+                        .lineLimit(1)
+                    Text(article.preview ?? article.authorDisplayForList)
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 154/255, green: 134/255, blue: 85/255))
+                        .lineLimit(1)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color(red: 201/255, green: 162/255, blue: 75/255))
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 255/255, green: 246/255, blue: 227/255),
+                            Color(red: 255/255, green: 233/255, blue: 196/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.35), lineWidth: 2)
+                    )
+                    .shadow(color: Color(red: 120/255, green: 90/255, blue: 30/255).opacity(0.1), radius: 8, y: 4)
+            )
+            .padding(.horizontal, 18)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - 背景装饰（太阳/云）
@@ -227,29 +317,30 @@ struct BishenEssayHomeView: View {
         .allowsHitTesting(false)
     }
 
-    private struct GardenSway: ViewModifier {
+    private struct FieldBob: ViewModifier {
         let delay: Double
         func body(content: Content) -> some View {
             TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate + delay
                 content
-                    .rotationEffect(.degrees(sin(t * 2.4) * 5), anchor: .bottom)
+                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
             }
         }
     }
 
-    private struct GardenFlutter: ViewModifier {
+    private struct FieldFlutter: ViewModifier {
         let delay: Double
-        let reverse: Bool
         func body(content: Content) -> some View {
             TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate + delay
                 content
                     .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+                    .rotationEffect(.degrees(sin(t * 3) * 6))
             }
         }
     }
+
+    // MARK: - 内容区
 
     private var contentView: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -259,30 +350,18 @@ struct BishenEssayHomeView: View {
                 yearSelector
             }
 
-            // 分区标题
-            HStack(spacing: 8) {
-                Rectangle()
-                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
-                    .frame(width: 6, height: 20)
-                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                Text(selectedTag == "月刊" ? "花园月刊" : "花园花圃")
-                    .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                Spacer()
-                Text(summaryText)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 10)
+            // 全部文集（单列表：两列封面大卡，避免分类重复出现）
+            sectionTitle(
+                title: "全部文集",
+                countText: "共 \(filteredAlbums.count) 册"
+            )
 
-            LazyVGrid(columns: columns, spacing: 14) {
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                 ForEach(filteredAlbums) { album in
                     NavigationLink {
                         BishenAlbumListView(album: album)
                     } label: {
-                        BishenAlbumGridCard(album: album)
+                        BookCoverCard(album: album)
                     }
                     .buttonStyle(.plain)
                 }
@@ -297,6 +376,25 @@ struct BishenEssayHomeView: View {
                     .padding(.top, 14)
             }
         }
+    }
+
+    private func sectionTitle(title: String, countText: String) -> some View {
+        HStack(spacing: 8) {
+            Rectangle()
+                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .frame(width: 6, height: 20)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            Text(title)
+                .font(.system(size: 15, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            Spacer()
+            Text(countText)
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 10)
     }
 
     private var tagSelector: some View {
@@ -322,7 +420,7 @@ struct BishenEssayHomeView: View {
                                     .strokeBorder(
                                         selectedTag == tag ? Color(red: 61/255, green: 74/255, blue: 54/255)
                                             : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
-                                        lineWidth: selectedTag == tag ? 2 : 2
+                                        lineWidth: 2
                                     )
                             }
                     }
@@ -369,19 +467,9 @@ struct BishenEssayHomeView: View {
         }
     }
 
-    private var summaryText: String {
-        if selectedTag == "月刊", let selectedYear {
-            return "\(selectedYear) 年共 \(filteredAlbums.count) 本月刊"
-        }
-        if selectedTag == "全部" {
-            return "共还原 \(filteredAlbums.count) 个文集"
-        }
-        return "\(selectedTag) 栏目共 \(filteredAlbums.count) 个文集"
-    }
-
     private var loadingView: some View {
         VStack(spacing: 12) {
-            ProgressView("正在浇灌花园...")
+            ProgressView("正在翻开书页...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
         }
@@ -393,14 +481,14 @@ struct BishenEssayHomeView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 24, weight: .medium))
                 .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
-            Text("花园暂时打不开")
+            Text("书摊暂时打不开")
                 .font(.system(size: 20, weight: .bold, design: .serif))
                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
             Text(message)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
                 .multilineTextAlignment(.center)
-            Button("重新浇灌") {
+            Button("重新翻书") {
                 Task { await load() }
             }
             .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -418,9 +506,13 @@ struct BishenEssayHomeView: View {
         isLoading = true
         defer { isLoading = false }
 
+        async let catalogTask: BishenAlbumsCatalog = BishenEssayService.shared.fetchAllAlbumsCatalog()
+        async let dailyTask: [BishenArticleSummary] = BishenEssayService.shared.fetchDailyRecommendations()
+
         do {
-            let catalog = try await BishenEssayService.shared.fetchAllAlbumsCatalog()
+            let (catalog, daily) = try await (catalogTask, dailyTask)
             self.catalog = catalog
+            dailyArticle = daily.first
             errorMessage = nil
 
             if selectedTag == "全部", availableTags.contains("月刊") {
@@ -470,6 +562,127 @@ struct BishenEssayHomeView: View {
     }
 }
 
+// MARK: - 文集封面大卡（L1 两列网格）
+
+private struct BookCoverCard: View {
+    let album: BishenAlbum
+
+    private var coverGradient: [Color] {
+        let palette: [[Color]] = [
+            [Color(red: 255/255, green: 238/255, blue: 216/255), Color(red: 248/255, green: 204/255, blue: 152/255)],
+            [Color(red: 227/255, green: 242/255, blue: 234/255), Color(red: 189/255, green: 232/255, blue: 211/255)],
+            [Color(red: 232/255, green: 240/255, blue: 248/255), Color(red: 168/255, green: 200/255, blue: 232/255)],
+            [Color(red: 245/255, green: 232/255, blue: 245/255), Color(red: 222/255, green: 190/255, blue: 226/255)]
+        ]
+        let seed = abs(album.id.hashValue)
+        return palette[seed % palette.count]
+    }
+
+    private var bookEmoji: String {
+        let books = ["📕", "📗", "📘", "📙", "📓", "📔"]
+        let seed = abs(album.id.hashValue)
+        return books[seed % books.count]
+    }
+
+    private var coverTag: String {
+        if album.isMonthly {
+            return "月刊"
+        }
+        return album.tags?.first(where: { $0 != "月刊" }) ?? "作文选集"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // 封面区（渐变 + 书本 + 标签 + NEW）
+            ZStack(alignment: .bottomLeading) {
+                LinearGradient(colors: coverGradient, startPoint: .topLeading, endPoint: .bottomTrailing)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(bookEmoji)
+                            .font(.system(size: 24))
+                            .modifier(BookBob(delay: Double(abs(album.id.hashValue) % 5) * 0.2))
+                        Spacer()
+                        if let countNew = album.countNew, countNew > 0 {
+                            Text("NEW")
+                                .font(.system(size: 8, weight: .heavy, design: .rounded))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 2)
+                                .background(Color(red: 232/255, green: 106/255, blue: 158/255), in: Capsule())
+                        }
+                    }
+                    Text(coverTag)
+                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.7))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.white.opacity(0.55), in: Capsule())
+                }
+                .padding(10)
+            }
+            .frame(height: 88)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1.5)
+            )
+
+            // 信息区
+            VStack(alignment: .leading, spacing: 3) {
+                Text(album.title)
+                    .font(.system(size: 13, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .lineLimit(1)
+
+                if !album.desc.isEmpty {
+                    Text(album.desc)
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .lineLimit(1)
+                }
+
+                HStack(spacing: 8) {
+                    Text("\(album.count) 篇")
+                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    if let year = album.year, album.isMonthly {
+                        Text(year)
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+        )
+    }
+
+    private struct BookBob: ViewModifier {
+        let delay: Double
+        func body(content: Content) -> some View {
+            TimelineView(.animation) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate + delay
+                content
+                    .offset(y: CGFloat(sin(t * 2.2) * 3.5))
+            }
+        }
+    }
+}
+
+// MARK: - L2 文集作文列表
+
 struct BishenAlbumListView: View {
     let album: BishenAlbum
 
@@ -514,7 +727,7 @@ struct BishenAlbumListView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
-                        gardenSign
+                        albumHeadCard
 
                         Group {
                             if isLoading && articles.isEmpty {
@@ -605,8 +818,8 @@ struct BishenAlbumListView: View {
     // 蝴蝶蜜蜂（右上）
     private var listFlutter: some View {
         ZStack {
-            Text("🦋").font(.system(size: 16)).modifier(GardenFlutter(delay: 0, reverse: false))
-            Text("🐝").font(.system(size: 15)).modifier(GardenFlutter(delay: 1.2, reverse: true))
+            Text("🦋").font(.system(size: 16)).modifier(Flutter(delay: 0))
+            Text("🐝").font(.system(size: 15)).modifier(Flutter(delay: 1.2))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .padding(.trailing, 24)
@@ -614,20 +827,19 @@ struct BishenAlbumListView: View {
         .allowsHitTesting(false)
     }
 
-    private struct GardenFlutter: ViewModifier {
+    private struct Flutter: ViewModifier {
         let delay: Double
-        let reverse: Bool
         func body(content: Content) -> some View {
             TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate + delay
                 content
                     .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+                    .rotationEffect(.degrees(sin(t * 3) * 6))
             }
         }
     }
 
-    private struct GardenBloom: ViewModifier {
+    private struct Bloom: ViewModifier {
         let delay: Double
         func body(content: Content) -> some View {
             TimelineView(.animation) { timeline in
@@ -638,8 +850,8 @@ struct BishenAlbumListView: View {
         }
     }
 
-    // 花园立牌头（花朵圆牌 + 标题 + meta）
-    private var gardenSign: some View {
+    // 文集头卡（花朵圆牌 + 标题 + meta）
+    private var albumHeadCard: some View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
@@ -651,9 +863,9 @@ struct BishenAlbumListView: View {
                     )
                 Text("🌷")
                     .font(.system(size: 28))
-                    .modifier(GardenBloom(delay: 0))
+                    .modifier(Bloom(delay: 0))
             }
-            .frame(width: 60, height: 60)
+            .frame(width: 58, height: 58)
             .overlay(
                 Circle().strokeBorder(Color(red: 176/255, green: 138/255, blue: 94/255).opacity(0.35), lineWidth: 2)
             )
@@ -733,7 +945,7 @@ struct BishenAlbumListView: View {
 
     private var loadingView: some View {
         VStack(spacing: 12) {
-            ProgressView("正在浇灌花园...")
+            ProgressView("正在翻开花园...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
         }
@@ -778,6 +990,8 @@ struct BishenAlbumListView: View {
         }
     }
 }
+
+// MARK: - L3 作文详情（书野学堂）
 
 struct BishenEssayDetailView: View {
     let articleID: String
@@ -913,8 +1127,8 @@ struct BishenEssayDetailView: View {
     // 蝴蝶蜜蜂（右上）
     private var detailFlutter: some View {
         ZStack {
-            Text("🦋").font(.system(size: 16)).modifier(DetailFlutter(delay: 0, reverse: false))
-            Text("🐝").font(.system(size: 15)).modifier(DetailFlutter(delay: 1.2, reverse: true))
+            Text("🦋").font(.system(size: 16)).modifier(DetailFlutter(delay: 0))
+            Text("🐝").font(.system(size: 15)).modifier(DetailFlutter(delay: 1.2))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .padding(.trailing, 24)
@@ -924,62 +1138,66 @@ struct BishenEssayDetailView: View {
 
     private struct DetailFlutter: ViewModifier {
         let delay: Double
-        let reverse: Bool
         func body(content: Content) -> some View {
             TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate + delay
                 content
                     .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+                    .rotationEffect(.degrees(sin(t * 3) * 6))
             }
         }
     }
 
     private func detailView(_ detail: BishenArticleDetail) -> some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                authorHeader(detail)
-                articleHeader(detail)
-                articleContent(detail)
-                critiqueSection(detail)
+            VStack(spacing: 16) {
+                paperCard(detail)
                 bottomActionBar(detail)
             }
             .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 14)
+            .padding(.top, 10)
             .padding(.bottom, 28)
         }
     }
 
+    // 纸张容器
+    private func paperCard(_ detail: BishenArticleDetail) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            authorHeader(detail)
+            articleHeader(detail)
+            articleContent(detail)
+            critiqueSection(detail)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+        )
+    }
+
     private func authorHeader(_ detail: BishenArticleDetail) -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             Circle()
                 .fill(BishenDisplayMapper.avatarGradient(for: detail.author))
-                .frame(width: 54, height: 54)
+                .frame(width: 46, height: 46)
                 .overlay {
                     Text(String(detail.authorDisplay.prefix(1)))
-                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .font(.system(size: 20, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
                 }
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    Text(detail.authorDisplay)
-                        .font(.system(size: 20, weight: .bold, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-
-                    if let reviewTag = detail.reviewTag, !reviewTag.isEmpty {
-                        Text(reviewTag)
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(AppTheme.accentCinnabar, in: Capsule())
-                    }
-                }
-
+            VStack(alignment: .leading, spacing: 3) {
+                Text(detail.authorDisplay)
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 Text(detail.publishLine)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
             }
 
             Spacer()
@@ -987,27 +1205,32 @@ struct BishenEssayDetailView: View {
             if let score = detail.score {
                 HStack(spacing: 6) {
                     Text("评")
-                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .font(.system(size: 9, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
-                        .frame(width: 20, height: 20)
+                        .frame(width: 18, height: 18)
                         .background(AppTheme.accentJade, in: Circle())
-                    Text("\(score)分")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+                    Text("\(score) 分")
+                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color(red: 238/255, green: 247/255, blue: 238/255), in: Capsule())
+                .overlay(
+                    Capsule().strokeBorder(AppTheme.accentJade.opacity(0.4), lineWidth: 1.5)
+                )
             }
         }
-        .padding(.horizontal, 2)
     }
 
     private func articleHeader(_ detail: BishenArticleDetail) -> some View {
         VStack(spacing: 12) {
             Text(detail.title)
-                .font(.system(size: 31, weight: .heavy, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(.system(size: 27, weight: .heavy, design: .serif))
+                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 .multilineTextAlignment(.center)
 
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 if let grade = detail.gradeDisplay {
                     BishenMetaTag(title: grade, color: AppTheme.accentJade)
                 }
@@ -1018,75 +1241,87 @@ struct BishenEssayDetailView: View {
                     BishenMetaTag(title: source, color: AppTheme.accentCinnabar)
                 }
             }
-
-            if let albumTitle = detail.albumTitle, !albumTitle.isEmpty {
-                Text(albumTitle)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 4)
+        .padding(.top, 14)
     }
 
     private func articleContent(_ detail: BishenArticleDetail) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 12) {
             ForEach(detail.paragraphs.indices, id: \.self) { index in
                 Text(detail.paragraphs[index])
-                    .font(.system(size: 21, weight: .regular, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .lineSpacing(14)
+                    .font(.system(size: 17, weight: .regular, design: .serif))
+                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .lineSpacing(16)
                     .tracking(0.3)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, index == 0 ? 0 : 14)
             }
         }
-        .padding(.top, 4)
+        .padding(.top, 16)
     }
 
     private func critiqueSection(_ detail: BishenArticleDetail) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
                 Text("笔神点评")
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
+                    .padding(.vertical, 4)
                     .background(AppTheme.accentJade, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 if let reviewTag = detail.reviewTag, !reviewTag.isEmpty {
-                    Text(reviewTag)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.accentJade)
+                    Text("· \(reviewTag)")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 46/255, green: 125/255, blue: 91/255))
                 }
             }
 
             Text(detail.critiqueText)
-                .font(.system(size: 17, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-                .lineSpacing(8)
+                .font(.system(size: 12.5, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 85/255, green: 112/255, blue: 95/255))
+                .lineSpacing(7)
+                .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .padding(.top, 8)
+        .padding(14)
+        .background(Color(red: 238/255, green: 247/255, blue: 238/255).opacity(0.9), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2)
+        )
+        .padding(.top, 16)
     }
 
     private func bottomActionBar(_ detail: BishenArticleDetail) -> some View {
         HStack(spacing: 12) {
-            Text(detail.commentsSummary)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 14)
+            Text("💬 \(detail.commentsSummary)")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white.opacity(0.65), in: Capsule())
+                .background(Color.white.opacity(0.7), in: Capsule())
+                .overlay(
+                    Capsule().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5)
+                )
 
-            BishenBottomStat(icon: "hand.thumbsup", value: detail.likeSummary, tint: AppTheme.accentJade)
-            BishenBottomStat(icon: "star", value: "收藏", tint: AppTheme.accentJade)
-            BishenBottomStat(icon: "square.and.arrow.up", value: "分享", tint: AppTheme.accentJade)
+            actionStat(icon: "hand.thumbsup", label: "点赞")
+            actionStat(icon: "star", label: "收藏")
+            actionStat(icon: "square.and.arrow.up", label: "分享")
         }
-        .padding(.horizontal, 4)
+    }
+
+    private func actionStat(icon: String, label: String) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+            Text(label)
+                .font(.system(size: 8.5, weight: .heavy, design: .rounded))
+        }
+        .foregroundStyle(AppTheme.accentJade)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 4)
     }
 
     private var loadingView: some View {
@@ -1137,74 +1372,7 @@ struct BishenEssayDetailView: View {
     }
 }
 
-private struct BishenAlbumGridCard: View {
-    let album: BishenAlbum
-
-    private var flowerEmoji: String {
-        let flowers = ["🌷", "🌼", "🌹", "🌺", "🌸", "🌻"]
-        let seed = abs(album.id.hashValue)
-        return flowers[seed % flowers.count]
-    }
-
-    private var tint: Color {
-        let colors: [Color] = [
-            Color(red: 234/255, green: 246/255, blue: 228/255),
-            Color(red: 248/255, green: 232/255, blue: 240/255),
-            Color(red: 232/255, green: 240/255, blue: 248/255),
-            Color(red: 248/255, green: 240/255, blue: 224/255),
-        ]
-        return colors[abs(album.id.hashValue) % colors.count]
-    }
-
-    var body: some View {
-        VStack(spacing: 5) {
-            // 花朵图标（摇摆）
-            Text(flowerEmoji)
-                .font(.system(size: 26))
-                .modifier(FlowerSway(delay: Double(abs(album.id.hashValue) % 5) * 0.2))
-
-            Text(album.title)
-                .font(.system(size: 12, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-
-            HStack(spacing: 4) {
-                Text("共 \(album.count) 篇")
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
-                if let countNew = album.countNew, countNew > 0 {
-                    Text("+\(countNew)")
-                        .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
-                }
-            }
-        }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white.opacity(0.9))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
-                )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
-        )
-    }
-
-    private struct FlowerSway: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .rotationEffect(.degrees(sin(t * 2.6) * 4), anchor: .bottom)
-            }
-        }
-    }
-}
+// MARK: - 文章列表卡（L2）
 
 private struct BishenArticleListCard: View {
     let article: BishenArticleSummary
@@ -1243,12 +1411,26 @@ private struct BishenArticleListCard: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(article.title)
-                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .font(.system(size: 13.5, weight: .heavy, design: .serif))
                     .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                     .lineLimit(2)
-                Text(article.authorDisplayForList)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                HStack(spacing: 8) {
+                    if let grade = article.gradeDisplay {
+                        Text(grade)
+                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    }
+                    if let category = article.categoryDisplay {
+                        Text(category)
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    }
+                    if article.gradeDisplay == nil, article.categoryDisplay == nil {
+                        Text(article.authorDisplayForList)
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    }
+                }
             }
             Spacer(minLength: 0)
             Image(systemName: "chevron.right")
@@ -1279,51 +1461,26 @@ private struct BishenArticleListCard: View {
     }
 }
 
+// MARK: - 通用小组件
+
 private struct BishenMetaTag: View {
     let title: String
     let color: Color
 
     var body: some View {
         Text(title)
-            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .font(.system(size: 10, weight: .heavy, design: .rounded))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.vertical, 3)
             .background(color.opacity(0.10), in: Capsule())
+            .overlay(
+                Capsule().strokeBorder(color.opacity(0.35), lineWidth: 1.5)
+            )
     }
 }
 
-private struct BishenCapsuleLabel: View {
-    let title: String
-    let textColor: Color
-    let fillColor: Color
-
-    var body: some View {
-        Text(title)
-            .font(.system(size: 12, weight: .bold, design: .rounded))
-            .foregroundStyle(textColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(fillColor, in: Capsule())
-    }
-}
-
-private struct BishenBottomStat: View {
-    let icon: String
-    let value: String
-    let tint: Color
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .medium))
-            Text(value)
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-        }
-        .foregroundStyle(tint)
-        .frame(width: 54)
-    }
-}
+// MARK: - 数据映射
 
 private extension BishenAlbum {
     var isMonthly: Bool {
@@ -1385,14 +1542,6 @@ private extension BishenArticleDetail {
         return "暂无评论"
     }
 
-    var likeSummary: String {
-        guard let score else { return "--" }
-        if score >= 95 { return "2.8k" }
-        if score >= 90 { return "2.5k" }
-        if score >= 85 { return "1.8k" }
-        return "839"
-    }
-
     var critiqueText: String {
         let theme = categoryDisplay ?? "主题"
         let tone = reviewTag?.isEmpty == false ? reviewTag! : "表达自然"
@@ -1412,8 +1561,6 @@ private extension BishenArticleDetail {
 }
 
 private enum BishenDisplayMapper {
-    static let detailBackground = Color(red: 243 / 255, green: 244 / 255, blue: 246 / 255)
-
     static func gradeName(for raw: String?) -> String? {
         switch raw {
         case "g1": return "一年级"
@@ -1452,8 +1599,7 @@ private enum BishenDisplayMapper {
     static func sourceName(for raw: String?) -> String? {
         switch raw {
         case "contrib": return "精选投稿"
-        case "default": return "官方整理"
-        case "DEFAULT": return "官方整理"
+        case "default", "DEFAULT": return "官方整理"
         default: return nil
         }
     }
@@ -1463,6 +1609,13 @@ private enum BishenDisplayMapper {
         formatter.locale = Locale(identifier: "zh_CN")
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
         return formatter.string(from: Date(timeIntervalSince1970: timestamp))
+    }
+
+    nonisolated static func currentDayText(from date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "M月d日"
+        return formatter.string(from: date)
     }
 
     static func avatarGradient(for seed: String) -> LinearGradient {
