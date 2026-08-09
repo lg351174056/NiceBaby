@@ -96,7 +96,7 @@ struct BishenListView: View {
                         Spacer()
                     }
                     Text("笔神精选")
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
                 .padding(.horizontal, 18)
@@ -389,7 +389,7 @@ struct BishenLinesView: View {
                         Spacer()
                     }
                     Text("\(subcategory.category) · \(subcategory.name)")
-                        .font(.system(size: 15, weight: .heavy, design: .serif))
+                        .font(.system(size: 17, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                         .lineLimit(1)
                 }

@@ -1050,7 +1050,7 @@ private struct PoemCollectionContent: View {
                             Spacer()
                         }
                         Text(title)
-                            .font(.system(size: 16, weight: .heavy, design: .serif))
+                            .font(.system(size: 18, weight: .heavy, design: .serif))
                             .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                             .lineLimit(1)
                     }

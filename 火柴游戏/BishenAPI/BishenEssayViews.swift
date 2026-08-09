@@ -130,7 +130,7 @@ struct BishenEssayHomeView: View {
                 Spacer()
             }
             Text("小学作文精选")
-                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .font(.system(size: 18, weight: .heavy, design: .serif))
                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
         }
         .padding(.horizontal, 18)
@@ -717,7 +717,7 @@ struct BishenAlbumListView: View {
                         Spacer()
                     }
                     Text(album.title)
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                         .lineLimit(1)
                 }
@@ -1034,7 +1034,7 @@ struct BishenEssayDetailView: View {
                             .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
                     }
                     Text("作文详情")
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
                 .padding(.horizontal, 18)

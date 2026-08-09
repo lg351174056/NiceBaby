@@ -43,7 +43,7 @@ struct WallpaperGalleryView: View {
                         Spacer()
                     }
                     Text("壁纸图库")
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
                 .padding(.horizontal, 18)

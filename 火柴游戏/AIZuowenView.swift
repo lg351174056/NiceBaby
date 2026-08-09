@@ -1,5 +1,31 @@
 import SwiftUI
 
+// MARK: - 书野竹青配色（AI 作文）
+
+fileprivate enum ZuowenStyle {
+    static let bambooGreen = Color(red: 76/255, green: 175/255, blue: 125/255)
+    static let bambooGreenLight = Color(red: 126/255, green: 211/255, blue: 160/255)
+    static let inkGreen = Color(red: 61/255, green: 74/255, blue: 54/255)
+    static let deepGreen = Color(red: 46/255, green: 125/255, blue: 91/255)
+    static let sage = Color(red: 138/255, green: 154/255, blue: 122/255)
+    static let strokeGreen = Color(red: 110/255, green: 140/255, blue: 90/255)
+    static let chipText = Color(red: 74/255, green: 92/255, blue: 66/255)
+    static let gold = Color(red: 176/255, green: 130/255, blue: 50/255)
+    static let goldSoft = Color(red: 245/255, green: 200/255, blue: 107/255)
+    static let iceBlue = Color(red: 190/255, green: 227/255, blue: 245/255)
+    static let mint = Color(red: 220/255, green: 242/255, blue: 220/255)
+    static let grass = Color(red: 207/255, green: 235/255, blue: 196/255)
+
+    static let skyGradient = LinearGradient(
+        colors: [iceBlue, mint, grass],
+        startPoint: .top, endPoint: .bottom
+    )
+    static let greenGradient = LinearGradient(
+        colors: [bambooGreenLight, bambooGreen],
+        startPoint: .leading, endPoint: .trailing
+    )
+}
+
 // MARK: - AI作文大全
 
 enum AIZuowenNavTarget: Hashable { case home }
@@ -18,107 +44,42 @@ struct AIZuowenView: View {
     @State private var selectedType = ""
     @State private var selectedCount = ""
 
+    private let essayEmojis = ["🌻", "🎠", "🥟", "🐘", "🖌", "🚀", "🎣", "⛺️", "🦋", "🌱", "📚", "🍂"]
+
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            ZuowenStyle.skyGradient.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // 导航
+                // 透明导航条
                 ZStack {
                     HStack {
                         GracefulBackButton()
                         Spacer()
                     }
                     Text("AI作文大全")
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
+                        .foregroundStyle(ZuowenStyle.inkGreen)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
                 .padding(.bottom, 6)
 
-                // 顶部：段位切换 + 当前筛选 + 筛选按钮
-                VStack(spacing: 8) {
-                    // 小学/初中/高中 段位
-                    HStack(spacing: 6) {
-                        ForEach(ZuowenSection.allCases, id: \.self) { s in
-                            sectionChip(s)
+                // 整页滚动
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        heroCard
+                        sectionCards
+                        gradeChips
+                        filterSummaryRow
+                        sectionHeader
+                        if essays.isEmpty && !isLoading {
+                            emptyState
+                        } else {
+                            essayList
                         }
-                        Spacer()
-                        Button { showFilter = true } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "line.3.horizontal.decrease")
-                                    .font(.system(size: 11, weight: .heavy))
-                                Text("筛选")
-                                    .font(.system(size: 11, weight: .heavy, design: .rounded))
-                            }
-                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color.white.opacity(0.9), in: Capsule())
-                            .overlay(Capsule().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 1))
-                        }
-                        .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, 18)
-
-                    // 当前筛选提示
-                    HStack(spacing: 6) {
-                        Text(filterSummary)
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 18)
-                }
-                .padding(.bottom, 8)
-
-                // 列表
-                if essays.isEmpty && !isLoading {
-                    Spacer()
-                    VStack(spacing: 12) {
-                        Text("📝")
-                            .font(.system(size: 40))
-                        Text("暂无结果，换个条件试试")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
-                    }
-                    Spacer()
-                } else {
-                    ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 10) {
-                            ForEach(essays) { essay in
-                                NavigationLink(value: essay) {
-                                    essayRow(essay)
-                                }
-                                .buttonStyle(.plain)
-                                .onAppear {
-                                    if essay.id == essays.last?.id { loadMore() }
-                                }
-                            }
-                            if isLoading {
-                                ProgressView()
-                                    .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
-                                    .padding(.vertical, 16)
-                            }
-                            if !hasMore && !essays.isEmpty {
-                                Text("— 已加载全部 —")
-                                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
-                                    .padding(.vertical, 12)
-                            }
-                        }
-                        .padding(.horizontal, 18)
-                        .padding(.bottom, 40)
-                    }
+                    .padding(.bottom, 40)
                 }
             }
         }
@@ -128,7 +89,7 @@ struct AIZuowenView: View {
         }
         .sheet(isPresented: $showFilter) {
             ZuowenFilterSheet(
-                section: $section,
+                section: section,
                 gradeOrCategory: $gradeOrCategory,
                 selectedType: $selectedType,
                 selectedCount: $selectedCount,
@@ -139,68 +100,342 @@ struct AIZuowenView: View {
         .onAppear { if essays.isEmpty { loadMore() } }
     }
 
-    private var filterSummary: String {
-        var parts = [gradeOrCategory]
-        if !selectedType.isEmpty { parts.append(selectedType) }
-        if !selectedCount.isEmpty { parts.append(selectedCount) }
-        return parts.joined(separator: " · ")
+    // MARK: - 头部
+
+    private var heroCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(LinearGradient(
+                        colors: [Color(red: 227/255, green: 242/255, blue: 234/255), Color(red: 189/255, green: 232/255, blue: 211/255)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
+                    ))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(ZuowenStyle.bambooGreen.opacity(0.4), lineWidth: 2)
+                    )
+                Text("✍️")
+                    .font(.system(size: 24))
+            }
+            .frame(width: 52, height: 52)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("AI作文大全")
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(ZuowenStyle.inkGreen)
+                Text("海量范文 · 名师精选 · 一键朗读")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(ZuowenStyle.sage)
+                    .padding(.top, 2)
+                HStack(spacing: 10) {
+                    Text("📚 5000+ 篇")
+                        .font(.system(size: 9.5, weight: .heavy))
+                        .foregroundStyle(ZuowenStyle.bambooGreen)
+                    Text("🤖 AI 精选")
+                        .font(.system(size: 9.5, weight: .heavy))
+                        .foregroundStyle(ZuowenStyle.gold)
+                }
+                .padding(.top, 3)
+            }
+            Spacer()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(ZuowenStyle.bambooGreen.opacity(0.3), lineWidth: 2)
+                )
+        )
+        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 14, y: 5)
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
     }
 
-    private func sectionChip(_ s: ZuowenSection) -> some View {
-        Button {
+    // MARK: - 三段切换卡
+
+    private var sectionCards: some View {
+        HStack(spacing: 10) {
+            ForEach(ZuowenSection.allCases, id: \.self) { s in
+                sectionCard(s)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 12)
+    }
+
+    private func sectionCard(_ s: ZuowenSection) -> some View {
+        let meta = sectionMeta(s)
+        let isOn = section == s
+        return Button {
             section = s
             gradeOrCategory = s.defaultGrade
             selectedType = ""
             selectedCount = ""
             refresh()
         } label: {
-            Text(s.label)
-                .font(.system(size: 11, weight: .heavy, design: .rounded))
-                .foregroundStyle(section == s ? .white : Color(red: 76/255, green: 175/255, blue: 125/255))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(section == s ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color.white.opacity(0.8), in: Capsule())
-                .overlay(Capsule().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 1))
+            VStack(spacing: 4) {
+                Text(meta.icon)
+                    .font(.system(size: 22))
+                Text(s.label)
+                    .font(.system(size: 12, weight: .heavy))
+                    .foregroundStyle(isOn ? ZuowenStyle.deepGreen : ZuowenStyle.inkGreen)
+                Text(meta.sub)
+                    .font(.system(size: 8.5, weight: .bold))
+                    .foregroundStyle(ZuowenStyle.sage)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(isOn
+                          ? LinearGradient(colors: [Color(red: 238/255, green: 247/255, blue: 238/255), Color(red: 223/255, green: 242/255, blue: 228/255)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                          : LinearGradient(colors: [Color.white.opacity(0.88)], startPoint: .top, endPoint: .bottom))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(isOn ? ZuowenStyle.bambooGreen : ZuowenStyle.strokeGreen.opacity(0.25), lineWidth: 2)
+                    )
+            )
+            .shadow(color: isOn ? ZuowenStyle.bambooGreen.opacity(0.15) : .clear, radius: 8, y: 3)
         }
         .buttonStyle(.plain)
     }
 
-    private func essayRow(_ essay: ZuowenEssay) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Text(essay.title)
-                    .font(.system(size: 14, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                    .lineLimit(1)
-                Spacer()
-                Text(essay.count)
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+    private func sectionMeta(_ s: ZuowenSection) -> (icon: String, sub: String) {
+        switch s {
+        case .xiaoxue: return ("🎒", "1 ~ 6 年级")
+        case .chuzhong: return ("📕", "7 ~ 9 年级")
+        case .gaozhong: return ("📗", "高一 ~ 高三")
+        }
+    }
+
+    // MARK: - 年级 chips + 筛选按钮
+
+    private var gradeChips: some View {
+        HStack(spacing: 8) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(section.grades, id: \.self) { g in
+                        chip(g, isOn: gradeOrCategory == g) {
+                            gradeOrCategory = g
+                            refresh()
+                        }
+                    }
+                }
+                .padding(.horizontal, 18)
             }
-            Text(essay.cttip)
-                .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 100/255, green: 110/255, blue: 90/255))
-                .lineLimit(2)
-            HStack(spacing: 6) {
-                if !essay.grade.isEmpty { tag(essay.grade) }
-                if !essay.type.isEmpty { tag(essay.type) }
+
+            Button { showFilter = true } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .font(.system(size: 11, weight: .heavy))
+                    Text("筛选")
+                        .font(.system(size: 11.5, weight: .heavy))
+                }
+                .foregroundStyle(ZuowenStyle.gold)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.85), in: Capsule())
+                .overlay(Capsule().strokeBorder(ZuowenStyle.gold.opacity(0.45), lineWidth: 2))
             }
+            .buttonStyle(.plain)
+            .padding(.trailing, 18)
+        }
+        .padding(.top, 12)
+    }
+
+    private func chip(_ text: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(text)
+                .font(.system(size: 11.5, weight: .heavy))
+                .foregroundStyle(isOn ? .white : ZuowenStyle.chipText)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(isOn ? ZuowenStyle.bambooGreen : Color.white.opacity(0.85), in: Capsule())
+                .overlay(Capsule().strokeBorder(isOn ? ZuowenStyle.inkGreen.opacity(0.6) : ZuowenStyle.strokeGreen.opacity(0.35), lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 已选条件
+
+    private var filterSummaryRow: some View {
+        HStack(spacing: 8) {
+            Text("已选：\(filterSummary)")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(ZuowenStyle.sage)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.7), in: Capsule())
+                .overlay(Capsule().strokeBorder(ZuowenStyle.strokeGreen.opacity(0.35), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
+            Spacer()
+            Button {
+                gradeOrCategory = ""
+                selectedType = ""
+                selectedCount = ""
+                refresh()
+            } label: {
+                Text("✕ 清空")
+                    .font(.system(size: 10, weight: .heavy))
+                    .foregroundStyle(ZuowenStyle.bambooGreen)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.white.opacity(0.85), in: Capsule())
+                    .overlay(Capsule().strokeBorder(ZuowenStyle.bambooGreen.opacity(0.35), lineWidth: 1.5))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
+    }
+
+    private var filterSummary: String {
+        var parts = [gradeOrCategory.isEmpty ? "全部" : gradeOrCategory]
+        if !selectedType.isEmpty { parts.append(selectedType) }
+        if !selectedCount.isEmpty { parts.append(selectedCount) }
+        return parts.joined(separator: " · ")
+    }
+
+    // MARK: - 分区标题
+
+    private var sectionHeader: some View {
+        HStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(ZuowenStyle.bambooGreen)
+                .frame(width: 6, height: 20)
+            Text("精选范文")
+                .font(.system(size: 15, weight: .heavy))
+                .foregroundStyle(ZuowenStyle.inkGreen)
+            Spacer()
+            Text("按热度排序 · \(essays.count) 篇")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(ZuowenStyle.sage)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 10)
+    }
+
+    // MARK: - 列表
+
+    private var essayList: some View {
+        LazyVStack(spacing: 10) {
+            ForEach(essays) { essay in
+                NavigationLink(value: essay) {
+                    essayRow(essay, emoji: essayEmojis[stableIndex(essay) % essayEmojis.count])
+                }
+                .buttonStyle(.plain)
+                .onAppear {
+                    if essay.id == essays.last?.id { loadMore() }
+                }
+            }
+            if isLoading {
+                ProgressView()
+                    .tint(ZuowenStyle.bambooGreen)
+                    .padding(.vertical, 16)
+            } else if !hasMore {
+                Text("— 已加载全部 · 共计 5000+ 篇 —")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Color(red: 168/255, green: 184/255, blue: 154/255))
+                    .padding(.vertical, 12)
+            } else {
+                Button { loadMore() } label: {
+                    Text("加载更多")
+                        .font(.system(size: 12, weight: .heavy))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 11)
+                        .background(ZuowenStyle.greenGradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .strokeBorder(ZuowenStyle.inkGreen, lineWidth: 2)
+                        )
+                        .shadow(color: ZuowenStyle.bambooGreen.opacity(0.35), radius: 10, y: 4)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+            }
+        }
+        .padding(.horizontal, 18)
+    }
+
+    private func essayRow(_ essay: ZuowenEssay, emoji: String) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color(red: 234/255, green: 246/255, blue: 228/255))
+                    .overlay(Circle().strokeBorder(ZuowenStyle.strokeGreen.opacity(0.3), lineWidth: 2))
+                Text(emoji)
+                    .font(.system(size: 17))
+            }
+            .frame(width: 42, height: 42)
+
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 6) {
+                    Text(essay.title)
+                        .font(.system(size: 14, weight: .heavy, design: .serif))
+                        .foregroundStyle(ZuowenStyle.inkGreen)
+                        .lineLimit(1)
+                    Spacer()
+                    if !essay.count.isEmpty {
+                        Text(essay.count)
+                            .font(.system(size: 9, weight: .heavy))
+                            .foregroundStyle(ZuowenStyle.gold)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 1)
+                            .background(ZuowenStyle.goldSoft.opacity(0.25), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(ZuowenStyle.gold.opacity(0.35), lineWidth: 1))
+                    }
+                }
+                Text(essay.cttip)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(ZuowenStyle.sage)
+                    .lineLimit(2)
+                    .lineSpacing(2)
+                    .padding(.top, 3)
+                HStack(spacing: 6) {
+                    if !essay.grade.isEmpty { miniTag(essay.grade) }
+                    if !essay.type.isEmpty { miniTag(essay.type) }
+                }
+                .padding(.top, 5)
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.white.opacity(0.92))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(ZuowenStyle.strokeGreen.opacity(0.25), lineWidth: 2))
         )
     }
 
-    private func tag(_ text: String) -> some View {
+    private func stableIndex(_ essay: ZuowenEssay) -> Int {
+        abs(essay.id.hashValue)
+    }
+
+    private func miniTag(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 9, weight: .bold, design: .rounded))
-            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
-            .padding(.horizontal, 6)
+            .font(.system(size: 9, weight: .heavy))
+            .foregroundStyle(ZuowenStyle.bambooGreen)
+            .padding(.horizontal, 8)
             .padding(.vertical, 2)
-            .background(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.1), in: Capsule())
+            .background(ZuowenStyle.bambooGreen.opacity(0.1), in: Capsule())
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Text("📝")
+                .font(.system(size: 40))
+            Text("暂无结果，换个条件试试")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(ZuowenStyle.sage)
+        }
+        .padding(.top, 80)
     }
 
     // MARK: - Network
@@ -236,64 +471,138 @@ struct AIZuowenView: View {
     }
 }
 
-// MARK: - 详情页（二级页）
+// MARK: - 详情页（作文本方格纸）
 
 struct ZuowenDetailView: View {
     let essay: ZuowenEssay
 
+    private let paperLine = Color(red: 201/255, green: 100/255, blue: 66/255).opacity(0.35)
+    private let paperInk = Color(red: 61/255, green: 58/255, blue: 48/255)
+    private let paperBg = Color(red: 251/255, green: 248/255, blue: 238/255)
+
+    private let cols = 13
+    private var cellSize: CGFloat { (UIScreen.main.bounds.width - 36 - 24) / CGFloat(cols) }
+
     var body: some View {
         ZStack {
-            Color(red: 247/255, green: 245/255, blue: 240/255).ignoresSafeArea()
+            ZuowenStyle.skyGradient.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(essay.title)
-                        .font(.system(size: 22, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-
-                    HStack(spacing: 8) {
-                        if !essay.grade.isEmpty { Text(essay.grade) }
-                        if !essay.type.isEmpty { Text("·"); Text(essay.type) }
-                        if !essay.count.isEmpty { Text("·"); Text(essay.count) }
+                VStack(spacing: 10) {
+                    // 方格纸
+                    let rows = buildRows(cols: cols)
+                    VStack(spacing: 0) {
+                        ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                            HStack(spacing: 0) {
+                                ForEach(0..<cols, id: \.self) { col in
+                                    let ch: Character? = col < row.count ? row[col] : nil
+                                    ZStack {
+                                        Rectangle()
+                                            .stroke(paperLine, lineWidth: 0.6)
+                                        if let ch, ch != "　" {
+                                            Text(String(ch))
+                                                .font(.system(size: cellSize * 0.6, weight: .medium, design: .serif))
+                                                .foregroundStyle(paperInk)
+                                        }
+                                    }
+                                    .frame(width: cellSize, height: cellSize)
+                                }
+                            }
+                        }
                     }
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
-
-                    Rectangle()
-                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.2))
-                        .frame(height: 1)
-
-                    Text(essay.content)
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
-                        .lineSpacing(8)
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(paperBg)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .strokeBorder(ZuowenStyle.strokeGreen.opacity(0.4), lineWidth: 1.5)
+                            )
+                    )
+                    .padding(.horizontal, 18)
                 }
-                .padding(22)
                 .padding(.bottom, 40)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .top) {
-            ZStack {
-                HStack {
-                    GracefulBackButton()
-                    Spacer()
-                }
-                Text("作文详情")
-                    .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            HStack {
+                GracefulBackButton()
+                Spacer()
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
-            .background(Color(red: 247/255, green: 245/255, blue: 240/255))
         }
+    }
+
+
+    /// 构建格子行：标题居中一行 + 正文按段换行、段首缩进两格
+    private func buildRows(cols: Int) -> [[Character]] {
+        var result: [[Character]] = []
+
+        // 标题行：居中
+        let titleChars = Array(essay.title)
+        let titlePad = max(0, (cols - titleChars.count) / 2)
+        var titleRow: [Character] = Array(repeating: "　", count: titlePad)
+        titleRow.append(contentsOf: titleChars.prefix(cols - titlePad))
+        result.append(titleRow)
+
+        // 标题和正文之间空一行
+        result.append([])
+
+        // 清理 content：去掉开头的「《标题》\n年级 | 体裁 | 字数\n」
+        var content = essay.content
+        // 去掉 《标题》\n 或 标题\n
+        if content.hasPrefix("《\(essay.title)》") {
+            content = String(content.dropFirst(essay.title.count + 2))
+        } else if content.hasPrefix(essay.title) {
+            content = String(content.dropFirst(essay.title.count))
+        }
+        // 去掉紧随的换行
+        while content.hasPrefix("\n") || content.hasPrefix("\r") {
+            content = String(content.dropFirst())
+        }
+        // 去掉第二行的 "年级 | 体裁 | 字数"
+        if let firstNewline = content.firstIndex(where: { $0 == "\n" || $0 == "\r" }) {
+            let firstLine = String(content[content.startIndex..<firstNewline])
+            if firstLine.contains("|") {
+                content = String(content[content.index(after: firstNewline)...])
+            }
+        }
+        // 去掉末尾多余换行
+        while content.hasSuffix("\n") || content.hasSuffix("\r") {
+            content = String(content.dropLast())
+        }
+
+        // 按段落分割
+        let paragraphs = content.components(separatedBy: CharacterSet.newlines).filter { !$0.isEmpty }
+
+        for para in paragraphs {
+            var row: [Character] = []
+            // 去掉段首已有的全角空格，统一加两格缩进
+            let trimmed = para.drop { $0 == "　" || $0 == "\t" || $0 == " " }
+            row.append("　")
+            row.append("　")
+
+            for ch in trimmed {
+                row.append(ch)
+                if row.count == cols {
+                    result.append(row)
+                    row = []
+                }
+            }
+            // 段末不满一行也要追加（左对齐）
+            if !row.isEmpty { result.append(row) }
+        }
+
+        return result
     }
 }
 
-// MARK: - 筛选弹框
+// MARK: - 筛选弹框（书野竹青）
 
 private struct ZuowenFilterSheet: View {
-    @Binding var section: ZuowenSection
+    let section: ZuowenSection
     @Binding var gradeOrCategory: String
     @Binding var selectedType: String
     @Binding var selectedCount: String
@@ -303,22 +612,25 @@ private struct ZuowenFilterSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
+                Spacer()
                 Text("筛选条件")
                     .font(.system(size: 18, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(ZuowenStyle.inkGreen)
                 Spacer()
+            }
+            .overlay(alignment: .trailing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
-                        .frame(width: 30, height: 30)
-                        .background(Color(red: 240/255, green: 238/255, blue: 232/255), in: Circle())
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(ZuowenStyle.sage)
+                        .frame(width: 28, height: 28)
+                        .background(ZuowenStyle.strokeGreen.opacity(0.12), in: Circle())
                 }
                 .buttonStyle(.plain)
             }
 
             // 年级/分类
-            filterSection(title: section.gradeLabel, options: section.grades, selected: $gradeOrCategory)
+            filterSection(title: section.gradeLabel, options: [""] + section.grades, selected: $gradeOrCategory, allLabel: "全部")
 
             // 体裁
             if !section.types.isEmpty {
@@ -337,23 +649,29 @@ private struct ZuowenFilterSheet: View {
                 onApply()
             } label: {
                 Text("确定")
-                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                    .font(.system(size: 14, weight: .heavy))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color(red: 76/255, green: 175/255, blue: 125/255), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.vertical, 13)
+                    .background(ZuowenStyle.greenGradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(ZuowenStyle.inkGreen, lineWidth: 2)
+                    )
+                    .shadow(color: ZuowenStyle.bambooGreen.opacity(0.35), radius: 10, y: 4)
             }
             .buttonStyle(.plain)
         }
         .padding(22)
+        .background(Color.white)
     }
 
     private func filterSection(title: String, options: [String], selected: Binding<String>, allLabel: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 9) {
             Text(title)
-                .font(.system(size: 12, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
-            FlowLayout(spacing: 6) {
+                .font(.system(size: 11, weight: .heavy))
+                .foregroundStyle(ZuowenStyle.bambooGreen)
+            FlowLayout(spacing: 8) {
                 ForEach(options, id: \.self) { opt in
                     let label = opt.isEmpty ? (allLabel ?? "全部") : opt
                     let isOn = selected.wrappedValue == opt
@@ -361,11 +679,12 @@ private struct ZuowenFilterSheet: View {
                         selected.wrappedValue = opt
                     } label: {
                         Text(label)
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundStyle(isOn ? .white : Color(red: 76/255, green: 175/255, blue: 125/255))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(isOn ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color(red: 240/255, green: 238/255, blue: 232/255), in: Capsule())
+                            .font(.system(size: 11, weight: .heavy))
+                            .foregroundStyle(isOn ? .white : ZuowenStyle.chipText)
+                            .padding(.horizontal, 13)
+                            .padding(.vertical, 7)
+                            .background(isOn ? ZuowenStyle.bambooGreen : Color(red: 241/255, green: 246/255, blue: 236/255), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(isOn ? ZuowenStyle.inkGreen : ZuowenStyle.strokeGreen.opacity(0.25), lineWidth: 2))
                     }
                     .buttonStyle(.plain)
                 }
@@ -492,7 +811,7 @@ enum ZuowenAPI {
             "useridstr": "8f5af5773cc44a20bd6d6cbbf8da6ba4",
             "version": "2.2.1"
         ]
-        params[section.paramKey] = gradeOrCategory
+        if !gradeOrCategory.isEmpty { params[section.paramKey] = gradeOrCategory }
         if !type.isEmpty { params["lx"] = type }
         if !count.isEmpty { params["zs"] = count }
 

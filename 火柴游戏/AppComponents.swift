@@ -84,7 +84,7 @@ struct UnifiedBackButton: ViewModifier {
                                 .frame(width: 30, height: 30)
                                 .background(.ultraThinMaterial, in: Circle())
                             Text(title)
-                                .font(.system(size: 17, weight: .bold, design: .serif))
+                                .font(.system(size: 19, weight: .bold, design: .serif))
                         }
                         .foregroundStyle(AppTheme.textPrimary)
                     }

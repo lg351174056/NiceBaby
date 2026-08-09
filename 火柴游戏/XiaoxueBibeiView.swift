@@ -44,7 +44,7 @@ struct XiaoxueBibeiView: View {
                         Spacer()
                     }
                     Text("小学生必背")
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
                 .padding(.horizontal, 18)

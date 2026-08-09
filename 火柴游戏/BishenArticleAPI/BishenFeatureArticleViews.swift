@@ -60,7 +60,7 @@ struct BishenFeatureArticleHomeView: View {
                 Spacer()
             }
             Text("笔神精选")
-                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .font(.system(size: 18, weight: .heavy, design: .serif))
                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
         }
         .padding(.horizontal, 18)
@@ -517,7 +517,7 @@ struct BishenFeatureArticleDetailView: View {
                 }
             }
             Text("文章详情")
-                .font(.system(size: 16, weight: .heavy, design: .serif))
+                .font(.system(size: 18, weight: .heavy, design: .serif))
                 .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
         }
         .padding(.horizontal, 18)
@@ -812,7 +812,7 @@ struct BishenFeatureArticleArchiveView: View {
                         Spacer()
                     }
                     Text("更多文章")
-                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                        .font(.system(size: 18, weight: .heavy, design: .serif))
                         .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
                 }
                 .padding(.horizontal, 18)

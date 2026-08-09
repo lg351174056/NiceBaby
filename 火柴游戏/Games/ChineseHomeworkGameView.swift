@@ -134,7 +134,7 @@ enum ChineseCharConfusable {
 
 // MARK: - 数据模型
 
-struct YwTextbook: Decodable {
+struct YwTextbook: Codable {
     let title: String
     let content: String
 }
@@ -156,6 +156,9 @@ enum ChineseHomeworkStore {
             SourceGroup(label: "作文精选", emoji: "✍️", items: [
                 "一年级作文", "二年级作文", "三年级作文", "四年级作文", "五年级作文", "六年级作文"
             ]),
+            SourceGroup(label: "AI作文大全", emoji: "🤖", items: [
+                "AI一年级", "AI二年级", "AI三年级", "AI四年级", "AI五年级", "AI六年级"
+            ]),
             SourceGroup(label: "笔神精选", emoji: "🖋", items: bishenItems)
         ]
     }
@@ -163,6 +166,10 @@ enum ChineseHomeworkStore {
     static let gradeNames: [String] = sourceGroups.flatMap { $0.items }
 
     static func loadTextbooks(grade: String) -> [YwTextbook] {
+        // AI作文大全：从缓存加载
+        if grade.hasPrefix("AI") {
+            return loadAIZuowenTextbooks(grade: grade)
+        }
         if let url = Bundle.main.url(forResource: grade, withExtension: "json"),
            let data = try? Data(contentsOf: url),
            let arr = try? JSONDecoder().decode([YwTextbook].self, from: data) {
@@ -175,6 +182,92 @@ enum ChineseHomeworkStore {
             return [YwTextbook(title: sub.name, content: content)]
         }
         return []
+    }
+
+    /// 从 AI作文大全 API 同步加载（有本地缓存）
+    private static func loadAIZuowenTextbooks(grade: String) -> [YwTextbook] {
+        let apiGrade = grade.replacingOccurrences(of: "AI", with: "")
+        let cacheKey = "ai_zuowen_v2_\(apiGrade)"
+
+        // 清除旧版缓存
+        UserDefaults.standard.removeObject(forKey: "ai_zuowen_cache_\(apiGrade)")
+
+        // 尝试读缓存
+        if let cached = UserDefaults.standard.data(forKey: cacheKey),
+           let arr = try? JSONDecoder().decode([YwTextbook].self, from: cached),
+           !arr.isEmpty {
+            return arr
+        }
+
+        // 同步请求（首次加载）
+        let urlStr = "http://newos.glassmarket.cn/index.php?main_page=zuowen_handler"
+        guard let url = URL(string: urlStr) else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 10
+        let params = "actiontype=2&appname=AI作文大全&bid=zw&channel=zuowen&page=1&systemName=iOS&systemVersion=18.0&userid=568426&useridstr=8f5af5773cc44a20bd6d6cbbf8da6ba4&version=2.2.1&xx=\(apiGrade.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? apiGrade)"
+        request.httpBody = params.data(using: .utf8)
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        guard let (data, _) = try? synchronousData(for: request),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let infos = json["infos"] as? [[String: Any]] else { return [] }
+
+        let textbooks: [YwTextbook] = infos.compactMap { item in
+            guard let title = item["title"] as? String,
+                  let rawContent = item["content"] as? String,
+                  !rawContent.isEmpty else { return nil }
+            let content = Self.cleanAIZuowenContent(rawContent, title: title)
+            guard !content.isEmpty else { return nil }
+            return YwTextbook(title: title, content: content)
+        }
+
+        // 写入缓存
+        if let encoded = try? JSONEncoder().encode(textbooks) {
+            UserDefaults.standard.set(encoded, forKey: cacheKey)
+        }
+        return textbooks
+    }
+
+    /// 清理 AI 作文 content：去掉开头的《标题》和"年级 | 体裁 | 字数"行，保留换行
+    private static func cleanAIZuowenContent(_ raw: String, title: String) -> String {
+        var content = raw
+        // 去掉 《标题》\n
+        if content.hasPrefix("《\(title)》") {
+            content = String(content.dropFirst(title.count + 2))
+        } else if content.hasPrefix(title) {
+            content = String(content.dropFirst(title.count))
+        }
+        // 去掉紧随的换行
+        while content.hasPrefix("\n") || content.hasPrefix("\r") {
+            content = String(content.dropFirst())
+        }
+        // 去掉第二行的 "年级 | 体裁 | 字数"
+        if let idx = content.firstIndex(where: { $0 == "\n" || $0 == "\r" }) {
+            let firstLine = String(content[content.startIndex..<idx])
+            if firstLine.contains("|") {
+                content = String(content[content.index(after: idx)...])
+            }
+        }
+        // 去掉末尾多余换行
+        while content.hasSuffix("\n") || content.hasSuffix("\r") {
+            content = String(content.dropLast())
+        }
+        return content
+    }
+
+    private static func synchronousData(for request: URLRequest) throws -> (Data, URLResponse) {
+        var result: (Data, URLResponse)?
+        var error: Error?
+        let semaphore = DispatchSemaphore(value: 0)
+        URLSession.shared.dataTask(with: request) { d, r, e in
+            if let d, let r { result = (d, r) }
+            error = e
+            semaphore.signal()
+        }.resume()
+        semaphore.wait()
+        if let result { return result }
+        throw error ?? URLError(.unknown)
     }
 
     /// 错别字数量：最少 5 个，最多 30 个，随文章长度自适应
@@ -209,6 +302,7 @@ struct TianToken: Identifiable {
         case char(Character, isWrong: Bool, fix: Character, exp: String)
         case punct(Character)
         case blank
+        case newline
     }
 
     var widthUnit: CGFloat {
@@ -217,6 +311,7 @@ struct TianToken: Identifiable {
         case .char: return 1
         case .punct: return 1
         case .blank: return 1
+        case .newline: return 0
         }
     }
 }
@@ -241,7 +336,12 @@ struct HomeworkSession {
         var tokens: [TianToken] = []
         var posByChar: [Character: [Int]] = [:]
         for ch in textbook.content {
-            if ChineseCharConfusable.isHanzi(ch) {
+            if ch == "\n" {
+                tokens.append(TianToken(kind: .newline))
+            } else if ch == "\r" || ch == "\u{3000}" || ch == "\t" {
+                // 跳过回车、全角空格（段首缩进由 newline 后自动添加）、制表符
+                continue
+            } else if ChineseCharConfusable.isHanzi(ch) {
                 let token = TianToken(kind: .char(ch, isWrong: false, fix: ch, exp: ""))
                 tokens.append(token)
                 posByChar[ch, default: []].append(tokens.count - 1)
@@ -273,11 +373,34 @@ struct HomeworkSession {
             }
         }
 
-        // 4. 按行宽拆行（一行 8 格）
+        // 4. 按行宽拆行（一行 8 格），遇到换行标记强制断行
         var result: [[TianToken]] = []
         var line: [TianToken] = []
         var width: CGFloat = 0
+
+        // 第一行：如果首个 token 不是换行，自动缩进两格
+        if let first = tokens.first {
+            if case .newline = first.kind { } else {
+                line.append(TianToken(kind: .blank))
+                line.append(TianToken(kind: .blank))
+                width = 2
+            }
+        }
+
         for token in tokens {
+            if case .newline = token.kind {
+                if !line.isEmpty {
+                    while line.count < 8 { line.append(TianToken(kind: .blank)) }
+                    result.append(line)
+                    line = []
+                    width = 0
+                }
+                // 新段首空两格
+                line.append(TianToken(kind: .blank))
+                line.append(TianToken(kind: .blank))
+                width = 2
+                continue
+            }
             if width + token.widthUnit > 8, !line.isEmpty {
                 while line.count < 8 {
                     line.append(TianToken(kind: .blank))
@@ -697,7 +820,7 @@ import SwiftUI
 struct ChineseHomeworkView: View {
     let onExit: () -> Void
 
-    @State private var grade = "一年级上册"
+    @State private var grade = "二年级上册"
     @State private var textbooks: [YwTextbook] = []
     @State private var currentTextbook: YwTextbook?
     @State private var gameKey = UUID()
@@ -1044,6 +1167,8 @@ struct ChineseHomeworkGameView: View {
                 tapChar(index: index, isWrong: isWrong, fix: fix, session: session)
             }
             .id(index)
+        case .newline:
+            EmptyView()
         }
     }
 
