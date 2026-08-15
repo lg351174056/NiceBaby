@@ -11,15 +11,7 @@ struct VideoEpisodeListView: View {
         if #available(iOS 16.0, *) {
             ZStack {
                 // 蓝天草地背景（书野营地竹青风）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 listSun
                 listCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -35,7 +27,7 @@ struct VideoEpisodeListView: View {
                         }
                         Text("剧集列表")
                             .font(.system(size: 18, weight: .heavy, design: .serif))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 6)
@@ -53,22 +45,22 @@ struct VideoEpisodeListView: View {
                                 )
                             Text("🎬")
                                 .font(.system(size: 24))
-                                .modifier(Bob(delay: 0.3))
+                                .modifier(FieldBob(delay: 0.3))
                         }
                         .frame(width: 52, height: 52)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                                .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
                         )
 
                         VStack(alignment: .leading, spacing: 3) {
                             Text(series.name)
                                 .font(.system(size: 15, weight: .heavy, design: .serif))
-                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .foregroundStyle(AppTheme.fieldInk)
                                 .lineLimit(2)
                             Text("\(episodes.count) 集 · 每日更新")
                                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                .foregroundStyle(AppTheme.fieldMoss)
                         }
                         Spacer()
                     }
@@ -78,9 +70,9 @@ struct VideoEpisodeListView: View {
                             .fill(Color.white.opacity(0.9))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                                    .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                             )
-                            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
                     )
                     .padding(.horizontal, 18)
                     .padding(.top, 8)
@@ -88,8 +80,8 @@ struct VideoEpisodeListView: View {
                     if isLoading {
                         Spacer()
                         ProgressView("加载中...")
-                            .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .tint(AppTheme.fieldMint)
+                            .foregroundStyle(AppTheme.fieldMoss)
                             .frame(maxWidth: .infinity)
                         Spacer()
                     } else if episodes.isEmpty {
@@ -100,7 +92,7 @@ struct VideoEpisodeListView: View {
                                 .foregroundStyle(Color(red: 168/255, green: 184/255, blue: 154/255))
                             Text("暂无集数")
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                .foregroundStyle(AppTheme.fieldMoss)
                         }
                         .frame(maxWidth: .infinity)
                         Spacer()
@@ -198,19 +190,7 @@ struct VideoEpisodeListView: View {
         }
         .allowsHitTesting(false)
     }
-
-    private struct Bob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
-
-    // MARK: - 剧集图卡（书野竹青风）
+// MARK: - 剧集图卡（书野竹青风）
 
     private func episodeCard(_ ep: VideoEpisode, index: Int) -> some View {
         Button {
@@ -278,17 +258,17 @@ struct VideoEpisodeListView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("第 \(ep.episodeNo) 集")
                         .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(ep.isPlayable ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color(red: 168/255, green: 184/255, blue: 154/255))
+                        .foregroundStyle(ep.isPlayable ? AppTheme.fieldMint : Color(red: 168/255, green: 184/255, blue: 154/255))
                     Text(cleanTitle(ep.name))
                         .font(.system(size: 13.5, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                    .foregroundStyle(AppTheme.fieldMossLight)
             }
             .padding(12)
             .background(
@@ -296,9 +276,9 @@ struct VideoEpisodeListView: View {
                     .fill(Color.white.opacity(0.92))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
             )
         }
         .buttonStyle(GalleryCardBounceStyle())
@@ -307,7 +287,7 @@ struct VideoEpisodeListView: View {
 
     private func placeholderThumb(index: Int) -> some View {
         let palette: [[Color]] = [
-            [Color(red: 189/255, green: 232/255, blue: 211/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+            [Color(red: 189/255, green: 232/255, blue: 211/255), AppTheme.fieldMint],
             [Color(red: 245/255, green: 217/255, blue: 168/255), Color(red: 217/255, green: 169/255, blue: 94/255)],
             [Color(red: 203/255, green: 226/255, blue: 240/255), Color(red: 91/255, green: 168/255, blue: 217/255)]
         ]

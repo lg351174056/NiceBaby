@@ -492,3 +492,102 @@ extension View {
         modifier(GradientCardModifier(colors: colors, cornerRadius: cornerRadius))
     }
 }
+
+// MARK: - 田园背景 · 蓝天草地（全 App 统一）
+
+/// 蓝天草地三色渐变页面背景。替代各页面散落的 LinearGradient 复制。
+struct FieldBackground: View {
+    var body: some View {
+        LinearGradient(
+            colors: [
+                AppTheme.fieldSky,
+                AppTheme.fieldSkyMid,
+                AppTheme.fieldGrass
+            ],
+            startPoint: .top, endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+}
+
+// MARK: - 太阳 · 呼吸光晕
+
+struct FieldSun: View {
+    @State private var breathing = false
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(colors: [
+                        AppTheme.fieldSunGlowA.opacity(0.4),
+                        AppTheme.fieldSunGlowB.opacity(0.14),
+                        .clear
+                    ], center: .center, startRadius: 10, endRadius: 50)
+                )
+                .frame(width: 100, height: 100)
+                .scaleEffect(breathing ? 1.03 : 0.97)
+            Circle()
+                .fill(
+                    RadialGradient(colors: [
+                        AppTheme.fieldSunCoreA,
+                        AppTheme.fieldSunCoreB,
+                        AppTheme.fieldSunCoreC
+                    ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
+                )
+                .frame(width: 32, height: 32)
+                .scaleEffect(breathing ? 1.03 : 0.97)
+                .shadow(color: AppTheme.fieldSunGlowB.opacity(0.8), radius: 12)
+        }
+        .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathing)
+        .onAppear { breathing = true }
+    }
+}
+
+// MARK: - 云朵 · 漂移
+
+struct FieldCloud: View {
+    let scale: CGFloat
+    let delay: Double
+    @State private var drifting = false
+    var body: some View {
+        ZStack {
+            Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
+            Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
+        }
+        .frame(width: 52, height: 30)
+        .scaleEffect(scale)
+        .offset(x: drifting ? 14 : -14, y: drifting ? 3 : -3)
+        .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true).delay(delay), value: drifting)
+        .onAppear { drifting = true }
+    }
+}
+
+// MARK: - 上下浮动动画（TimelineView 版）
+
+struct FieldBob: ViewModifier {
+    let delay: Double
+    func body(content: Content) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            content
+                .offset(y: CGFloat(sin(t * 2.2) * 4.0))
+        }
+    }
+}
+
+// MARK: - 飘舞动画（含反向可选）
+
+struct FieldFlutter: ViewModifier {
+    let delay: Double
+    var reverse: Bool = false
+    func body(content: Content) -> some View {
+        TimelineView(.animation) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate + delay
+            content
+                .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
+                .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
+        }
+    }
+}

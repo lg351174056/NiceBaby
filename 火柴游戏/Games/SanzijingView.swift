@@ -27,15 +27,7 @@ struct SanzijingView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             bambooSun
             bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -50,7 +42,7 @@ struct SanzijingView: View {
                     }
                     Text("三字经")
                         .font(.system(size: 16, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -59,11 +51,11 @@ struct SanzijingView: View {
                 if isLoading {
                     ProgressView()
                         .controlSize(.large)
-                        .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .tint(AppTheme.fieldMint)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if parts.isEmpty {
                     Text("数据加载失败")
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     heroHeader
@@ -93,35 +85,35 @@ struct SanzijingView: View {
                     )
                 Text("📖")
                     .font(.system(size: 24))
-                    .modifier(Bob(delay: 0.3))
+                    .modifier(FieldBob(delay: 0.3))
             }
             .frame(width: 52, height: 52)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("三字经")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("人之初，性本善 · 蒙学第一书")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 HStack(spacing: 12) {
                     Text("📚 \(parts.count) 部分")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     Text("✨ \(totalLines) 段 · 全带释义")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                        .foregroundStyle(AppTheme.fieldGold)
                 }
                 .padding(.top, 1)
             }
             Spacer()
             HStack(spacing: 6) {
-                Text("🍃").font(.system(size: 15)).modifier(Bob(delay: 0))
-                Text("🦋").font(.system(size: 14)).modifier(Flutter(delay: 0.9))
+                Text("🍃").font(.system(size: 15)).modifier(FieldBob(delay: 0))
+                Text("🦋").font(.system(size: 14)).modifier(FieldFlutter(delay: 0.9))
             }
         }
         .padding(14)
@@ -130,9 +122,9 @@ struct SanzijingView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 10)
@@ -151,20 +143,20 @@ struct SanzijingView: View {
                     } label: {
                         Text(short)
                             .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selectedIndex == index ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(selectedIndex == index ? .white : AppTheme.fieldOliveDeep)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .fill(selectedIndex == index
-                                        ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                        ? AppTheme.fieldMint
                                         : Color.white.opacity(0.85))
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .strokeBorder(
-                                        selectedIndex == index ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                        selectedIndex == index ? AppTheme.fieldInk
+                                            : AppTheme.fieldOlive.opacity(0.35),
                                         lineWidth: 2
                                     )
                             )
@@ -193,21 +185,21 @@ struct SanzijingView: View {
                 VStack(spacing: 6) {
                     Text(part.part)
                         .font(.system(size: 20, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .tracking(1)
                     Text("共 \(part.lines.count) 段")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                     HStack(spacing: 10) {
                         Rectangle()
-                            .fill(LinearGradient(colors: [.clear, Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing))
+                            .fill(LinearGradient(colors: [.clear, AppTheme.fieldMint.opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing))
                             .frame(height: 1.5)
                         Text("· 竹简开卷 ·")
                             .font(.system(size: 10, weight: .heavy, design: .rounded))
                             .tracking(2)
-                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .foregroundStyle(AppTheme.fieldMint)
                         Rectangle()
-                            .fill(LinearGradient(colors: [.clear, Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing))
+                            .fill(LinearGradient(colors: [.clear, AppTheme.fieldMint.opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing))
                             .frame(height: 1.5)
                     }
                     .padding(.top, 8)
@@ -245,16 +237,16 @@ struct SanzijingView: View {
                     .background(
                         LinearGradient(colors: [
                             Color(red: 126/255, green: 211/255, blue: 160/255),
-                            Color(red: 76/255, green: 175/255, blue: 125/255)
+                            AppTheme.fieldMint
                         ], startPoint: .topLeading, endPoint: .bottomTrailing),
                         in: Circle()
                     )
-                    .overlay(Circle().strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2))
-                    .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), radius: 4, y: 2)
+                    .overlay(Circle().strokeBorder(AppTheme.fieldInk, lineWidth: 2))
+                    .shadow(color: AppTheme.fieldMint.opacity(0.35), radius: 4, y: 2)
 
                 Text(line.text)
                     .font(.system(size: 17, weight: .semibold, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineSpacing(6)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -263,7 +255,7 @@ struct SanzijingView: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "text.book.closed.fill")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                    .foregroundStyle(AppTheme.fieldGold)
                     .padding(.top, 2)
                 Text(line.explain)
                     .font(.system(size: 12, weight: .medium, design: .rounded))
@@ -292,7 +284,7 @@ struct SanzijingView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1.5)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
                 )
         )
     }
@@ -354,29 +346,6 @@ struct SanzijingView: View {
             .padding(.top, 390 * y)
         }
         .allowsHitTesting(false)
-    }
-
-    private struct Bob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
-
-    private struct Flutter: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees(sin(t * 3) * 6))
-            }
-        }
     }
 
     private func loadData() {

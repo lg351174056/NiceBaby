@@ -88,15 +88,7 @@ struct XiehouyuDictionaryView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             xhSun
             xhCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -113,20 +105,20 @@ struct XiehouyuDictionaryView: View {
                     }) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .foregroundStyle(AppTheme.fieldMint)
                             .frame(width: 36, height: 36)
                             .background(Color.white.opacity(0.9), in: Circle())
-                            .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2))
+                            .overlay(Circle().strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 2))
                     }
                     .buttonStyle(.plain)
                 }
                 VStack(spacing: 2) {
                     Text("盲盒歇后语")
                         .font(.system(size: 16, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Text(progressText)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
             }
             .padding(.horizontal, 18)
@@ -242,7 +234,7 @@ struct XiehouyuCard: View {
             
             Image(systemName: "quote.bubble.fill")
                 .font(.system(size: 50))
-                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .foregroundStyle(AppTheme.fieldMint)
             
             Text(item.riddle)
                 .font(.system(size: 32, weight: .heavy, design: .rounded))
@@ -253,7 +245,7 @@ struct XiehouyuCard: View {
             
             Image(systemName: "arrow.down.circle.fill")
                 .font(.system(size: 30))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255).opacity(0.4))
+                .foregroundStyle(AppTheme.fieldMossLight.opacity(0.4))
                 .padding(.vertical, 8)
             
             Text(item.answer)
@@ -275,9 +267,9 @@ struct XiehouyuCard: View {
                 .fill(Color.white.opacity(0.94))
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 14, y: 6)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 14, y: 6)
         )
         .padding(26)
     }
@@ -308,11 +300,11 @@ struct ChallengeCompleteView: View {
                     .foregroundStyle(.white)
                     .frame(width: 200, height: 56)
                     .background(
-                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing),
                         in: Capsule()
                     )
-                    .overlay(Capsule().strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2))
-                    .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), radius: 10, y: 5)
+                    .overlay(Capsule().strokeBorder(AppTheme.fieldInk, lineWidth: 2))
+                    .shadow(color: AppTheme.fieldMint.opacity(0.35), radius: 10, y: 5)
             }
             .padding(.top, 20)
         }
@@ -347,7 +339,7 @@ struct XiehouyuSearchSheet: View {
                 .background(Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
                 )
                 .padding()
                 
@@ -355,7 +347,7 @@ struct XiehouyuSearchSheet: View {
                     VStack(spacing: 16) {
                         Image(systemName: "magnifyingglass.circle")
                             .font(.system(size: 60))
-                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35))
+                            .foregroundStyle(AppTheme.fieldMint.opacity(0.35))
                         Text("共收录 \(viewModel.totalCount) 条歇后语")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundStyle(.secondary)
@@ -372,7 +364,7 @@ struct XiehouyuSearchSheet: View {
                                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                             Text("👉 \(item.answer)")
                                 .font(.system(size: 16))
-                                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                .foregroundStyle(AppTheme.fieldMint)
                         }
                         .padding(.vertical, 4)
                     }

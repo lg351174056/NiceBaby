@@ -1,8 +1,47 @@
 import SwiftUI
 
-/// 墨韵新风 (Ink Rhythm) 设计系统
-/// 水墨留白 × 现代 iOS，五 Tab 各有独立强调色
+/// 设计系统 · 蓝天草地田园风（Field Style）
+/// 田园系 token 为全 App 主导风格（见 field* 前缀），墨韵系 accent 色仅保留给个别页面的强调点缀。
 enum AppTheme {
+    // MARK: — 田园系（蓝天草地 · 全 App 主导风格）
+    // 以下 token 对应各页面散落的硬编码色值，新代码优先使用。
+
+    /// 蓝天草地背景 · 天空蓝（顶部）
+    static let fieldSky = Color(red: 190/255, green: 227/255, blue: 245/255)
+    /// 蓝天草地背景 · 过渡青
+    static let fieldSkyMid = Color(red: 220/255, green: 242/255, blue: 220/255)
+    /// 蓝天草地背景 · 草地绿（底部）
+    static let fieldGrass = Color(red: 207/255, green: 235/255, blue: 196/255)
+
+    /// 薄荷绿 · 主强调色（按钮/进度/徽章）
+    static let fieldMint = Color(red: 76/255, green: 175/255, blue: 125/255)
+    /// 深墨绿 · 主文字
+    static let fieldInk = Color(red: 61/255, green: 74/255, blue: 54/255)
+    /// 灰绿 · 次要文字
+    static let fieldMoss = Color(red: 138/255, green: 154/255, blue: 122/255)
+    /// 橄榄绿 · 边框/描边
+    static let fieldOlive = Color(red: 110/255, green: 140/255, blue: 90/255)
+    /// 绿阴影
+    static let fieldGrassShadow = Color(red: 60/255, green: 90/255, blue: 50/255)
+    /// 浅灰绿 · 弱化文字
+    static let fieldMossLight = Color(red: 160/255, green: 176/255, blue: 152/255)
+    /// 深橄榄 · 标签/徽章文字
+    static let fieldOliveDeep = Color(red: 74/255, green: 92/255, blue: 66/255)
+
+    /// 太阳光晕外圈（呼吸动画用）
+    static let fieldSunGlowA = Color(red: 255/255, green: 214/255, blue: 110/255)
+    /// 太阳光晕内圈
+    static let fieldSunGlowB = Color(red: 255/255, green: 201/255, blue: 61/255)
+    /// 太阳核心高光
+    static let fieldSunCoreA = Color(red: 255/255, green: 246/255, blue: 205/255)
+    /// 太阳核心主体
+    static let fieldSunCoreB = Color(red: 255/255, green: 214/255, blue: 100/255)
+    /// 太阳核心暗部
+    static let fieldSunCoreC = Color(red: 247/255, green: 188/255, blue: 55/255)
+
+    /// 金币金棕
+    static let fieldGold = Color(red: 176/255, green: 138/255, blue: 62/255)
+
     // MARK: — 宣纸底色层
     static let background = Color(red: 247/255, green: 245/255, blue: 240/255) // #F7F5F0 宣纸暖白
     static let card = Color.white
@@ -32,89 +71,16 @@ enum AppTheme {
 
     static let separator = Color(red: 30/255, green: 28/255, blue: 24/255).opacity(0.08)
 
-    // MARK: — 火柴棋盘配色（保持不变）
-    static let matchPaper = Color(red: 0.99, green: 0.985, blue: 0.975)
-    static let matchPaperStroke = Color.black.opacity(0.06)
-    static let matchInk = Color(red: 49/255, green: 46/255, blue: 129/255)
-    static let matchControlTint = Color(red: 201/255, green: 100/255, blue: 66/255)
-
     // MARK: — Layout
-    static let cornerXL: CGFloat = 24
     static let cornerLarge: CGFloat = 20
     static let cornerMedium: CGFloat = 16
     static let cornerSmall: CGFloat = 12
-    static let cornerXS: CGFloat = 8
     static let paddingScreen: CGFloat = 20
-    static let cardShadowRadius: CGFloat = 0
-
-    // Spacing scale (8-base)
-    static let spacing4: CGFloat = 4
-    static let spacing8: CGFloat = 8
-    static let spacing12: CGFloat = 12
-    static let spacing16: CGFloat = 16
-    static let spacing20: CGFloat = 20
-    static let spacing24: CGFloat = 24
-    static let spacing32: CGFloat = 32
-    static let spacing48: CGFloat = 48
-
-    // MARK: — 标题渐变色（每 Tab 独立渐变）
-    static let gradientHome = LinearGradient(
-        colors: [Color(red: 201/255, green: 100/255, blue: 66/255), Color(red: 232/255, green: 148/255, blue: 100/255)],
-        startPoint: .leading, endPoint: .trailing
-    )
-    static let gradientDiscover = LinearGradient(
-        colors: [Color(red: 74/255, green: 124/255, blue: 89/255), Color(red: 110/255, green: 172/255, blue: 120/255)],
-        startPoint: .leading, endPoint: .trailing
-    )
-    static let gradientExplore = LinearGradient(
-        colors: [Color(red: 59/255, green: 142/255, blue: 165/255), Color(red: 80/255, green: 180/255, blue: 160/255)],
-        startPoint: .leading, endPoint: .trailing
-    )
-    static let gradientPlay = LinearGradient(
-        colors: [Color(red: 92/255, green: 75/255, blue: 138/255), Color(red: 140/255, green: 115/255, blue: 195/255)],
-        startPoint: .leading, endPoint: .trailing
-    )
-    static let gradientProfile = LinearGradient(
-        colors: [Color(red: 74/255, green: 111/255, blue: 165/255), Color(red: 120/255, green: 160/255, blue: 210/255)],
-        startPoint: .leading, endPoint: .trailing
-    )
 
     // MARK: — Typography（宋体标题 + 圆体正文）
-    static func titleHero() -> Font { .system(size: 34, weight: .bold, design: .serif) }
     static func titleSection() -> Font { .system(size: 22, weight: .heavy, design: .serif) }
-    static func cardTitle() -> Font { .system(size: 17, weight: .heavy, design: .serif) }
-    static func bodyText() -> Font { .system(size: 15, weight: .medium, design: .rounded) }
-    static func caption() -> Font { .system(size: 13, weight: .semibold, design: .rounded) }
     static func captionMuted() -> Font { .system(size: 14, weight: .semibold, design: .rounded) }
-    static func micro() -> Font { .system(size: 11, weight: .medium, design: .rounded) }
-    static func poemDisplay() -> Font { .system(size: 22, weight: .medium, design: .serif) }
-    static func poemTitle() -> Font { .system(size: 32, weight: .heavy, design: .serif) }
 
     // MARK: — 水墨卡片阴影（轻单影，替代黏土双重阴影）
     static let inkShadow = Color(red: 30/255, green: 28/255, blue: 24/255).opacity(0.06)
-    static let inkShadowStrong = Color(red: 30/255, green: 28/255, blue: 24/255).opacity(0.12)
-
-    // MARK: — 首页背景渐变（墨韵暖调，替代婴儿蓝 MeshGradient）
-    static let homeMeshA: [Color] = [
-        Color(red: 0.97, green: 0.96, blue: 0.94),
-        Color(red: 0.96, green: 0.94, blue: 0.92),
-        Color(red: 0.97, green: 0.96, blue: 0.94),
-        Color(red: 0.95, green: 0.94, blue: 0.91),
-        Color(red: 0.97, green: 0.96, blue: 0.94),
-        Color(red: 0.96, green: 0.95, blue: 0.93),
-        Color(red: 0.97, green: 0.97, blue: 0.95),
-        Color(red: 0.96, green: 0.94, blue: 0.92),
-        Color(red: 0.97, green: 0.96, blue: 0.94)
-    ]
-    static let homeMeshB: [Color] = [
-        Color(red: 0.97, green: 0.95, blue: 0.93),
-        Color(red: 0.96, green: 0.95, blue: 0.93),
-        Color(red: 0.95, green: 0.94, blue: 0.91),
-        Color(red: 0.97, green: 0.95, blue: 0.92),
-        Color(red: 0.96, green: 0.95, blue: 0.94),
-        Color(red: 0.95, green: 0.93, blue: 0.91),
-        Color(red: 0.96, green: 0.95, blue: 0.93),
-        Color(red: 0.96, green: 0.94, blue: 0.92),
-        Color(red: 0.95, green: 0.94, blue: 0.91)
-    ]
 }

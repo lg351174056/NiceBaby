@@ -33,15 +33,7 @@ struct PMMainView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             gardenSun
             gardenCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -56,7 +48,7 @@ struct PMMainView: View {
                     }
                     Text("诗词古文大全")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -90,35 +82,35 @@ struct PMMainView: View {
                     )
                 Text("📜")
                     .font(.system(size: 24))
-                    .modifier(Bob(delay: 0.3))
+                    .modifier(FieldBob(delay: 0.3))
             }
             .frame(width: 52, height: 52)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("诗词文学")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("唐诗宋词 · 文言古籍 · 一网打尽")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 HStack(spacing: 12) {
                     Text("📖 30000+ 首")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     Text("🏛 12 部古籍")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                        .foregroundStyle(AppTheme.fieldGold)
                 }
                 .padding(.top, 1)
             }
             Spacer()
             HStack(spacing: 6) {
-                Text("🍃").font(.system(size: 15)).modifier(Bob(delay: 0))
-                Text("🦋").font(.system(size: 14)).modifier(Flutter(delay: 0.9))
+                Text("🍃").font(.system(size: 15)).modifier(FieldBob(delay: 0))
+                Text("🦋").font(.system(size: 14)).modifier(FieldFlutter(delay: 0.9))
             }
         }
         .padding(14)
@@ -127,9 +119,9 @@ struct PMMainView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 8)
@@ -156,15 +148,15 @@ struct PMMainView: View {
             VStack(spacing: 4) {
                 Text(section.icon)
                     .font(.system(size: 22))
-                    .modifier(Bob(delay: isSelected ? 0 : 100))
+                    .modifier(FieldBob(delay: isSelected ? 0 : 100))
 
                 Text(section.rawValue)
                     .font(.system(size: 12, weight: .heavy, design: .rounded))
-                    .foregroundStyle(isSelected ? Color(red: 46/255, green: 125/255, blue: 91/255) : Color(red: 74/255, green: 92/255, blue: 66/255))
+                    .foregroundStyle(isSelected ? Color(red: 46/255, green: 125/255, blue: 91/255) : AppTheme.fieldOliveDeep)
 
                 Text(section.subtitle)
                     .font(.system(size: 8.5, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
@@ -177,12 +169,12 @@ struct PMMainView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .strokeBorder(isSelected
-                                ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25),
+                                ? AppTheme.fieldMint
+                                : AppTheme.fieldOlive.opacity(0.25),
                                 lineWidth: 2)
                     )
             )
-            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(isSelected ? 0.12 : 0.06), radius: 6, y: 3)
+            .shadow(color: AppTheme.fieldGrassShadow.opacity(isSelected ? 0.12 : 0.06), radius: 6, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -258,31 +250,7 @@ struct PMMainView: View {
             .padding(.top, 390 * y)
         }
         .allowsHitTesting(false)
-    }
-
-    private struct Bob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
-
-    private struct Flutter: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees(sin(t * 3) * 6))
-            }
-        }
-    }
-}
+    }}
 
 #Preview {
     NavigationStack {

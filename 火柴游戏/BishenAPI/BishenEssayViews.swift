@@ -68,15 +68,7 @@ struct BishenEssayHomeView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             gardenSun
             gardenCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -131,7 +123,7 @@ struct BishenEssayHomeView: View {
             }
             Text("小学作文精选")
                 .font(.system(size: 18, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
         }
         .padding(.horizontal, 18)
         .padding(.top, 6)
@@ -163,17 +155,17 @@ struct BishenEssayHomeView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("小学作文精选")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("1~6 年级 · 好词好句，学会写作的第一步")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 HStack(spacing: 12) {
                     Text("📚 \(allAlbums.count) 册文集")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     Text("✨ 每日更新")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                        .foregroundStyle(AppTheme.fieldGold)
                 }
                 .padding(.top, 1)
             }
@@ -315,32 +307,7 @@ struct BishenEssayHomeView: View {
             .padding(.top, 390 * y)
         }
         .allowsHitTesting(false)
-    }
-
-    private struct FieldBob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
-
-    private struct FieldFlutter: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees(sin(t * 3) * 6))
-            }
-        }
-    }
-
-    // MARK: - 内容区
+    }// MARK: - 内容区
 
     private var contentView: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -381,16 +348,16 @@ struct BishenEssayHomeView: View {
     private func sectionTitle(title: String, countText: String) -> some View {
         HStack(spacing: 8) {
             Rectangle()
-                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .fill(AppTheme.fieldMint)
                 .frame(width: 6, height: 20)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
             Text(title)
                 .font(.system(size: 15, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Spacer()
             Text(countText)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .padding(.horizontal, 20)
         .padding(.top, 16)
@@ -406,20 +373,20 @@ struct BishenEssayHomeView: View {
                     } label: {
                         Text(tag)
                             .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selectedTag == tag ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(selectedTag == tag ? .white : AppTheme.fieldOliveDeep)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .fill(selectedTag == tag
-                                        ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                        ? AppTheme.fieldMint
                                         : Color.white.opacity(0.85))
                             )
                             .overlay {
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .strokeBorder(
-                                        selectedTag == tag ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                        selectedTag == tag ? AppTheme.fieldInk
+                                            : AppTheme.fieldOlive.opacity(0.35),
                                         lineWidth: 2
                                     )
                             }
@@ -442,19 +409,19 @@ struct BishenEssayHomeView: View {
                         Text(year)
                             .font(.system(size: 11, weight: .bold, design: .rounded))
                             .foregroundStyle(selectedYear == year ? Color(red: 240/255, green: 232/255, blue: 214/255)
-                                : Color(red: 138/255, green: 154/255, blue: 122/255))
+                                : AppTheme.fieldMoss)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
                             .background(
                                 Capsule()
                                     .fill(selectedYear == year
-                                        ? Color(red: 61/255, green: 74/255, blue: 54/255)
+                                        ? AppTheme.fieldInk
                                         : Color.white.opacity(0.7))
                             )
                             .overlay {
                                 Capsule()
                                     .strokeBorder(
-                                        Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.4),
+                                        AppTheme.fieldOlive.opacity(0.4),
                                         style: StrokeStyle(lineWidth: 1.5, dash: selectedYear == year ? [] : [4, 3])
                                     )
                             }
@@ -471,7 +438,7 @@ struct BishenEssayHomeView: View {
         VStack(spacing: 12) {
             ProgressView("正在翻开书页...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .tint(AppTheme.fieldMint)
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }
@@ -480,13 +447,13 @@ struct BishenEssayHomeView: View {
         VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                .foregroundStyle(AppTheme.fieldGold)
             Text("书摊暂时打不开")
                 .font(.system(size: 20, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(message)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .multilineTextAlignment(.center)
             Button("重新翻书") {
                 Task { await load() }
@@ -495,7 +462,7 @@ struct BishenEssayHomeView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
-            .background(Color(red: 76/255, green: 175/255, blue: 125/255), in: Capsule())
+            .background(AppTheme.fieldMint, in: Capsule())
         }
         .frame(maxWidth: .infinity, minHeight: 300)
         .padding(.horizontal, AppTheme.paddingScreen)
@@ -614,7 +581,7 @@ private struct BookCoverCard: View {
                     }
                     Text(coverTag)
                         .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.7))
+                        .foregroundStyle(AppTheme.fieldInk.opacity(0.7))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(Color.white.opacity(0.55), in: Capsule())
@@ -625,31 +592,31 @@ private struct BookCoverCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1.5)
+                    .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
             )
 
             // 信息区
             VStack(alignment: .leading, spacing: 3) {
                 Text(album.title)
                     .font(.system(size: 13, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
 
                 if !album.desc.isEmpty {
                     Text(album.desc)
                         .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                         .lineLimit(1)
                 }
 
                 HStack(spacing: 8) {
                     Text("\(album.count) 篇")
                         .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     if let year = album.year, album.isMonthly {
                         Text(year)
                             .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                            .foregroundStyle(AppTheme.fieldGold)
                     }
                 }
             }
@@ -663,9 +630,9 @@ private struct BookCoverCard: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 6, y: 3)
         )
     }
 
@@ -694,15 +661,7 @@ struct BishenAlbumListView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             listSun
             listCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -718,7 +677,7 @@ struct BishenAlbumListView: View {
                     }
                     Text(album.title)
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .lineLimit(1)
                 }
                 .padding(.horizontal, 18)
@@ -818,28 +777,15 @@ struct BishenAlbumListView: View {
     // 蝴蝶蜜蜂（右上）
     private var listFlutter: some View {
         ZStack {
-            Text("🦋").font(.system(size: 16)).modifier(Flutter(delay: 0))
-            Text("🐝").font(.system(size: 15)).modifier(Flutter(delay: 1.2))
+            Text("🦋").font(.system(size: 16)).modifier(FieldFlutter(delay: 0))
+            Text("🐝").font(.system(size: 15)).modifier(FieldFlutter(delay: 1.2))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .padding(.trailing, 24)
         .padding(.top, 140)
         .allowsHitTesting(false)
     }
-
-    private struct Flutter: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees(sin(t * 3) * 6))
-            }
-        }
-    }
-
-    private struct Bloom: ViewModifier {
+private struct Bloom: ViewModifier {
         let delay: Double
         func body(content: Content) -> some View {
             TimelineView(.animation) { timeline in
@@ -873,20 +819,20 @@ struct BishenAlbumListView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(album.title)
                     .font(.system(size: 17, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(2)
                 Text(album.desc.isEmpty ? "精选优秀小学生作文" : album.desc)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(2)
                 HStack(spacing: 12) {
                     Text("🌼 \(album.count) 朵")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     if let countNew = album.countNew, countNew > 0 {
                         Text("✨ 新开 \(countNew)")
                             .font(.system(size: 10, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                            .foregroundStyle(AppTheme.fieldGold)
                     }
                 }
                 .padding(.top, 2)
@@ -899,9 +845,9 @@ struct BishenAlbumListView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 10)
@@ -912,16 +858,16 @@ struct BishenAlbumListView: View {
             // 分区标题
             HStack(spacing: 8) {
                 Rectangle()
-                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .fill(AppTheme.fieldMint)
                     .frame(width: 6, height: 20)
                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 Text("花园里的作文")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Spacer()
                 Text("\(articles.count) 朵")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .padding(.horizontal, 20)
             .padding(.top, 14)
@@ -947,7 +893,7 @@ struct BishenAlbumListView: View {
         VStack(spacing: 12) {
             ProgressView("正在翻开花园...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .tint(AppTheme.fieldMint)
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }
@@ -956,13 +902,13 @@ struct BishenAlbumListView: View {
         VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                .foregroundStyle(AppTheme.fieldGold)
             Text("花园暂时打不开")
                 .font(.system(size: 20, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(message)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .multilineTextAlignment(.center)
             Button("重新浇灌") {
                 Task { await load() }
@@ -971,7 +917,7 @@ struct BishenAlbumListView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
-            .background(Color(red: 76/255, green: 175/255, blue: 125/255), in: Capsule())
+            .background(AppTheme.fieldMint, in: Capsule())
         }
         .frame(maxWidth: .infinity, minHeight: 300)
         .padding(.horizontal, AppTheme.paddingScreen)
@@ -1005,15 +951,7 @@ struct BishenEssayDetailView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             detailSun
             detailCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -1028,14 +966,14 @@ struct BishenEssayDetailView: View {
                         Spacer()
                         Image(systemName: "ellipsis")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                             .frame(width: 36, height: 36)
                             .background(Color.white.opacity(0.9), in: Circle())
-                            .overlay(Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2))
+                            .overlay(Circle().strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 2))
                     }
                     Text("作文详情")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -1174,9 +1112,9 @@ struct BishenEssayDetailView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
     }
 
@@ -1194,10 +1132,10 @@ struct BishenEssayDetailView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(detail.authorDisplay)
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text(detail.publishLine)
                     .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
 
             Spacer()
@@ -1211,7 +1149,7 @@ struct BishenEssayDetailView: View {
                         .background(AppTheme.accentJade, in: Circle())
                     Text("\(score) 分")
                         .font(.system(size: 14, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
@@ -1227,7 +1165,7 @@ struct BishenEssayDetailView: View {
         VStack(spacing: 12) {
             Text(detail.title)
                 .font(.system(size: 27, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
                 .multilineTextAlignment(.center)
 
             HStack(spacing: 6) {
@@ -1251,7 +1189,7 @@ struct BishenEssayDetailView: View {
             ForEach(detail.paragraphs.indices, id: \.self) { index in
                 Text(detail.paragraphs[index])
                     .font(.system(size: 17, weight: .regular, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineSpacing(16)
                     .tracking(0.3)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1288,7 +1226,7 @@ struct BishenEssayDetailView: View {
         .background(Color(red: 238/255, green: 247/255, blue: 238/255).opacity(0.9), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2)
+                .strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 2)
         )
         .padding(.top, 16)
     }
@@ -1297,13 +1235,13 @@ struct BishenEssayDetailView: View {
         HStack(spacing: 12) {
             Text("💬 \(detail.commentsSummary)")
                 .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.white.opacity(0.7), in: Capsule())
                 .overlay(
-                    Capsule().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5)
+                    Capsule().strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                 )
 
             actionStat(icon: "hand.thumbsup", label: "点赞")
@@ -1406,36 +1344,36 @@ private struct BishenArticleListCard: View {
             }
             .frame(width: 42, height: 42)
             .overlay(
-                Circle().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                Circle().strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(article.title)
                     .font(.system(size: 13.5, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(2)
                 HStack(spacing: 8) {
                     if let grade = article.gradeDisplay {
                         Text(grade)
                             .font(.system(size: 9, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .foregroundStyle(AppTheme.fieldMint)
                     }
                     if let category = article.categoryDisplay {
                         Text(category)
                             .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
                     if article.gradeDisplay == nil, article.categoryDisplay == nil {
                         Text(article.authorDisplayForList)
                             .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
                 }
             }
             Spacer(minLength: 0)
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(12)
         .background(
@@ -1443,9 +1381,9 @@ private struct BishenArticleListCard: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
     }
 

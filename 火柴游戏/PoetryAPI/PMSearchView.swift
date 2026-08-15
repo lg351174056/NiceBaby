@@ -36,7 +36,7 @@ struct PMSearchView: View {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
 
                 TextField("搜索诗词、诗人...", text: $keyword)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
@@ -52,7 +52,7 @@ struct PMSearchView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 16))
-                            .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                            .foregroundStyle(AppTheme.fieldMossLight)
                     }
                 }
             }
@@ -61,14 +61,14 @@ struct PMSearchView: View {
             .background(Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
-            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 4, y: 2)
+            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 4, y: 2)
 
             if isFocused || !keyword.isEmpty {
                 Button("搜索") { performSearch() }
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
@@ -84,16 +84,16 @@ struct PMSearchView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 8) {
                     Rectangle()
-                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .fill(AppTheme.fieldMint)
                         .frame(width: 6, height: 20)
                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     Text("热门搜索")
                         .font(.system(size: 15, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Spacer()
                     Text("实时更新")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
                 .padding(.top, 12)
 
@@ -107,7 +107,7 @@ struct PMSearchView: View {
                                 .font(.system(size: 13, weight: .heavy, design: .rounded))
                                 .foregroundStyle(index < 3
                                     ? Color(red: 176/255, green: 130/255, blue: 50/255)
-                                    : Color(red: 74/255, green: 92/255, blue: 66/255))
+                                    : AppTheme.fieldOliveDeep)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
                                 .background(
@@ -118,10 +118,10 @@ struct PMSearchView: View {
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                         .strokeBorder(index < 3
                                             ? Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.5)
-                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                            : AppTheme.fieldOlive.opacity(0.3),
                                             lineWidth: 1.5)
                                 )
-                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.06), radius: 3, y: 1)
+                                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.06), radius: 3, y: 1)
                         }
                     }
                 }
@@ -144,11 +144,11 @@ struct PMSearchView: View {
                             Text(tab.rawValue)
                                 .font(.system(size: 14, weight: selectedTab == tab ? .heavy : .bold, design: .rounded))
                                 .foregroundStyle(selectedTab == tab
-                                    ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                                    : Color(red: 138/255, green: 154/255, blue: 122/255))
+                                    ? AppTheme.fieldMint
+                                    : AppTheme.fieldMoss)
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(selectedTab == tab
-                                    ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    ? AppTheme.fieldMint
                                     : .clear)
                                 .frame(height: 3).frame(width: 20)
                         }
@@ -166,7 +166,7 @@ struct PMSearchView: View {
                     Spacer(minLength: 60)
                     ProgressView()
                         .controlSize(.large)
-                        .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .tint(AppTheme.fieldMint)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -224,7 +224,7 @@ struct PMSearchView: View {
                 .foregroundStyle(Color(red: 168/255, green: 184/255, blue: 154/255))
             Text("暂无结果")
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 40)
@@ -256,22 +256,22 @@ private struct SearchPoetryRow: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.1))
+                    .fill(AppTheme.fieldMint.opacity(0.1))
                 Text("📜")
                     .font(.system(size: 15))
             }
             .frame(width: 36, height: 36)
-            .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 1.5))
+            .overlay(Circle().strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 1.5))
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(poetry.name)
                         .font(.system(size: 15, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Spacer()
                     Text("[\(poetry.dynasty)] \(poetry.poetName)")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
                 Text(poetry.excerpt)
                     .font(.system(size: 12, weight: .regular, design: .serif))
@@ -286,9 +286,9 @@ private struct SearchPoetryRow: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
     }
 }
@@ -303,7 +303,7 @@ private struct PoetRow: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+                        colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint],
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     )
                 )
@@ -318,18 +318,18 @@ private struct PoetRow: View {
                 HStack(spacing: 6) {
                     Text(poet.name)
                         .font(.system(size: 16, weight: .bold, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Text(poet.dynasty)
                         .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.1), in: Capsule())
+                        .background(AppTheme.fieldMint.opacity(0.1), in: Capsule())
                 }
                 if poet.poetryCount > 0 {
                     Text("收录 \(poet.poetryCount) 首")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
             }
 
@@ -341,7 +341,7 @@ private struct PoetRow: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
         )
     }

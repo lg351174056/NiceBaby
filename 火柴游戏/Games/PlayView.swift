@@ -18,15 +18,7 @@ struct PlayView: View {
         NavigationStack(path: $path) {
             ZStack {
                 // 蓝天草地背景（固定）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 // 太阳 + 白云 + 风车
                 fairSun
@@ -62,7 +54,7 @@ struct PlayView: View {
     // MARK: - 背景装饰（太阳/云/风车）
 
     private var fairSun: some View {
-        SunBreathPlay()
+        FieldSun()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 20)
             .padding(.top, 30)
@@ -70,7 +62,7 @@ struct PlayView: View {
     }
 
     private func fairCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
-        CloudDriftPlay(scale: scale, delay: delay)
+        FieldCloud(scale: scale, delay: delay)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.leading, 390 * x - 10)
             .padding(.top, 390 * y)
@@ -137,7 +129,7 @@ struct PlayView: View {
                 Text("益智")
                     .font(.system(size: 30, weight: .heavy, design: .serif))
                     .tracking(3)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .padding(.top, 6)
                 Text("每一道题，都是一座小游乐设施")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
@@ -164,7 +156,7 @@ struct PlayView: View {
                         RadialGradient(colors: [
                             Color(red: 255/255, green: 233/255, blue: 168/255),
                             Color(red: 212/255, green: 168/255, blue: 75/255),
-                            Color(red: 176/255, green: 138/255, blue: 62/255)
+                            AppTheme.fieldGold
                         ], center: .init(x: 0.35, y: 0.3), startRadius: 4, endRadius: 28)
                     )
                     .frame(width: 52, height: 52)
@@ -178,14 +170,14 @@ struct PlayView: View {
                 Text("小马骑士 · 课业 \(Int(beltProgress * 100))%")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
                     .tracking(1)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("再玩 3 个设施，可坐大转马")
                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.15))
+                            .fill(AppTheme.fieldOlive.opacity(0.15))
                             .frame(height: 8)
                         Capsule()
                             .fill(
@@ -213,9 +205,9 @@ struct PlayView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 10, y: 5)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 10, y: 5)
         )
     }
 
@@ -233,10 +225,10 @@ struct PlayView: View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.system(size: 13, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(label)
                 .font(.system(size: 8, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
     }
 
@@ -309,12 +301,12 @@ struct PlayView: View {
                 .fill(
                     LinearGradient(colors: [
                         Color(red: 143/255, green: 227/255, blue: 192/255),
-                        Color(red: 76/255, green: 175/255, blue: 125/255)
+                        AppTheme.fieldMint
                     ], startPoint: .topLeading, endPoint: .bottomTrailing)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 3)
+                        .strokeBorder(AppTheme.fieldInk, lineWidth: 3)
                 )
                 .shadow(color: Color(red: 60/255, green: 80/255, blue: 50/255).opacity(0.3), radius: 10, y: 5)
         )
@@ -335,16 +327,16 @@ struct PlayView: View {
     private func subjectHeader(seal: String, title: String) -> some View {
         HStack(spacing: 8) {
             Rectangle()
-                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .fill(AppTheme.fieldMint)
                 .frame(width: 6, height: 20)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
             Text(title)
                 .font(.system(size: 15, weight: .heavy, design: .serif))
                 .tracking(2)
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Rectangle()
                 .fill(
-                    LinearGradient(colors: [Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
+                    LinearGradient(colors: [AppTheme.fieldOlive.opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
                 )
                 .frame(height: 2)
         }
@@ -518,18 +510,18 @@ struct PlayView: View {
                 Text(subject.name)
                     .font(.system(size: 14, weight: .heavy, design: .serif))
                     .tracking(1)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Rectangle()
                     .fill(
                         LinearGradient(colors: [
-                            Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            AppTheme.fieldOlive.opacity(0.35),
                             .clear
                         ], startPoint: .leading, endPoint: .trailing)
                     )
                     .frame(height: 2)
                 Text("\(doneCount) / \(subject.lessons.count) 项")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .padding(.horizontal, 14)
             .padding(.top, 12)
@@ -544,7 +536,7 @@ struct PlayView: View {
                 .buttonStyle(LessonPressStyle())
                 if index < subject.lessons.count - 1 {
                     Rectangle()
-                        .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.12))
+                        .fill(AppTheme.fieldOlive.opacity(0.12))
                         .frame(height: 1)
                         .padding(.horizontal, 24)
                 }
@@ -570,16 +562,16 @@ struct PlayView: View {
             .frame(width: 44, height: 44)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(lesson.name)
                     .font(.system(size: 13, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text(lesson.sub)
                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(1)
             }
 
@@ -595,7 +587,7 @@ struct PlayView: View {
             // 状态
             Text(state.label)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(state.done ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                .foregroundStyle(state.done ? AppTheme.fieldMint
                     : state.now ? Color(red: 59/255, green: 142/255, blue: 165/255)
                     : Color(red: 168/255, green: 184/255, blue: 154/255))
         }
@@ -606,9 +598,9 @@ struct PlayView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
         .padding(.horizontal, 10)
     }
@@ -708,15 +700,15 @@ struct PlayView: View {
                 Text(no)
                     .font(.system(size: 10, weight: .medium, design: .serif))
                     .tracking(0.8)
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 Text(name)
                     .font(.system(size: 12.5, weight: .bold, design: .serif))
                     .tracking(0.3)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
                 Text(sub)
                     .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -726,9 +718,9 @@ struct PlayView: View {
                     .fill(Color.white.opacity(0.9))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
             )
         }
         .buttonStyle(.bouncy)
@@ -741,14 +733,14 @@ struct PlayView: View {
             Text("题 · 跋")
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .tracking(3.4)
-                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .foregroundStyle(AppTheme.fieldMint)
             Text("修学者，所以明理、益智、进德。每破一题则就一题之道，每成一课则进一阶之修。日拱一卒，功不唐捐。")
                 .font(.system(size: 12, weight: .regular, design: .serif))
                 .foregroundStyle(Color(red: 110/255, green: 138/255, blue: 98/255))
                 .lineSpacing(4)
             Text("田野游乐园 · 谨题")
                 .font(.system(size: 13, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                .foregroundStyle(AppTheme.fieldGold)
                 .rotationEffect(.degrees(-2))
                 .padding(.top, 4)
         }
@@ -759,11 +751,11 @@ struct PlayView: View {
                 .fill(Color.white.opacity(0.7))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.2), lineWidth: 1.5)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.2), lineWidth: 1.5)
                 )
                 .overlay(alignment: .leading) {
                     Rectangle()
-                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .fill(AppTheme.fieldMint)
                         .frame(width: 3)
                         .padding(.vertical, 8)
                         .padding(.leading, 6)
@@ -862,56 +854,6 @@ private struct MatchstickGameContainer: View {
 }
 
 // MARK: - 轻量装饰动画（隐式动画，不用 TimelineView）
-
-private struct SunBreathPlay: View {
-    @State private var breathing = false
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(colors: [
-                        Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
-                        Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
-                        .clear
-                    ], center: .center, startRadius: 10, endRadius: 50)
-                )
-                .frame(width: 100, height: 100)
-                .scaleEffect(breathing ? 1.03 : 0.97)
-            Circle()
-                .fill(
-                    RadialGradient(colors: [
-                        Color(red: 255/255, green: 246/255, blue: 205/255),
-                        Color(red: 255/255, green: 214/255, blue: 100/255),
-                        Color(red: 247/255, green: 188/255, blue: 55/255)
-                    ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
-                )
-                .frame(width: 32, height: 32)
-                .scaleEffect(breathing ? 1.03 : 0.97)
-                .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
-        }
-        .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathing)
-        .onAppear { breathing = true }
-    }
-}
-
-private struct CloudDriftPlay: View {
-    let scale: CGFloat
-    let delay: Double
-    @State private var drifting = false
-    var body: some View {
-        ZStack {
-            Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
-            Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
-        }
-        .frame(width: 52, height: 30)
-        .scaleEffect(scale)
-        .offset(x: drifting ? 14 : -14, y: drifting ? 3 : -3)
-        .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true).delay(delay), value: drifting)
-        .onAppear { drifting = true }
-    }
-}
 
 #Preview {
     PlayView()

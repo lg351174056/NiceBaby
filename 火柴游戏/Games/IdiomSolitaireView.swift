@@ -100,7 +100,7 @@ private struct ModeSelect: View {
 
             Text("🐉")
                 .font(.system(size: 34))
-                .modifier(Bob(delay: 0))
+                .modifier(FieldBob(delay: 0))
                 .padding(.top, 10)
                 .padding(.trailing, 14)
         }
@@ -143,7 +143,7 @@ private struct ModeSelect: View {
             }
             modeRow(icon: "🎬", tint: AppTheme.accentBamboo,
                     soft: Color(red: 238/255, green: 247/255, blue: 238/255),
-                    border: Color(red: 76/255, green: 175/255, blue: 125/255),
+                    border: AppTheme.fieldMint,
                     title: "自动演示", desc: "看 AI 自己表演一条完整龙链", tag: nil) {
                 onPick(.autoDemo)
             }
@@ -160,7 +160,7 @@ private struct ModeSelect: View {
                         .fill(soft)
                     Text(icon)
                         .font(.system(size: 26))
-                        .modifier(Bob(delay: 0.2))
+                        .modifier(FieldBob(delay: 0.2))
                 }
                 .frame(width: 54, height: 54)
                 .overlay(
@@ -329,7 +329,7 @@ private struct TurnBar: View {
                 .padding(.vertical, 5)
                 .background(
                     LinearGradient(colors: isAI
-                        ? [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)]
+                        ? [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint]
                         : [Color(red: 224/255, green: 122/255, blue: 98/255), Color(red: 201/255, green: 100/255, blue: 66/255)],
                         startPoint: .topLeading, endPoint: .bottomTrailing),
                     in: Capsule()
@@ -561,7 +561,7 @@ private struct ChainNode: View {
         if isMine {
             return [Color(red: 240/255, green: 200/255, blue: 122/255), Color(red: 217/255, green: 162/255, blue: 78/255)]
         }
-        return [Color(red: 143/255, green: 212/255, blue: 168/255), Color(red: 76/255, green: 175/255, blue: 125/255)]
+        return [Color(red: 143/255, green: 212/255, blue: 168/255), AppTheme.fieldMint]
     }
 }
 
@@ -756,7 +756,7 @@ private struct DetailSheet: View {
                     .font(.system(size: 24, weight: .heavy, design: .serif))
                     .foregroundStyle(AppTheme.textPrimary)
                     .tracking(2)
-                Text("尾「\(idiom.last)」")
+                Text(verbatim: "尾「\(idiom.last)」")
                     .font(.system(size: 10, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
@@ -792,7 +792,7 @@ private struct DetailSheet: View {
                         .foregroundStyle(AppTheme.textSecondary)
                     HStack(spacing: 6) {
                         ForEach(candidates) { c in
-                            Text("\(c.text) · 尾「\(c.last)」")
+                            Text(verbatim: "\(c.text) · 尾「\(c.last)」")
                                 .font(.system(size: 10.5, weight: .heavy, design: .rounded))
                                 .foregroundStyle(Color(red: 176/255, green: 120/255, blue: 48/255))
                                 .padding(.horizontal, 9)
@@ -813,10 +813,10 @@ private struct DetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(
-                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing),
                         in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                     )
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(AppTheme.fieldInk, lineWidth: 2))
             }
             .buttonStyle(BounceStyle())
 
@@ -1005,18 +1005,6 @@ private struct BounceStyle: ButtonStyle {
 }
 
 // MARK: - 浮动动效
-
-private struct Bob: ViewModifier {
-    let delay: Double
-    func body(content: Content) -> some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate + delay
-            content
-                .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-        }
-    }
-}
-
 // MARK: - 对弈模式（龙珠链 + 联想输入）
 
 private struct BattleGame: View {

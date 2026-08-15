@@ -14,7 +14,7 @@ enum MathHomeworkGrade: Int, CaseIterable, Identifiable {
         switch self {
         case .one:   return Color(red: 232/255, green: 106/255, blue: 158/255)
         case .two:   return Color(red: 245/255, green: 166/255, blue: 35/255)
-        case .three: return Color(red: 76/255, green: 175/255, blue: 125/255)
+        case .three: return AppTheme.fieldMint
         case .four:  return Color(red: 74/255, green: 163/255, blue: 223/255)
         case .five:  return Color(red: 155/255, green: 123/255, blue: 216/255)
         case .six:   return Color(red: 232/255, green: 100/255, blue: 82/255)
@@ -940,11 +940,11 @@ struct HomeworkClockFace: View {
         ZStack {
             Circle()
                 .fill(Color.white)
-                .overlay(Circle().strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2))
+                .overlay(Circle().strokeBorder(AppTheme.fieldInk, lineWidth: 2))
                 .frame(width: 64, height: 64)
             ForEach(0..<12, id: \.self) { i in
                 Rectangle()
-                    .fill(Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.5))
+                    .fill(AppTheme.fieldInk.opacity(0.5))
                     .frame(width: 1, height: i % 3 == 0 ? 5 : 3)
                     .offset(y: -29)
                     .rotationEffect(.degrees(Double(i) * 30))
@@ -957,12 +957,12 @@ struct HomeworkClockFace: View {
                 .rotationEffect(.degrees(half ? 180 : 0))
             // 时针
             Rectangle()
-                .fill(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .fill(AppTheme.fieldInk)
                 .frame(width: 2.5, height: 16)
                 .offset(y: -8)
                 .rotationEffect(.degrees(Double(hour % 12) * 30 + (half ? 15 : 0)))
             Circle()
-                .fill(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .fill(AppTheme.fieldInk)
                 .frame(width: 4, height: 4)
         }
         .frame(width: 64, height: 64)
@@ -994,15 +994,7 @@ struct MathHomeworkView: View {
 
     private var mathBackground: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate
@@ -1082,7 +1074,7 @@ struct MathHomeworkGameView: View {
                         Image(systemName: "chevron.down")
                             .font(.system(size: 8, weight: .bold))
                     }
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(
@@ -1103,7 +1095,7 @@ struct MathHomeworkGameView: View {
                 Button(action: onRefresh) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                        .foregroundStyle(AppTheme.fieldOliveDeep)
                         .frame(width: 30, height: 30)
                         .background(Circle().fill(.ultraThinMaterial))
                 }
@@ -1138,7 +1130,7 @@ struct MathHomeworkGameView: View {
                         } label: {
                             Text(g.name)
                                 .font(.system(size: 13, weight: .heavy, design: .rounded))
-                                .foregroundStyle(grade == g ? .white : Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .foregroundStyle(grade == g ? .white : AppTheme.fieldInk)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                                 .background(
@@ -1398,13 +1390,13 @@ struct MathStampOverlay: View {
 
                 Text("\(wrongTotal) 处错误全揪出来！")
                     .font(.system(size: 20, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .opacity(appear ? 1 : 0)
                     .animation(.easeOut(duration: 0.3).delay(0.15), value: appear)
 
                 Text("李慕子的作业本被小老师改得干干净净")
                     .font(.system(size: 11.5, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .opacity(appear ? 1 : 0)
                     .animation(.easeOut(duration: 0.3).delay(0.25), value: appear)
 
@@ -1436,7 +1428,7 @@ struct MathStampOverlay: View {
                         } label: {
                             Text(c)
                                 .font(.system(size: 11, weight: .heavy, design: .rounded))
-                                .foregroundStyle(comment == c ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .foregroundStyle(comment == c ? AppTheme.fieldMint : AppTheme.fieldInk)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
                                 .background(
@@ -1444,7 +1436,7 @@ struct MathStampOverlay: View {
                                         .fill(comment == c ? Color(red: 223/255, green: 245/255, blue: 231/255) : Color(red: 244/255, green: 248/255, blue: 238/255))
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .strokeBorder(comment == c ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                                                .strokeBorder(comment == c ? AppTheme.fieldMint : AppTheme.fieldOlive.opacity(0.35), lineWidth: 2)
                                         )
                                 )
                         }
@@ -1472,17 +1464,17 @@ struct MathStampOverlay: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
-                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing),
                                 in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                             )
-                            .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), radius: 6, y: 3)
+                            .shadow(color: AppTheme.fieldMint.opacity(0.4), radius: 6, y: 3)
                     }
                     .buttonStyle(.plain)
 
                     Button(action: onRefresh) {
                         Text("换一本")
                             .font(.system(size: 13, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
@@ -1491,7 +1483,7 @@ struct MathStampOverlay: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.32), lineWidth: 2.5)
+                                    .strokeBorder(AppTheme.fieldOlive.opacity(0.32), lineWidth: 2.5)
                             )
                     }
                     .buttonStyle(.plain)

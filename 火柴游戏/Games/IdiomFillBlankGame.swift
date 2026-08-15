@@ -30,7 +30,7 @@ struct IdiomFillBlankGameView: View {
 
     /// 竹青主色（书野营地竹青风，替代朱砂 palette）
     private let bamboo: (Color, Color) = (
-        Color(red: 76/255, green: 175/255, blue: 125/255),
+        AppTheme.fieldMint,
         Color(red: 126/255, green: 211/255, blue: 160/255)
     )
 
@@ -45,15 +45,7 @@ struct IdiomFillBlankGameView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             bambooSun
             bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -74,7 +66,7 @@ struct IdiomFillBlankGameView: View {
                                     .foregroundStyle(bamboo.0)
                                     .frame(width: 36, height: 36)
                                     .background(Color.white.opacity(0.9), in: Circle())
-                                    .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2))
+                                    .overlay(Circle().strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 2))
                             }
                             .buttonStyle(.plain)
                         }
@@ -82,10 +74,10 @@ struct IdiomFillBlankGameView: View {
                     VStack(spacing: 2) {
                         Text(kind.title)
                             .font(.system(size: 16, weight: .heavy, design: .serif))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                         Text("第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
                 }
                 .padding(.horizontal, 18)
@@ -116,7 +108,7 @@ struct IdiomFillBlankGameView: View {
 
                     Text("点击可切换难度")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
 
                     Spacer()
                 }
@@ -129,7 +121,7 @@ struct IdiomFillBlankGameView: View {
                 } else {
                     ProgressView()
                         .controlSize(.large)
-                        .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .tint(AppTheme.fieldMint)
                         .frame(maxHeight: .infinity)
                 }
             }
@@ -204,8 +196,8 @@ struct IdiomFillBlankGameView: View {
                 .foregroundStyle(bamboo.0)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 5)
-                .background(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.12), in: Capsule())
-                .overlay(Capsule().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 1.5))
+                .background(AppTheme.fieldMint.opacity(0.12), in: Capsule())
+                .overlay(Capsule().strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 1.5))
 
             HStack(spacing: 10) {
                 ForEach(0..<chars.count, id: \.self) { i in
@@ -227,11 +219,11 @@ struct IdiomFillBlankGameView: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(
-                            isCorrect == true ? bamboo.0 : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                            isCorrect == true ? bamboo.0 : AppTheme.fieldOlive.opacity(0.3),
                             lineWidth: 2
                         )
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 8, y: 4)
         )
     }
 
@@ -282,7 +274,7 @@ struct IdiomFillBlankGameView: View {
                 : (isCorrect == false ? "再接再厉" : "点击下方一个字填入空缺")
             )
             .font(.system(size: 14, weight: .bold, design: .rounded))
-            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+            .foregroundStyle(AppTheme.fieldMoss)
         }
         .animation(.easeInOut(duration: 0.2), value: isCorrect)
     }
@@ -325,7 +317,7 @@ struct IdiomFillBlankGameView: View {
     private func candidateTile(_ s: String) -> some View {
         Text(s)
             .font(.system(size: 30, weight: .heavy, design: .serif))
-            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            .foregroundStyle(AppTheme.fieldInk)
             .frame(maxWidth: .infinity)
             .frame(height: 72)
             .background(
@@ -333,9 +325,9 @@ struct IdiomFillBlankGameView: View {
                     .fill(Color.white.opacity(0.92))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
             )
     }
 
@@ -345,7 +337,7 @@ struct IdiomFillBlankGameView: View {
         let (fg, bgStart, bgEnd, border): (Color, Color, Color, Color) = {
             switch state {
             case .normal:
-                return (Color(red: 61/255, green: 74/255, blue: 54/255), Color.white, Color(red: 244/255, green: 248/255, blue: 238/255), bamboo.0.opacity(0.2))
+                return (AppTheme.fieldInk, Color.white, Color(red: 244/255, green: 248/255, blue: 238/255), bamboo.0.opacity(0.2))
             case .correct:
                 return (.white, bamboo.1, bamboo.0, .clear)
             case .wrong:
@@ -529,7 +521,7 @@ struct IdiomExplanationSheet: View {
             VStack(spacing: 20) {
                 Text(idiom.text)
                     .font(.system(size: 44, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .tracking(2)
                     .padding(.bottom, 6)
 
@@ -615,7 +607,7 @@ struct DifficultyPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     private var accent: Color {
-        Color(red: 76/255, green: 175/255, blue: 125/255)
+        AppTheme.fieldMint
     }
 
     var body: some View {
@@ -623,12 +615,12 @@ struct DifficultyPickerSheet: View {
             HStack {
                 Text(title)
                     .font(.system(size: 17, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Spacer()
                 Button { dismiss() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255).opacity(0.6))
+                        .foregroundStyle(AppTheme.fieldMoss.opacity(0.6))
                 }
             }
             .padding(.horizontal, 20)
@@ -659,7 +651,7 @@ struct DifficultyPickerSheet: View {
                                     HStack(spacing: 6) {
                                         Text(diff.label)
                                             .font(.system(size: 15, weight: .heavy, design: .serif))
-                                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                            .foregroundStyle(AppTheme.fieldInk)
                                         if isCurrent {
                                             Text("当前")
                                                 .font(.system(size: 9, weight: .heavy, design: .rounded))
@@ -671,7 +663,7 @@ struct DifficultyPickerSheet: View {
                                     }
                                     Text("\(diff.subtitle) · \(diff.desc)")
                                         .font(.system(size: 11, weight: .bold, design: .rounded))
-                                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                        .foregroundStyle(AppTheme.fieldMoss)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -686,7 +678,7 @@ struct DifficultyPickerSheet: View {
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                                             .strokeBorder(isCurrent ? accent.opacity(0.5) : Color(red: 60/255, green: 80/255, blue: 110/255).opacity(0.12), lineWidth: isCurrent ? 2 : 1)
                                     )
-                                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(isCurrent ? 0.12 : 0.04), radius: 6, y: 3)
+                                    .shadow(color: AppTheme.fieldGrassShadow.opacity(isCurrent ? 0.12 : 0.04), radius: 6, y: 3)
                             )
                         }
                         .buttonStyle(.plain)

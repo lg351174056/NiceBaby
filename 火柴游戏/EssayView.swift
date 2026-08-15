@@ -68,7 +68,7 @@ struct EssayListView: View {
             Button { dismiss() } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .frame(width: 36, height: 36)
                     .background(Circle().fill(Color.white.opacity(0.8)))
             }
@@ -77,10 +77,10 @@ struct EssayListView: View {
             VStack(spacing: 2) {
                 Text("小学作文精选")
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("\(essays.count) 篇范文")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             Spacer()
             Color.clear.frame(width: 36, height: 36)
@@ -147,7 +147,7 @@ struct EssayListView: View {
             HStack {
                 Text(essay.title)
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
                 Spacer()
                 Text("\(essay.content.count) 字")

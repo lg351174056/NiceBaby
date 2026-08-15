@@ -21,15 +21,7 @@ struct WallpaperGalleryView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             gallerySun
             galleryCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -44,7 +36,7 @@ struct WallpaperGalleryView: View {
                     }
                     Text("壁纸图库")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -109,35 +101,35 @@ struct WallpaperGalleryView: View {
                     )
                 Text("🖼")
                     .font(.system(size: 24))
-                    .modifier(Bob(delay: 0.3))
+                    .modifier(FieldBob(delay: 0.3))
             }
             .frame(width: 52, height: 52)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("壁纸图库")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("山川风物 · 收藏入屏")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 HStack(spacing: 12) {
                     Text("🖼 \(wallpapers.count) 张")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     Text("🎬 \(videoCount) 个视频")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                        .foregroundStyle(AppTheme.fieldGold)
                 }
                 .padding(.top, 1)
             }
             Spacer()
             HStack(spacing: 6) {
-                Text("🍃").font(.system(size: 15)).modifier(Bob(delay: 0))
-                Text("🦋").font(.system(size: 14)).modifier(Flutter(delay: 0.9))
+                Text("🍃").font(.system(size: 15)).modifier(FieldBob(delay: 0))
+                Text("🦋").font(.system(size: 14)).modifier(FieldFlutter(delay: 0.9))
             }
         }
         .padding(14)
@@ -146,9 +138,9 @@ struct WallpaperGalleryView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 8)
@@ -158,7 +150,7 @@ struct WallpaperGalleryView: View {
     // MARK: - 背景装饰（太阳/云）
 
     private var gallerySun: some View {
-        WallpaperSunBreath()
+        FieldSun()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 20)
             .padding(.top, 30)
@@ -166,88 +158,12 @@ struct WallpaperGalleryView: View {
     }
 
     private func galleryCloud(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
-        WallpaperCloudDrift(scale: scale, delay: delay)
+        FieldCloud(scale: scale, delay: delay)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.leading, 390 * x - 10)
             .padding(.top, 390 * y)
             .allowsHitTesting(false)
-    }
-
-    private struct Bob: ViewModifier {
-        let delay: Double
-        @State private var floating = false
-        func body(content: Content) -> some View {
-            content
-                .offset(y: floating ? 4 : -4)
-                .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true).delay(delay), value: floating)
-                .onAppear { floating = true }
-        }
-    }
-
-    private struct Flutter: ViewModifier {
-        let delay: Double
-        @State private var fluttering = false
-        func body(content: Content) -> some View {
-            content
-                .offset(x: fluttering ? 3 : -3, y: fluttering ? 4 : -4)
-                .rotationEffect(.degrees(fluttering ? 6 : -6))
-                .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true).delay(delay), value: fluttering)
-                .onAppear { fluttering = true }
-        }
-    }
-}
-
-private struct WallpaperSunBreath: View {
-    @State private var breathing = false
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(colors: [
-                        Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
-                        Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
-                        .clear
-                    ], center: .center, startRadius: 10, endRadius: 50)
-                )
-                .frame(width: 100, height: 100)
-                .scaleEffect(breathing ? 1.03 : 0.97)
-            Circle()
-                .fill(
-                    RadialGradient(colors: [
-                        Color(red: 255/255, green: 246/255, blue: 205/255),
-                        Color(red: 255/255, green: 214/255, blue: 100/255),
-                        Color(red: 247/255, green: 188/255, blue: 55/255)
-                    ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
-                )
-                .frame(width: 32, height: 32)
-                .scaleEffect(breathing ? 1.03 : 0.97)
-                .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
-        }
-        .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathing)
-        .onAppear { breathing = true }
-    }
-}
-
-private struct WallpaperCloudDrift: View {
-    let scale: CGFloat
-    let delay: Double
-    @State private var drifting = false
-    var body: some View {
-        ZStack {
-            Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
-            Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
-        }
-        .frame(width: 52, height: 30)
-        .scaleEffect(scale)
-        .offset(x: drifting ? 14 : -14, y: drifting ? 3 : -3)
-        .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true).delay(delay), value: drifting)
-        .onAppear { drifting = true }
-    }
-}
-
-// 媒体单元格：区分图片和视频
+    }}// 媒体单元格：区分图片和视频
 struct MediaCell: View {
     let item: WallpaperMedia
     let onTap: () -> Void
@@ -281,12 +197,12 @@ struct MediaCell: View {
                         .background(
                             LinearGradient(colors: [
                                 Color(red: 126/255, green: 211/255, blue: 160/255),
-                                Color(red: 76/255, green: 175/255, blue: 125/255)
+                                AppTheme.fieldMint
                             ], startPoint: .topLeading, endPoint: .bottomTrailing),
                             in: Capsule()
                         )
                         .overlay(Capsule().strokeBorder(Color.white.opacity(0.5), lineWidth: 1))
-                        .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.5), radius: 4, y: 1)
+                        .shadow(color: AppTheme.fieldMint.opacity(0.5), radius: 4, y: 1)
                         .modifier(BadgeBreathe())
                         .padding(7)
                     }
@@ -302,9 +218,9 @@ struct MediaCell: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
         )
-        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 6, y: 3)
+        .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 6, y: 3)
         .clipped()
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
@@ -585,7 +501,7 @@ struct WallpaperPreviewOverlay: View {
         switch saveState {
         case .idle: return .white.opacity(0.16)
         case .saving: return .gray.opacity(0.4)
-        case .saved: return Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.8)
+        case .saved: return AppTheme.fieldMint.opacity(0.8)
         case .failed: return Color(red: 232/255, green: 100/255, blue: 82/255).opacity(0.8)
         }
     }

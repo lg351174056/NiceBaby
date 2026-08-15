@@ -14,15 +14,7 @@ struct VideoCategoryListView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             gardenSun
             gardenCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -37,7 +29,7 @@ struct VideoCategoryListView: View {
                     }
                     Text("视频乐园")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -112,21 +104,21 @@ struct VideoCategoryListView: View {
                     )
                 Text("🎬")
                     .font(.system(size: 24))
-                    .modifier(Bob(delay: 0.3))
+                    .modifier(FieldBob(delay: 0.3))
             }
             .frame(width: 52, height: 52)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("视频乐园")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("共 \(categories.count) 个频道，海量视频等你探索")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             Spacer()
         }
@@ -136,9 +128,9 @@ struct VideoCategoryListView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 10)
@@ -202,28 +194,16 @@ struct VideoCategoryListView: View {
         }
         .allowsHitTesting(false)
     }
-
-    private struct Bob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
-
-    // MARK: - 状态页
+// MARK: - 状态页
 
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.3)
-                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .tint(AppTheme.fieldMint)
             Text("正在加载频道...")
                 .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -235,10 +215,10 @@ struct VideoCategoryListView: View {
                 .foregroundStyle(Color(red: 232/255, green: 100/255, blue: 82/255))
             Text("加载失败")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text("请检查网络或 Token 是否有效")
                 .font(AppTheme.captionMuted())
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
             Button {
                 Task { await loadCategories() }
             } label: {
@@ -247,7 +227,7 @@ struct VideoCategoryListView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 28)
                     .padding(.vertical, 12)
-                    .background(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .background(AppTheme.fieldMint)
                     .clipShape(Capsule())
             }
         }
@@ -258,18 +238,18 @@ struct VideoCategoryListView: View {
         VStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.12))
+                    .fill(AppTheme.fieldMint.opacity(0.12))
                     .frame(width: 80, height: 80)
                 Image(systemName: "key.horizontal.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
             }
             Text("请先设置 Token")
                 .font(AppTheme.titleSection())
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text("从小程序抓包获取 Authorization\n中的 Token 即可使用")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .multilineTextAlignment(.center)
             Button {
                 showTokenInput = true
@@ -279,7 +259,7 @@ struct VideoCategoryListView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 32)
                     .padding(.vertical, 14)
-                    .background(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .background(AppTheme.fieldMint)
                     .clipShape(Capsule())
             }
         }
@@ -301,15 +281,15 @@ struct CategoryCardStyle {
     let icon: String
 
     static let styles: [CategoryCardStyle] = [
-        .init(gradient: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], icon: "music.note.list"),
+        .init(gradient: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], icon: "music.note.list"),
         .init(gradient: [Color(red: 232/255, green: 148/255, blue: 100/255), Color(red: 201/255, green: 100/255, blue: 66/255)], icon: "mouth.fill"),
         .init(gradient: [Color(red: 120/255, green: 160/255, blue: 210/255), Color(red: 74/255, green: 111/255, blue: 165/255)], icon: "tv.fill"),
         .init(gradient: [Color(red: 140/255, green: 115/255, blue: 195/255), Color(red: 92/255, green: 75/255, blue: 138/255)], icon: "arrow.up.right.circle.fill"),
         .init(gradient: [Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 186/255, green: 80/255, blue: 100/255)], icon: "star.fill"),
         .init(gradient: [Color(red: 245/255, green: 214/255, blue: 123/255), Color(red: 212/255, green: 168/255, blue: 75/255)], icon: "flask.fill"),
         .init(gradient: [Color(red: 91/255, green: 168/255, blue: 217/255), Color(red: 59/255, green: 142/255, blue: 165/255)], icon: "hare.fill"),
-        .init(gradient: [Color(red: 217/255, green: 164/255, blue: 91/255), Color(red: 176/255, green: 138/255, blue: 62/255)], icon: "crown.fill"),
-        .init(gradient: [Color(red: 110/255, green: 140/255, blue: 90/255), Color(red: 74/255, green: 124/255, blue: 89/255)], icon: "book.fill"),
+        .init(gradient: [Color(red: 217/255, green: 164/255, blue: 91/255), AppTheme.fieldGold], icon: "crown.fill"),
+        .init(gradient: [AppTheme.fieldOlive, Color(red: 74/255, green: 124/255, blue: 89/255)], icon: "book.fill"),
         .init(gradient: [Color(red: 186/255, green: 80/255, blue: 100/255), Color(red: 201/255, green: 100/255, blue: 66/255)], icon: "function"),
         .init(gradient: [Color(red: 80/255, green: 180/255, blue: 160/255), Color(red: 59/255, green: 142/255, blue: 165/255)], icon: "textformat.abc"),
     ]
@@ -361,9 +341,9 @@ private struct CategoryCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.25), lineWidth: 2)
+                .stroke(AppTheme.fieldInk.opacity(0.25), lineWidth: 2)
         )
-        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.14), radius: 6, y: 3)
+        .shadow(color: AppTheme.fieldGrassShadow.opacity(0.14), radius: 6, y: 3)
     }
 }
 

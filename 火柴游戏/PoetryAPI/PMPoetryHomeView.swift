@@ -108,16 +108,16 @@ struct PMPoetryHomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Rectangle()
-                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .fill(AppTheme.fieldMint)
                     .frame(width: 6, height: 20)
                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 Text("每日推荐")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Spacer()
                 Text("每日更新")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .padding(.horizontal, 18)
             .padding(.top, 14)
@@ -144,16 +144,16 @@ struct PMPoetryHomeView: View {
             if !dailyRecommends.isEmpty && selectedGenre == .all && selectedDynasty == .all {
                 HStack(spacing: 8) {
                     Rectangle()
-                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .fill(AppTheme.fieldMint)
                         .frame(width: 6, height: 20)
                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     Text("诗词文库")
                         .font(.system(size: 15, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Spacer()
                     Text("\(poetryList.count) 首")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
                 .padding(.horizontal, 18)
             }
@@ -183,10 +183,10 @@ struct PMPoetryHomeView: View {
         HStack(spacing: 8) {
             ProgressView()
                 .controlSize(.small)
-                .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .tint(AppTheme.fieldMint)
             Text("加载中...")
                 .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .padding(.vertical, 20)
     }
@@ -238,8 +238,8 @@ private struct DailyRecommendCard: View {
     let index: Int
 
     private let cardColors: [(Color, Color)] = [
-        (Color(red: 76/255, green: 175/255, blue: 125/255), Color(red: 46/255, green: 125/255, blue: 91/255)),
-        (Color(red: 217/255, green: 164/255, blue: 91/255), Color(red: 176/255, green: 138/255, blue: 62/255)),
+        (AppTheme.fieldMint, Color(red: 46/255, green: 125/255, blue: 91/255)),
+        (Color(red: 217/255, green: 164/255, blue: 91/255), AppTheme.fieldGold),
         (Color(red: 74/255, green: 111/255, blue: 165/255), Color(red: 59/255, green: 142/255, blue: 165/255)),
         (Color(red: 92/255, green: 75/255, blue: 138/255), Color(red: 140/255, green: 115/255, blue: 195/255)),
         (Color(red: 201/255, green: 100/255, blue: 66/255), Color(red: 168/255, green: 72/255, blue: 50/255)),
@@ -288,7 +288,7 @@ private struct DailyRecommendCard: View {
         .shadow(color: colors.0.opacity(0.3), radius: 8, x: 0, y: 5)
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.3), lineWidth: 2)
+                .stroke(AppTheme.fieldInk.opacity(0.3), lineWidth: 2)
         )
     }
 }
@@ -300,8 +300,8 @@ private struct PoetryListCard: View {
     let index: Int
 
     private let accentColors: [Color] = [
-        Color(red: 76/255, green: 175/255, blue: 125/255),
-        Color(red: 176/255, green: 138/255, blue: 62/255),
+        AppTheme.fieldMint,
+        AppTheme.fieldGold,
         Color(red: 74/255, green: 111/255, blue: 165/255),
         Color(red: 201/255, green: 100/255, blue: 66/255),
         Color(red: 186/255, green: 80/255, blue: 100/255),
@@ -330,7 +330,7 @@ private struct PoetryListCard: View {
                 HStack(spacing: 6) {
                     Text(poetry.name)
                         .font(.system(size: 15, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .lineLimit(1)
 
                     if !poetry.genre.isEmpty {
@@ -345,7 +345,7 @@ private struct PoetryListCard: View {
 
                 Text("[\(poetry.dynasty)] \(poetry.poetName)")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
 
                 Text(poetry.excerpt)
                     .font(.system(size: 12, weight: .regular, design: .serif))
@@ -362,7 +362,7 @@ private struct PoetryListCard: View {
                     .foregroundStyle(accent.opacity(0.5))
                 Text("\(poetry.upCount)")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
         }
         .padding(12)
@@ -371,9 +371,9 @@ private struct PoetryListCard: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
         .padding(.horizontal, 18)
     }
@@ -401,24 +401,24 @@ private struct FilterChip: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 12, weight: .heavy, design: .rounded))
-                .foregroundStyle(isSelected ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                .foregroundStyle(isSelected ? .white : AppTheme.fieldOliveDeep)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .background(
                     isSelected
-                        ? AnyShapeStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        ? AnyShapeStyle(AppTheme.fieldMint)
                         : AnyShapeStyle(Color.white.opacity(0.85))
                 )
                 .clipShape(Capsule())
                 .overlay(
                     Capsule().strokeBorder(
                         isSelected
-                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            ? AppTheme.fieldInk
+                            : AppTheme.fieldOlive.opacity(0.35),
                         lineWidth: 2
                     )
                 )
-                .shadow(color: isSelected ? Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3) : .clear, radius: 4, y: 2)
+                .shadow(color: isSelected ? AppTheme.fieldMint.opacity(0.3) : .clear, radius: 4, y: 2)
         }
         .buttonStyle(.plain)
     }
@@ -463,7 +463,7 @@ private struct DynastyPickerSheet: View {
                             .padding(.vertical, 10)
                             .background(
                                 selected == dynasty
-                                    ? AnyShapeStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                    ? AnyShapeStyle(AppTheme.fieldMint)
                                     : AnyShapeStyle(AppTheme.background)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))

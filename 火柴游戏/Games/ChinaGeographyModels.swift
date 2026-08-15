@@ -2,6 +2,16 @@ import Foundation
 
 struct GeoFeatureCollection: Decodable {
     let features: [GeoFeature]
+
+    enum CodingKeys: String, CodingKey {
+        case features
+    }
+
+    // nonisolated：确保该 conformance 可在非隔离上下文（后台解码）使用
+    nonisolated init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        features = try container.decode([GeoFeature].self, forKey: .features)
+    }
 }
 
 struct GeoFeature: Decodable, Identifiable {

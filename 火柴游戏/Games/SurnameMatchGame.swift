@@ -145,7 +145,7 @@ struct SurnameMatchGameView: View {
 
     /// 竹青主色（书野营地竹青风）
     private let bamboo: (Color, Color) = (
-        Color(red: 76/255, green: 175/255, blue: 125/255),
+        AppTheme.fieldMint,
         Color(red: 126/255, green: 211/255, blue: 160/255)
     )
 
@@ -159,15 +159,7 @@ struct SurnameMatchGameView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             bambooSun
             bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -183,10 +175,10 @@ struct SurnameMatchGameView: View {
                     VStack(spacing: 2) {
                         Text(kind.title)
                             .font(.system(size: 16, weight: .heavy, design: .serif))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                         Text("第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
                 }
                 .padding(.horizontal, 18)
@@ -304,7 +296,7 @@ struct SurnameMatchGameView: View {
                         Text(m.label)
                             .font(.system(size: 13, weight: .heavy, design: .rounded))
                     }
-                    .foregroundStyle(mode == m ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                    .foregroundStyle(mode == m ? .white : AppTheme.fieldOliveDeep)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(
@@ -318,8 +310,8 @@ struct SurnameMatchGameView: View {
                     .overlay(
                         Capsule().strokeBorder(
                             mode == m
-                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            ? AppTheme.fieldInk
+                            : AppTheme.fieldOlive.opacity(0.35),
                             lineWidth: 2
                         )
                     )
@@ -419,11 +411,11 @@ struct SurnameMatchGameView: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(
-                            isCorrect == true ? AppTheme.accentSage.opacity(0.8) : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                            isCorrect == true ? AppTheme.accentSage.opacity(0.8) : AppTheme.fieldOlive.opacity(0.3),
                             lineWidth: 2
                         )
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 8, y: 4)
         )
         .modifier(CardShake(trigger: shakeWrong))
     }
@@ -475,11 +467,11 @@ struct SurnameMatchGameView: View {
         }()
 
         let borderColor: Color = {
-            if !showFeedback { return Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3) }
+            if !showFeedback { return AppTheme.fieldOlive.opacity(0.3) }
             if isPicked && isCorrect == true { return AppTheme.accentSage }
             if isPicked && isCorrect == false { return AppTheme.accentPink }
             if showFeedback && isAnswer { return AppTheme.accentSage.opacity(0.6) }
-            return Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.15)
+            return AppTheme.fieldOlive.opacity(0.15)
         }()
 
         let textColor: Color = {

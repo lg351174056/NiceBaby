@@ -74,15 +74,7 @@ struct BishenListView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             bishenSun
             bishenCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -97,7 +89,7 @@ struct BishenListView: View {
                     }
                     Text("笔神精选")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -139,36 +131,36 @@ struct BishenListView: View {
                     )
                 Text("🖋")
                     .font(.system(size: 24))
-                    .modifier(Bob(delay: 0.3))
+                    .modifier(FieldBob(delay: 0.3))
             }
             .frame(width: 52, height: 52)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("笔神精选")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("小学好词好句好段")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 HStack(spacing: 12) {
                     Text("📚 \(categories.count) 大主题")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     Text("✨ \(totalLines) 段好句")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                        .foregroundStyle(AppTheme.fieldGold)
                 }
                 .padding(.top, 1)
             }
             Spacer()
             // 叶片 + 蝴蝶动效
             HStack(spacing: 6) {
-                Text("🍃").font(.system(size: 15)).modifier(Bob(delay: 0))
-                Text("🦋").font(.system(size: 14)).modifier(Flutter(delay: 0.9))
+                Text("🍃").font(.system(size: 15)).modifier(FieldBob(delay: 0))
+                Text("🦋").font(.system(size: 14)).modifier(FieldFlutter(delay: 0.9))
             }
         }
         .padding(14)
@@ -177,9 +169,9 @@ struct BishenListView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 8)
@@ -195,19 +187,19 @@ struct BishenListView: View {
                     } label: {
                         Text(cat)
                             .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selectedCategory == cat ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(selectedCategory == cat ? .white : AppTheme.fieldOliveDeep)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 Capsule()
                                     .fill(selectedCategory == cat
-                                        ? AnyShapeStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                        ? AnyShapeStyle(AppTheme.fieldMint)
                                         : AnyShapeStyle(Color.white.opacity(0.9)))
                                     .overlay(
                                         Capsule().strokeBorder(
                                             selectedCategory == cat
-                                                ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                                ? AppTheme.fieldInk
+                                                : AppTheme.fieldOlive.opacity(0.35),
                                             lineWidth: 2)
                                     )
                             )
@@ -242,17 +234,17 @@ struct BishenListView: View {
             HStack {
                 Text(sub.name)
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Spacer()
                 Text("\(sub.lines.count) 段")
                     .font(.system(size: 9.5, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
                     .background(Color(red: 227/255, green: 242/255, blue: 234/255), in: Capsule())
                 Image(systemName: "chevron.right")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                    .foregroundStyle(AppTheme.fieldMossLight)
             }
 
             if let first = sub.lines.first {
@@ -269,9 +261,9 @@ struct BishenListView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
     }
 
@@ -332,31 +324,7 @@ struct BishenListView: View {
             .padding(.top, 390 * y)
         }
         .allowsHitTesting(false)
-    }
-
-    private struct Bob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
-
-    private struct Flutter: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees(sin(t * 3) * 6))
-            }
-        }
-    }
-}
+    }}
 
 // MARK: - 好句好段列表（L2 · 书野营地竹青风）
 
@@ -367,15 +335,7 @@ struct BishenLinesView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（固定）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             linesSun
             linesCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -390,7 +350,7 @@ struct BishenLinesView: View {
                     }
                     Text("\(subcategory.category) · \(subcategory.name)")
                         .font(.system(size: 17, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .lineLimit(1)
                 }
                 .padding(.horizontal, 18)
@@ -400,16 +360,16 @@ struct BishenLinesView: View {
                 // 分区标题
                 HStack(spacing: 8) {
                     Rectangle()
-                        .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .fill(AppTheme.fieldMint)
                         .frame(width: 6, height: 20)
                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     Text("好句好段")
                         .font(.system(size: 15, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Spacer()
                     Text("共 \(subcategory.lines.count) 段")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
@@ -441,14 +401,14 @@ struct BishenLinesView: View {
                     Circle().fill(
                         LinearGradient(colors: [
                             Color(red: 126/255, green: 211/255, blue: 160/255),
-                            Color(red: 76/255, green: 175/255, blue: 125/255)
+                            AppTheme.fieldMint
                         ], startPoint: .top, endPoint: .bottom)
                     )
                 )
 
             Text(line.content)
                 .font(.system(size: 15, weight: .regular, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
                 .lineSpacing(8)
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
@@ -460,9 +420,9 @@ struct BishenLinesView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.06), radius: 4, y: 2)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.06), radius: 4, y: 2)
         )
     }
 

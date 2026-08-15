@@ -30,10 +30,10 @@ struct PMGujiListView: View {
                     HStack(spacing: 8) {
                         ProgressView()
                             .controlSize(.small)
-                            .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .tint(AppTheme.fieldMint)
                         Text("加载中...")
                             .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
                     .padding(.vertical, 20)
                 }
@@ -114,12 +114,12 @@ private struct GujiCard: View, Equatable {
             VStack(alignment: .leading, spacing: 4) {
                 Text(guji.name)
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
 
                 Text(guji.poetName)
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
 
                 if !guji.excerpt.isEmpty {
                     Text(guji.excerpt)
@@ -135,15 +135,15 @@ private struct GujiCard: View, Equatable {
             VStack(spacing: 4) {
                 Image(systemName: "eye.fill")
                     .font(.system(size: 10))
-                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                    .foregroundStyle(AppTheme.fieldMossLight)
                 Text("\(guji.viewCount)")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(12)
         .background(
@@ -151,9 +151,9 @@ private struct GujiCard: View, Equatable {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
     }
 }

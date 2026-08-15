@@ -98,15 +98,7 @@ struct BrainTeaserHomeView: View {
     var body: some View {
         ZStack(alignment: .top) {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
             VStack(spacing: 0) {
                 // 透明导航条
                 ZStack {
@@ -116,7 +108,7 @@ struct BrainTeaserHomeView: View {
                     }
                     Text("脑筋急转弯")
                         .font(.system(size: 16, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -198,9 +190,9 @@ struct BrainTeaserHomeView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 10)
@@ -254,12 +246,12 @@ struct BrainTeaserHomeView: View {
                     } label: {
                         Text(cat)
                             .font(.system(size: 13, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selectedCategory == cat ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(selectedCategory == cat ? .white : AppTheme.fieldOliveDeep)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(
                                 selectedCategory == cat
-                                    ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    ? AppTheme.fieldMint
                                     : Color.white.opacity(0.85),
                                 in: Capsule()
                             )
@@ -267,8 +259,8 @@ struct BrainTeaserHomeView: View {
                                 Capsule()
                                     .strokeBorder(
                                         selectedCategory == cat
-                                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                            ? AppTheme.fieldInk
+                                            : AppTheme.fieldOlive.opacity(0.35),
                                         lineWidth: 2
                                     )
                             )
@@ -323,9 +315,9 @@ struct BrainTeaserHomeView: View {
             ZStack {
                 Circle()
                     .fill(isUnlocked
-                        ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing))
                         : AnyShapeStyle(Color(red: 168/255, green: 184/255, blue: 154/255).opacity(0.4)))
-                    .overlay(Circle().strokeBorder(isUnlocked ? Color(red: 61/255, green: 74/255, blue: 54/255) : Color.clear, lineWidth: 2))
+                    .overlay(Circle().strokeBorder(isUnlocked ? AppTheme.fieldInk : Color.clear, lineWidth: 2))
                 if isUnlocked {
                     Text("\(index + 1)")
                         .font(.system(size: 12, weight: .black, design: .rounded))
@@ -333,16 +325,16 @@ struct BrainTeaserHomeView: View {
                 } else {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
             }
             .frame(width: 36, height: 36)
-            .shadow(color: isUnlocked ? Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3) : .clear, radius: 4, y: 2)
+            .shadow(color: isUnlocked ? AppTheme.fieldMint.opacity(0.3) : .clear, radius: 4, y: 2)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(teaser.question)
                     .font(.system(size: 14, weight: .semibold, design: .serif))
-                    .foregroundStyle(isUnlocked ? Color(red: 61/255, green: 74/255, blue: 54/255) : Color(red: 138/255, green: 154/255, blue: 122/255).opacity(0.5))
+                    .foregroundStyle(isUnlocked ? AppTheme.fieldInk : AppTheme.fieldMoss.opacity(0.5))
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
 
@@ -359,7 +351,7 @@ struct BrainTeaserHomeView: View {
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255).opacity(isUnlocked ? 0.7 : 0.3))
+                .foregroundStyle(AppTheme.fieldMossLight.opacity(isUnlocked ? 0.7 : 0.3))
         }
         .padding(12)
         .background(
@@ -367,9 +359,9 @@ struct BrainTeaserHomeView: View {
                 .fill(Color.white.opacity(isUnlocked ? 0.92 : 0.7))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(isUnlocked ? 0.28 : 0.15), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(isUnlocked ? 0.28 : 0.15), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(isUnlocked ? 0.08 : 0.03), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(isUnlocked ? 0.08 : 0.03), radius: 5, y: 3)
         )
     }
 }
@@ -411,15 +403,7 @@ struct BrainTeaserGameView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             bambooSun
             bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -459,10 +443,10 @@ struct BrainTeaserGameView: View {
             VStack(spacing: 2) {
                 Text("脑筋急转弯")
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("第 \(store.currentIndex + 1) 关 · 共 \(store.total) 关")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
         }
         .padding(.horizontal, 18)
@@ -656,8 +640,8 @@ struct BrainTeaserGameView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .strokeBorder(
                                 inputFocused
-                                    ? Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.6)
-                                    : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                    ? AppTheme.fieldMint.opacity(0.6)
+                                    : AppTheme.fieldOlive.opacity(0.3),
                                 lineWidth: 1.5
                             )
                     )
@@ -669,7 +653,7 @@ struct BrainTeaserGameView: View {
                             .foregroundStyle(.white)
                             .frame(width: 44, height: 44)
                             .background(
-                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing),
                                 in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                             )
                     }
@@ -742,12 +726,12 @@ struct BrainTeaserGameView: View {
                 .background(
                     showAnswer
                         ? AnyShapeStyle(AppTheme.accentSage)
-                        : AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing)),
+                        : AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing)),
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldInk, lineWidth: 2)
                 )
             }
 

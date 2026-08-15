@@ -485,18 +485,18 @@ struct TianGeCell: View {
                 if state == .found, let fix {
                     Text(String(fix))
                         .font(.system(size: size * 0.36, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                         .padding(.horizontal, 3)
                         .padding(.vertical, 1)
                         .background(
                             Capsule()
                                 .fill(Color(red: 223/255, green: 245/255, blue: 231/255))
-                                .overlay(Capsule().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255), lineWidth: 1.2))
+                                .overlay(Capsule().strokeBorder(AppTheme.fieldMint, lineWidth: 1.2))
                         )
                         .offset(y: -size * 0.9)
                         .scaleEffect(fixShow ? 1 : 0.3)
                         .opacity(fixShow ? 1 : 0)
-                        .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), radius: 3, y: 1)
+                        .shadow(color: AppTheme.fieldMint.opacity(0.3), radius: 3, y: 1)
                 }
 
                 if state == .found {
@@ -504,7 +504,7 @@ struct TianGeCell: View {
                         .font(.system(size: 8, weight: .heavy))
                         .foregroundStyle(.white)
                         .frame(width: 14, height: 14)
-                        .background(Circle().fill(Color(red: 76/255, green: 175/255, blue: 125/255)))
+                        .background(Circle().fill(AppTheme.fieldMint))
                         .overlay(Circle().strokeBorder(.white, lineWidth: 1.2))
                         .offset(x: size * 0.45, y: -size * 0.45)
                         .scaleEffect(checkShow ? 1 : 0.2)
@@ -605,7 +605,7 @@ struct HomeworkToast: View {
     private var isHint: Bool { item.kind == .hint }
 
     private var main: Color {
-        isGood ? Color(red: 76/255, green: 175/255, blue: 125/255)
+        isGood ? AppTheme.fieldMint
             : isHint ? Color(red: 245/255, green: 166/255, blue: 35/255)
             : Color(red: 232/255, green: 100/255, blue: 82/255)
     }
@@ -678,13 +678,13 @@ struct HomeworkResultOverlay: View {
 
                     Text("全部找齐！")
                         .font(.system(size: 20, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .opacity(appear ? 1 : 0)
                         .animation(.easeOut(duration: 0.3).delay(0.15), value: appear)
 
                     Text("《\(title)》被小老师改得干干净净")
                         .font(.system(size: 11.5, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                         .opacity(appear ? 1 : 0)
                         .animation(.easeOut(duration: 0.3).delay(0.25), value: appear)
 
@@ -715,13 +715,13 @@ struct HomeworkResultOverlay: View {
 
                     Text("机会用完啦")
                         .font(.system(size: 20, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .opacity(appear ? 1 : 0)
                         .animation(.easeOut(duration: 0.3).delay(0.15), value: appear)
 
                     Text("还有 \(missing.count) 处没找到，看看正确答案：")
                         .font(.system(size: 11.5, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                         .padding(.top, 2)
                         .opacity(appear ? 1 : 0)
                         .animation(.easeOut(duration: 0.3).delay(0.25), value: appear)
@@ -734,13 +734,13 @@ struct HomeworkResultOverlay: View {
                                     .foregroundStyle(Color(red: 232/255, green: 100/255, blue: 82/255))
                                 Image(systemName: "arrow.right")
                                     .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                                    .foregroundStyle(AppTheme.fieldMossLight)
                                 Text(String(item.fix))
                                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                    .foregroundStyle(AppTheme.fieldMint)
                                 Text(item.exp)
                                     .font(.system(size: 9.5, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                    .foregroundStyle(AppTheme.fieldMoss)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.7)
                             }
@@ -771,17 +771,17 @@ struct HomeworkResultOverlay: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
-                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing),
                                 in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                             )
-                            .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), radius: 6, y: 3)
+                            .shadow(color: AppTheme.fieldMint.opacity(0.4), radius: 6, y: 3)
                     }
                     .buttonStyle(.plain)
 
                     Button(action: onPick) {
                         Text("换一篇")
                             .font(.system(size: 13, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
@@ -790,7 +790,7 @@ struct HomeworkResultOverlay: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.32), lineWidth: 2.5)
+                                    .strokeBorder(AppTheme.fieldOlive.opacity(0.32), lineWidth: 2.5)
                             )
                     }
                     .buttonStyle(.plain)
@@ -857,15 +857,7 @@ struct ChineseHomeworkView: View {
 
     private var backgroundGradient: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             TimelineView(.animation) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate
@@ -916,12 +908,12 @@ struct ChineseHomeworkGameView: View {
                 Spacer()
                 Text("找错别字")
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Spacer()
                 Button(action: onRefresh) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                        .foregroundStyle(AppTheme.fieldOliveDeep)
                         .frame(width: 32, height: 32)
                         .background(Circle().fill(Color.white.opacity(0.8)))
                 }
@@ -940,20 +932,20 @@ struct ChineseHomeworkGameView: View {
                         Image(systemName: "chevron.down")
                             .font(.system(size: 8, weight: .bold))
                     }
-                    .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                    .foregroundStyle(AppTheme.fieldOliveDeep)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
                             .fill(Color.white.opacity(0.85))
-                            .overlay(Capsule().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 1.5))
+                            .overlay(Capsule().strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 1.5))
                     )
                 }
                 .buttonStyle(.plain)
 
                 Text("🔍 \(foundCount)/\(session?.totalWrong ?? 0)")
                     .font(.system(size: 11, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
                     .contentTransition(.numericText())
 
                 Spacer()
@@ -993,11 +985,11 @@ struct ChineseHomeworkGameView: View {
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(textbook?.title ?? "正在出题…")
                                     .font(.system(size: 12, weight: .heavy, design: .serif))
-                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .foregroundStyle(AppTheme.fieldInk)
                                     .lineLimit(1)
                                 Text("\(grade) · 田字格找错别字")
                                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                    .foregroundStyle(AppTheme.fieldMoss)
                             }
                             Spacer()
                             Text("语文")
@@ -1016,7 +1008,7 @@ struct ChineseHomeworkGameView: View {
 
                         Text(textbook?.title ?? "")
                             .font(.system(size: 16, weight: .heavy, design: .serif))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                             .padding(.top, 12)
                             .padding(.bottom, 10)
 
@@ -1039,7 +1031,7 @@ struct ChineseHomeworkGameView: View {
                     .fill(Color(red: 255/255, green: 253/255, blue: 246/255))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                     )
             )
         }
@@ -1068,7 +1060,7 @@ struct ChineseHomeworkGameView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("选择文本来源")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 22)
 
@@ -1079,7 +1071,7 @@ struct ChineseHomeworkGameView: View {
                                     .font(.system(size: 16))
                                 Text(group.label)
                                     .font(.system(size: 13, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .foregroundStyle(AppTheme.fieldInk)
                             }
                             .padding(.leading, 4)
 
@@ -1091,19 +1083,19 @@ struct ChineseHomeworkGameView: View {
                                     } label: {
                                         Text(item)
                                             .font(.system(size: 12, weight: .heavy, design: .rounded))
-                                            .foregroundStyle(grade == item ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                                            .foregroundStyle(grade == item ? .white : AppTheme.fieldOliveDeep)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 11)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                                     .fill(grade == item
-                                                        ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                                        ? AppTheme.fieldMint
                                                         : Color(red: 244/255, green: 248/255, blue: 238/255))
                                                     .overlay(
                                                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                                                             .strokeBorder(grade == item
-                                                                ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                                                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                                                ? AppTheme.fieldMint
+                                                                : AppTheme.fieldOlive.opacity(0.3),
                                                                 lineWidth: 1.5)
                                                     )
                                             )
@@ -1153,7 +1145,7 @@ struct ChineseHomeworkGameView: View {
                         .strokeBorder(Color(red: 120/255, green: 160/255, blue: 70/255).opacity(0.5), lineWidth: 1.2)
                     Text(String(ch))
                         .font(.system(size: s * 0.55, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
             }
             .aspectRatio(1, contentMode: .fit)

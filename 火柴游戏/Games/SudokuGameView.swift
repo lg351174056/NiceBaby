@@ -270,7 +270,7 @@ struct SudokuHomeView: View {
                 levelCard(icon: "🪐", name: "星尘启蒙 · 4×4",
                           desc: "适合 5 岁+ · 数字 1-4",
                           meta: "已完成 \(SudokuProgressStore.clearCount(size: 4)) 局" + best(4),
-                          colors: (Color(red: 143/255, green: 227/255, blue: 192/255), Color(red: 76/255, green: 175/255, blue: 125/255)),
+                          colors: (Color(red: 143/255, green: 227/255, blue: 192/255), AppTheme.fieldMint),
                           size: 4)
                 levelCard(icon: "🌠", name: "流星进阶 · 6×6",
                           desc: "适合 7 岁+ · 数字 1-6",

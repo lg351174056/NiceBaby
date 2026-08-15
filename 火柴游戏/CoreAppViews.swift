@@ -23,7 +23,7 @@ struct MainTabView: View {
                 ProfileView()
             }
         }
-        .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+        .tint(AppTheme.fieldMint)
         .onAppear { progress.refreshStreakOnActivity() }
     }
 }
@@ -43,15 +43,7 @@ struct DiscoverView: View {
         NavigationStack(path: $navPath) {
             ZStack {
                 // 蓝天草地背景（固定）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 // 太阳 + 白云 + 书堆猫头鹰
                 fieldSun
@@ -165,7 +157,7 @@ struct DiscoverView: View {
             Text("诗文")
                 .font(.system(size: 30, weight: .heavy, design: .serif))
                 .tracking(3)
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
                 .padding(.top, 6)
             Text("在草地上，翻开一本诗集")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
@@ -195,10 +187,10 @@ struct DiscoverView: View {
                 .modifier(FieldBob(delay: delay))
             Text(stage.rawValue)
                 .font(.system(size: 13, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(stage == .primary ? "小学课文" : stage == .junior ? "初中课文" : "高中课文")
                 .font(.system(size: 8, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -212,29 +204,29 @@ struct DiscoverView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(
-                        active ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                        active ? AppTheme.fieldMint
+                            : AppTheme.fieldOlive.opacity(0.35),
                         lineWidth: active ? 2.5 : 2
                     )
             )
-            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 6, y: 3)
     }
 
     // 分组标题（书摊）
     private func fieldSectionTitle(seal: String, title: String) -> some View {
         HStack(spacing: 8) {
             Rectangle()
-                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .fill(AppTheme.fieldMint)
                 .frame(width: 6, height: 20)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
             Text(title)
                 .font(.system(size: 15, weight: .heavy, design: .serif))
                 .tracking(2)
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Spacer()
             Text("\(PoetryLibraryItem.allItems.count) 卷 · 已读 \(progress.openedPoemIds.count)")
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .padding(.horizontal, AppTheme.paddingScreen)
         .padding(.top, 16)
@@ -264,7 +256,7 @@ struct DiscoverView: View {
                         .frame(width: 52, height: 52)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                                .strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 2)
                         )
                         .overlay(alignment: .topTrailing) {
                             Text("🐦")
@@ -275,10 +267,10 @@ struct DiscoverView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text("今日一诗 · \(poem.title)")
                                 .font(.system(size: 14, weight: .heavy, design: .rounded))
-                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .foregroundStyle(AppTheme.fieldInk)
                             Text(poem.author)
                                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                .foregroundStyle(AppTheme.fieldMoss)
                             Text(firstTwoLines(of: poem))
                                 .font(.system(size: 11, weight: .bold, design: .serif))
                                 .foregroundStyle(Color(red: 59/255, green: 142/255, blue: 165/255))
@@ -287,7 +279,7 @@ struct DiscoverView: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                            .foregroundStyle(AppTheme.fieldMossLight)
                     }
                     .padding(14)
                     .background(
@@ -295,9 +287,9 @@ struct DiscoverView: View {
                             .fill(Color.white.opacity(0.9))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                                    .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                             )
-                            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
                     )
                     .padding(.horizontal, AppTheme.paddingScreen)
                 }
@@ -331,10 +323,10 @@ struct DiscoverView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("小学作文精选")
                     .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("1~6 年级 · 480 篇范文")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 Text("好词好句，学会写作的第一步")
                     .font(.system(size: 11, weight: .bold, design: .serif))
                     .foregroundStyle(Color(red: 180/255, green: 130/255, blue: 50/255))
@@ -343,7 +335,7 @@ struct DiscoverView: View {
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(14)
         .background(
@@ -377,16 +369,16 @@ struct DiscoverView: View {
             .frame(width: 52, height: 52)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("笔神精选")
                     .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("每天一篇好文章 · 妙笔生花")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 Text("积累素材，让作文有话可说")
                     .font(.system(size: 11, weight: .bold, design: .serif))
                     .foregroundStyle(Color(red: 63/255, green: 143/255, blue: 104/255))
@@ -395,7 +387,7 @@ struct DiscoverView: View {
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(14)
         .background(
@@ -403,9 +395,9 @@ struct DiscoverView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 8, y: 4)
         )
         .padding(.horizontal, AppTheme.paddingScreen)
     }
@@ -432,10 +424,10 @@ struct DiscoverView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("AI作文大全")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("小学1-6年级 · 按体裁字数筛选")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -450,7 +442,7 @@ struct DiscoverView: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(Color(red: 100/255, green: 160/255, blue: 220/255).opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 8, y: 4)
         )
         .padding(.horizontal, AppTheme.paddingScreen)
     }
@@ -477,10 +469,10 @@ struct DiscoverView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("小学生必背")
                     .font(.system(size: 13, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("26首 · 配音频视频")
                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -492,7 +484,7 @@ struct DiscoverView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.white.opacity(0.92))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color(red: 200/255, green: 160/255, blue: 80/255).opacity(0.3), lineWidth: 1.5))
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 6, y: 3)
         )
     }
 
@@ -590,17 +582,6 @@ struct DiscoverView: View {
             }
         }
     }
-
-    private struct FieldBob: ViewModifier {
-        let delay: Double
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(y: CGFloat(sin(t * 2.2) * 4.0))
-            }
-        }
-    }
 }
 
 // MARK: - 诗词集子数据模型
@@ -693,23 +674,23 @@ private struct CollectionCardView: View {
             .frame(width: 44, height: 44)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
                     .font(.system(size: 13, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
                 Text("\(poemCount) 首")
                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(12)
         .background(
@@ -717,9 +698,9 @@ private struct CollectionCardView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 6, y: 3)
         )
     }
 }
@@ -1026,15 +1007,7 @@ private struct PoemCollectionContent: View {
         } else {
             ZStack {
                 // 蓝天草地背景（固定）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 // 太阳 + 云 + 叶片小鸟
                 poemSun
@@ -1051,7 +1024,7 @@ private struct PoemCollectionContent: View {
                         }
                         Text(title)
                             .font(.system(size: 18, weight: .heavy, design: .serif))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                             .lineLimit(1)
                     }
                     .padding(.horizontal, 18)
@@ -1076,11 +1049,11 @@ private struct PoemCollectionContent: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                                 Text("国风目录")
                                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .foregroundStyle(AppTheme.fieldInk)
                                 Spacer()
                                 Text("\(readCount) / \(poems.count) 已读")
                                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                    .foregroundStyle(AppTheme.fieldMoss)
                             }
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
@@ -1125,7 +1098,7 @@ private struct PoemCollectionContent: View {
                                         .padding(.vertical, 12)
                                         .background(
                                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                                .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.4), lineWidth: 2)
+                                                .strokeBorder(AppTheme.fieldOlive.opacity(0.4), lineWidth: 2)
                                         )
                                 }
                                 .buttonStyle(.plain)
@@ -1146,12 +1119,12 @@ private struct PoemCollectionContent: View {
                                             .fill(
                                                 LinearGradient(colors: [
                                                     Color(red: 143/255, green: 227/255, blue: 192/255),
-                                                    Color(red: 76/255, green: 175/255, blue: 125/255)
+                                                    AppTheme.fieldMint
                                                 ], startPoint: .leading, endPoint: .trailing)
                                             )
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                                    .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2.5)
+                                                    .strokeBorder(AppTheme.fieldInk, lineWidth: 2.5)
                                             )
                                     )
                                 }
@@ -1202,17 +1175,17 @@ private struct PoemCollectionContent: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text(subtitle)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 HStack(spacing: 12) {
                     Text("📜 \(poems.count) 首")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
                         .foregroundStyle(Color(red: 74/255, green: 124/255, blue: 89/255))
                     Text("🔥 已读 \(readCount)")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                        .foregroundStyle(AppTheme.fieldGold)
                 }
                 .padding(.top, 1)
             }
@@ -1220,7 +1193,7 @@ private struct PoemCollectionContent: View {
             // 叶片 + 小鸟动效
             HStack(spacing: 6) {
                 Text("🍃").font(.system(size: 15)).modifier(PoemLeafSway(delay: 0))
-                Text("🐦").font(.system(size: 14)).modifier(PoemFlutter(delay: 0.9, reverse: false))
+                Text("🐦").font(.system(size: 14)).modifier(FieldFlutter(delay: 0.9, reverse: false))
             }
         }
         .padding(14)
@@ -1229,9 +1202,9 @@ private struct PoemCollectionContent: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .padding(.horizontal, 18)
         .padding(.top, 10)
@@ -1246,7 +1219,7 @@ private struct PoemCollectionContent: View {
                 } label: {
                     Text("全部")
                         .font(.system(size: 12, weight: .heavy, design: .rounded))
-                        .foregroundStyle(selectedType == nil ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                        .foregroundStyle(selectedType == nil ? .white : AppTheme.fieldOliveDeep)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(
@@ -1258,8 +1231,8 @@ private struct PoemCollectionContent: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .strokeBorder(
-                                    selectedType == nil ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                        : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                    selectedType == nil ? AppTheme.fieldInk
+                                        : AppTheme.fieldOlive.opacity(0.35),
                                     lineWidth: 2
                                 )
                         )
@@ -1272,7 +1245,7 @@ private struct PoemCollectionContent: View {
                     } label: {
                         Text(type)
                             .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(selectedType == type ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(selectedType == type ? .white : AppTheme.fieldOliveDeep)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
@@ -1284,8 +1257,8 @@ private struct PoemCollectionContent: View {
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .strokeBorder(
-                                        selectedType == type ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                                        selectedType == type ? AppTheme.fieldInk
+                                            : AppTheme.fieldOlive.opacity(0.35),
                                         lineWidth: 2
                                     )
                             )
@@ -1361,7 +1334,7 @@ private struct PoemCollectionContent: View {
     private var poemFlutter: some View {
         ZStack {
             Text("🍃").font(.system(size: 15)).modifier(PoemLeafSway(delay: 0))
-            Text("🐦").font(.system(size: 14)).modifier(PoemFlutter(delay: 1.2, reverse: true))
+            Text("🐦").font(.system(size: 14)).modifier(FieldFlutter(delay: 1.2, reverse: true))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .padding(.trailing, 24)
@@ -1387,19 +1360,6 @@ private struct PoemCollectionContent: View {
                 let t = timeline.date.timeIntervalSinceReferenceDate + delay
                 content
                     .rotationEffect(.degrees(sin(t * 2.6) * 6), anchor: .bottom)
-            }
-        }
-    }
-
-    private struct PoemFlutter: ViewModifier {
-        let delay: Double
-        let reverse: Bool
-        func body(content: Content) -> some View {
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate + delay
-                content
-                    .offset(x: CGFloat(sin(t * 1.8) * 3), y: CGFloat(sin(t * 2.4) * 4))
-                    .rotationEffect(.degrees((reverse ? -1 : 1) * sin(t * 3) * 6))
             }
         }
     }
@@ -1467,11 +1427,11 @@ private struct PoemCard: View, Equatable {
             VStack(alignment: .leading, spacing: 3) {
                 Text(poem.title)
                     .font(.system(size: 14, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
                 Text("\(poem.author) · \(poem.type)")
                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(1)
                 Text(firstLine)
                     .font(.system(size: 11, weight: .bold, design: .serif))
@@ -1486,7 +1446,7 @@ private struct PoemCard: View, Equatable {
                 if isRead {
                     Text("✓")
                         .font(.system(size: 13, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                 } else if isCurrent {
                     Text("在读")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
@@ -1511,11 +1471,11 @@ private struct PoemCard: View, Equatable {
                         .strokeBorder(
                             isCurrent
                                 ? Color(red: 74/255, green: 124/255, blue: 89/255).opacity(0.6)
-                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25),
+                                : AppTheme.fieldOlive.opacity(0.25),
                             lineWidth: isCurrent ? 2.5 : 2
                         )
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
     }
 
@@ -1651,15 +1611,7 @@ struct ProfileView: View {
         NavigationStack {
             ZStack {
                 // 蓝天草地背景（固定）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 // 白云留在背景层，太阳放进内容坐标，明确位于成长卡 Y 方向上方
                 cloudDecor(x: 0.02, y: 0.10, scale: 1.0, delay: 0)
@@ -1677,7 +1629,7 @@ struct ProfileView: View {
                             Text("我的")
                                 .font(.system(size: 32, weight: .black, design: .serif))
                                 .tracking(5)
-                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .foregroundStyle(AppTheme.fieldInk)
                                 .padding(.top, 6)
 
                             Text("每一滴浇水，都在让知识长大")
@@ -1758,21 +1710,21 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("学习伙伴")
                     .font(.system(size: 18, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text(growHint)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 // 成长条（动画增长）
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.15))
+                            .fill(AppTheme.fieldOlive.opacity(0.15))
                             .frame(height: 10)
                         Capsule()
                             .fill(
                                 LinearGradient(colors: [
                                     Color(red: 143/255, green: 206/255, blue: 143/255),
-                                    Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    AppTheme.fieldMint
                                 ], startPoint: .leading, endPoint: .trailing)
                             )
                             .frame(width: geo.size.width * growProgress, height: 10)
@@ -1790,10 +1742,10 @@ struct ProfileView: View {
                     .modifier(WaterDropFloat())
                 Text("\(progress.streakDays)")
                     .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
                 Text("浇水天数")
                     .font(.system(size: 8, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
         }
         .padding(18)
@@ -1802,9 +1754,9 @@ struct ProfileView: View {
                 .fill(Color.white.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 10, y: 5)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 10, y: 5)
         )
         .padding(.horizontal, AppTheme.paddingScreen)
     }
@@ -1843,10 +1795,10 @@ struct ProfileView: View {
             Text(icon).font(.system(size: 16))
             Text(value)
                 .font(.system(size: 20, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(label)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -1855,9 +1807,9 @@ struct ProfileView: View {
                 .fill(Color.white.opacity(0.85))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 6, y: 3)
         )
     }
 
@@ -1884,15 +1836,15 @@ struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("语音设置")
                         .font(.system(size: 14, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Text("切换朗读音色、语速与情感参数")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                    .foregroundStyle(AppTheme.fieldMossLight)
             }
             .padding(14)
             .background(
@@ -1900,9 +1852,9 @@ struct ProfileView: View {
                     .fill(Color.white.opacity(0.9))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 6, y: 3)
             )
             .padding(.horizontal, AppTheme.paddingScreen)
         }
@@ -1915,17 +1867,17 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Rectangle()
-                    .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .fill(AppTheme.fieldMint)
                     .frame(width: 6, height: 22)
                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 Text("成就花园")
                     .font(.system(size: 18, weight: .heavy, design: .serif))
                     .tracking(2)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Spacer()
                 Text("已开花 \(unlockedCount) / \(Achievement.all.count)")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .padding(.horizontal, AppTheme.paddingScreen)
             .padding(.top, 10)
@@ -1955,10 +1907,10 @@ struct ProfileView: View {
                 .modifier(FlowerSway(delay: Double(index) * 0.3, enabled: unlocked))
             Text(achievement.title)
                 .font(.system(size: 13, weight: .heavy, design: .serif))
-                .foregroundStyle(unlocked ? Color(red: 61/255, green: 74/255, blue: 54/255) : Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(unlocked ? AppTheme.fieldInk : AppTheme.fieldMoss)
             Text(achievement.subtitle + (unlocked ? "" : " · 待发芽"))
                 .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
         }
@@ -1973,11 +1925,11 @@ struct ProfileView: View {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .strokeBorder(
                             unlocked ? Color(red: 110/255, green: 160/255, blue: 90/255).opacity(0.45)
-                                : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.2),
+                                : AppTheme.fieldOlive.opacity(0.2),
                             lineWidth: unlocked ? 2 : 1.5
                         )
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 6, y: 3)
         )
         .opacity(unlocked ? 1 : 0.75)
     }

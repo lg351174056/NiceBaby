@@ -73,7 +73,7 @@ enum ArithmeticGrade: Int, CaseIterable, Identifiable {
         switch self {
         case .one:   return Color(red: 232/255, green: 106/255, blue: 158/255)
         case .two:   return Color(red: 245/255, green: 166/255, blue: 35/255)
-        case .three: return Color(red: 76/255, green: 175/255, blue: 125/255)
+        case .three: return AppTheme.fieldMint
         case .four:  return Color(red: 74/255, green: 163/255, blue: 223/255)
         case .five:  return Color(red: 155/255, green: 123/255, blue: 216/255)
         case .six:   return Color(red: 232/255, green: 100/255, blue: 82/255)
@@ -493,7 +493,7 @@ struct FerrisWheel: View {
         let colors: [Color] = [
             Color(red: 232/255, green: 106/255, blue: 158/255),
             Color(red: 245/255, green: 166/255, blue: 35/255),
-            Color(red: 76/255, green: 175/255, blue: 125/255),
+            AppTheme.fieldMint,
             Color(red: 74/255, green: 163/255, blue: 223/255),
             Color(red: 155/255, green: 123/255, blue: 216/255),
             Color(red: 232/255, green: 100/255, blue: 82/255)
@@ -552,14 +552,14 @@ struct ArithmeticHomeView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "hourglass")
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                     Text("每题限时")
                         .font(.system(size: 17, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Spacer()
                     Text("当前 \(limitOverride > 0 ? "\(limitOverride) 秒" : "按年级默认")")
                         .font(.system(size: 11, weight: .heavy, design: .rounded))
-                        .foregroundStyle(limitOverride > 0 ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                        .foregroundStyle(limitOverride > 0 ? AppTheme.fieldMint
                             : Color(red: 168/255, green: 184/255, blue: 154/255))
                 }
 
@@ -593,10 +593,10 @@ struct ArithmeticHomeView: View {
                     .fill(Color(red: 252/255, green: 250/255, blue: 244/255))
                     .overlay(
                         UnevenRoundedRectangle(topLeadingRadius: 28, topTrailingRadius: 28, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                     )
             )
-            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.2), radius: 18, y: -4)
+            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.2), radius: 18, y: -4)
         }
         .ignoresSafeArea(edges: .bottom)
     }
@@ -623,19 +623,19 @@ struct ArithmeticHomeView: View {
         } label: {
             Text(sec == 0 ? "自动" : "\(sec)s")
                 .font(.system(size: 13, weight: .heavy, design: .rounded))
-                .foregroundStyle(isOn ? .white : Color(red: 74/255, green: 92/255, blue: 66/255))
+                .foregroundStyle(isOn ? .white : AppTheme.fieldOliveDeep)
                 .frame(maxWidth: .infinity)
                 .frame(height: 38)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(isOn
-                            ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+                            ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint],
                                                            startPoint: .topLeading, endPoint: .bottomTrailing))
                             : AnyShapeStyle(Color(red: 238/255, green: 245/255, blue: 230/255)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .strokeBorder(isOn ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                                    : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1.5)
+                                .strokeBorder(isOn ? AppTheme.fieldMint
+                                    : AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
                         )
                 )
         }
@@ -644,15 +644,7 @@ struct ArithmeticHomeView: View {
 
     private var fairBackground: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             // 太阳
             TimelineView(.animation) { timeline in
@@ -718,7 +710,7 @@ struct ArithmeticHomeView: View {
                                 .font(.system(size: 10, weight: .heavy, design: .rounded))
                                 .monospacedDigit()
                         }
-                        .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                        .foregroundStyle(AppTheme.fieldOliveDeep)
                         .padding(.horizontal, 11)
                         .padding(.vertical, 7)
                         .background(
@@ -726,13 +718,13 @@ struct ArithmeticHomeView: View {
                                 .fill(Color.white.opacity(0.8))
                                 .overlay(Capsule().strokeBorder(Color.white.opacity(0.7), lineWidth: 1))
                         )
-                        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 3, y: 1)
+                        .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 3, y: 1)
                     }
                     .buttonStyle(.plain)
                 }
                 Text("口算摩天轮")
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
             }
             .padding(.horizontal, 18)
             .padding(.top, 6)
@@ -744,10 +736,10 @@ struct ArithmeticHomeView: View {
                     .frame(width: 128, height: 138)
                 Text("选一座座舱吧")
                     .font(.system(size: 22, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("每个年级一道风景 · 全部通关就是算术之王 🏆")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .padding(.top, 2)
             .padding(.bottom, 14)
@@ -790,7 +782,7 @@ struct ArithmeticHomeView: View {
 
                 Text("\(grade.rawValue) 年级")
                     .font(.system(size: 10, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text("\(grade.rawValue)")
@@ -806,13 +798,13 @@ struct ArithmeticHomeView: View {
                     ForEach(grade.tags.prefix(2), id: \.self) { tag in
                         Text(tag)
                             .font(.system(size: 8.5, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(AppTheme.fieldOliveDeep)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(
                                 Capsule()
                                     .fill(grade.light.opacity(0.7))
-                                    .overlay(Capsule().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1))
+                                    .overlay(Capsule().strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1))
                             )
                     }
                 }
@@ -846,9 +838,9 @@ struct ArithmeticHomeView: View {
                     .fill(Color.white.opacity(0.9))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2.5)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2.5)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 6, y: 3)
             )
         }
         .buttonStyle(.bouncy)
@@ -1152,19 +1144,19 @@ struct ArithmeticGameView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(Color(red: 74/255, green: 92/255, blue: 66/255))
+                            .foregroundStyle(AppTheme.fieldOliveDeep)
                             .frame(width: 32, height: 32)
                             .background(Color.white.opacity(0.8), in: Circle())
                             .overlay(
                                 Circle().strokeBorder(Color.white.opacity(0.7), lineWidth: 1)
                             )
-                            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 3, y: 1)
+                            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 3, y: 1)
                     }
                     .buttonStyle(.plain)
                 }
                 Text("\(grade.name) · 座舱")
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
             }
             .padding(.horizontal, 18)
             .padding(.top, 6)
@@ -1174,13 +1166,13 @@ struct ArithmeticGameView: View {
             HStack(spacing: 10) {
                 Text("第 \(index + 1)/\(roundLength) 题")
                     .font(.system(size: 12, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .fixedSize()
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
                             .fill(Color.white.opacity(0.75))
-                            .overlay(Capsule().strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1.5))
+                            .overlay(Capsule().strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5))
                         Capsule()
                             .fill(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), grade.color],
                                                  startPoint: .leading, endPoint: .trailing))
@@ -1254,7 +1246,7 @@ struct ArithmeticGameView: View {
 
                     Text(problem.hint)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .padding(.bottom, 12)
@@ -1268,9 +1260,9 @@ struct ArithmeticGameView: View {
                     .fill(Color.white.opacity(0.95))
                     .overlay(
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 3)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 3)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 10, y: 5)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 10, y: 5)
             )
             .padding(.horizontal, 22)
             .padding(.top, 24)
@@ -1343,9 +1335,9 @@ struct ArithmeticGameView: View {
             Text(option)
                 .font(.system(size: 26, weight: .heavy, design: .serif))
                 .foregroundStyle(
-                    isCorrect ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                    isCorrect ? AppTheme.fieldMint
                         : isTappedWrong ? Color(red: 232/255, green: 100/255, blue: 82/255)
-                        : Color(red: 61/255, green: 74/255, blue: 54/255)
+                        : AppTheme.fieldInk
                 )
                 .frame(maxWidth: .infinity)
                 .frame(height: 58)
@@ -1359,14 +1351,14 @@ struct ArithmeticGameView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 .strokeBorder(
-                                    isCorrect ? Color(red: 76/255, green: 175/255, blue: 125/255)
+                                    isCorrect ? AppTheme.fieldMint
                                         : isTappedWrong ? Color(red: 232/255, green: 100/255, blue: 82/255)
-                                        : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.32),
+                                        : AppTheme.fieldOlive.opacity(0.32),
                                     lineWidth: 3
                                 )
                         )
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(feedback != nil)
@@ -1436,11 +1428,11 @@ struct ArithmeticGameView: View {
                 } else if key == "⌫" {
                     Image(systemName: "delete.left")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 } else {
                     Text(key)
                         .font(.system(size: 20, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -1449,20 +1441,20 @@ struct ArithmeticGameView: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
                         isOK
-                            ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+                            ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint],
                                                            startPoint: .topLeading, endPoint: .bottomTrailing))
                             : AnyShapeStyle(Color.white.opacity(0.92))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .strokeBorder(
-                                isOK ? Color(red: 76/255, green: 175/255, blue: 125/255)
-                                    : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                isOK ? AppTheme.fieldMint
+                                    : AppTheme.fieldOlive.opacity(0.3),
                                 lineWidth: 2.5
                             )
                     )
             )
-            .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.06), radius: 4, y: 2)
+            .shadow(color: AppTheme.fieldGrassShadow.opacity(0.06), radius: 4, y: 2)
         }
         .buttonStyle(.plain)
         .disabled(feedback != nil)
@@ -1498,7 +1490,7 @@ struct ArithmeticGameView: View {
                 }
                 Text("本局结算")
                     .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
             }
             .padding(.horizontal, 18)
             .padding(.top, 6)
@@ -1524,18 +1516,18 @@ struct ArithmeticGameView: View {
 
                     Text(starsHeadline)
                         .font(.system(size: 22, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .padding(.top, 10)
 
                     Text("座舱 \(grade.rawValue) · \(grade.name) · 答对 \(result.correct)/\(result.total) 题")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                         .padding(.top, 6)
 
                     // 数据卡
                     HStack(spacing: 10) {
-                        resultStat(value: "\(Int(result.accuracy * 100))%", label: "正确率", color: Color(red: 76/255, green: 175/255, blue: 125/255))
-                        resultStat(value: fmtElapsed(result.elapsed), label: "用时", color: Color(red: 61/255, green: 74/255, blue: 54/255))
+                        resultStat(value: "\(Int(result.accuracy * 100))%", label: "正确率", color: AppTheme.fieldMint)
+                        resultStat(value: fmtElapsed(result.elapsed), label: "用时", color: AppTheme.fieldInk)
                         resultStat(value: "×\(result.bestCombo)", label: "最高连击", color: Color(red: 232/255, green: 106/255, blue: 158/255))
                     }
                     .padding(.top, 16)
@@ -1551,7 +1543,7 @@ struct ArithmeticGameView: View {
                                     .foregroundStyle(Color(red: 181/255, green: 118/255, blue: 10/255))
                                 Text("单局连击达到 5 次即可获得")
                                     .font(.system(size: 9, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                    .foregroundStyle(AppTheme.fieldMoss)
                             }
                             Spacer()
                             Text("NEW")
@@ -1579,7 +1571,7 @@ struct ArithmeticGameView: View {
                             HStack {
                                 Text("错题回看")
                                     .font(.system(size: 12, weight: .heavy, design: .serif))
-                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .foregroundStyle(AppTheme.fieldInk)
                                 Spacer()
                                 Text("\(result.mistakes.count) 题")
                                     .font(.system(size: 9, weight: .heavy, design: .rounded))
@@ -1599,7 +1591,7 @@ struct ArithmeticGameView: View {
                                         .background(Circle().fill(Color(red: 232/255, green: 100/255, blue: 82/255)))
                                     Text(mistake.text)
                                         .font(.system(size: 13, weight: .heavy, design: .rounded))
-                                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                        .foregroundStyle(AppTheme.fieldInk)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.6)
                                     if mistake.my != "超时" {
@@ -1614,11 +1606,11 @@ struct ArithmeticGameView: View {
                                     }
                                     Text("✓ \(mistake.correct)")
                                         .font(.system(size: 12, weight: .heavy, design: .rounded))
-                                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                        .foregroundStyle(AppTheme.fieldMint)
                                     Spacer(minLength: 0)
                                     Text(mistake.hint)
                                         .font(.system(size: 8.5, weight: .bold, design: .rounded))
-                                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                        .foregroundStyle(AppTheme.fieldMoss)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.6)
                                 }
@@ -1631,7 +1623,7 @@ struct ArithmeticGameView: View {
                                 .fill(Color.white.opacity(0.92))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2.5)
+                                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2.5)
                                 )
                         )
                         .padding(.top, 14)
@@ -1648,11 +1640,11 @@ struct ArithmeticGameView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 13)
                                 .background(
-                                    LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+                                    LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint],
                                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                                     in: RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 )
-                                .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), radius: 8, y: 4)
+                                .shadow(color: AppTheme.fieldMint.opacity(0.4), radius: 8, y: 4)
                         }
                         .buttonStyle(.plain)
 
@@ -1662,7 +1654,7 @@ struct ArithmeticGameView: View {
                             } label: {
                                 Text("换座舱")
                                     .font(.system(size: 12, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .foregroundStyle(AppTheme.fieldInk)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 12)
                                     .background(
@@ -1671,7 +1663,7 @@ struct ArithmeticGameView: View {
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.32), lineWidth: 2.5)
+                                            .strokeBorder(AppTheme.fieldOlive.opacity(0.32), lineWidth: 2.5)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -1681,7 +1673,7 @@ struct ArithmeticGameView: View {
                             } label: {
                                 Text("回到益智")
                                     .font(.system(size: 12, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                    .foregroundStyle(AppTheme.fieldInk)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 12)
                                     .background(
@@ -1690,7 +1682,7 @@ struct ArithmeticGameView: View {
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.32), lineWidth: 2.5)
+                                            .strokeBorder(AppTheme.fieldOlive.opacity(0.32), lineWidth: 2.5)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -1720,7 +1712,7 @@ struct ArithmeticGameView: View {
                 .foregroundStyle(color)
             Text(label)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
@@ -1729,7 +1721,7 @@ struct ArithmeticGameView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2.5)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2.5)
                 )
         )
     }
@@ -1779,16 +1771,16 @@ private struct ProblemExprView: View {
             VStack(spacing: 2) {
                 Text(num)
                 Rectangle()
-                    .fill(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .fill(AppTheme.fieldInk)
                     .frame(height: 2.5)
                 Text(den)
             }
             .font(.system(size: size * 0.55, weight: .heavy, design: .serif))
-            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+            .foregroundStyle(AppTheme.fieldInk)
         } else {
             Text(token)
                 .font(.system(size: size, weight: .heavy, design: .serif))
-                .foregroundStyle(token == "□" ? accent : Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(token == "□" ? accent : AppTheme.fieldInk)
         }
     }
 
@@ -1810,7 +1802,7 @@ private struct FeedbackPopView: View {
         return false
     }
 
-    private var good: Color { Color(red: 76/255, green: 175/255, blue: 125/255) }
+    private var good: Color { AppTheme.fieldMint }
     private var bad: Color { Color(red: 232/255, green: 100/255, blue: 82/255) }
     private var main: Color { isCorrect ? good : bad }
 

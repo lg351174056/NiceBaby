@@ -12,15 +12,7 @@ struct IdiomEncyclopediaView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             VStack(spacing: 0) {
                 ZStack {
@@ -30,7 +22,7 @@ struct IdiomEncyclopediaView: View {
                     }
                     Text("成语百科")
                         .font(.system(size: 16, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -40,10 +32,10 @@ struct IdiomEncyclopediaView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                     TextField("搜索成语…", text: $searchText)
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     if !searchText.isEmpty {
                         Button { searchText = "" } label: {
                             Image(systemName: "xmark.circle.fill")
@@ -56,7 +48,7 @@ struct IdiomEncyclopediaView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .background(Color.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5))
                 .padding(.horizontal, 18)
                 .padding(.bottom, 8)
 
@@ -77,7 +69,7 @@ struct IdiomEncyclopediaView: View {
                                 if filteredIdioms.count > 200 {
                                     Text("共 \(filteredIdioms.count) 条，输入关键字缩小范围")
                                         .font(.system(size: 11, weight: .medium, design: .rounded))
-                                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                        .foregroundStyle(AppTheme.fieldMoss)
                                         .padding(.vertical, 12)
                                 }
                             }
@@ -131,7 +123,7 @@ struct IdiomEncyclopediaView: View {
                 HStack(spacing: 6) {
                     Text(idiom.name)
                         .font(.system(size: 15, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     if IdiomEncyclopediaStore.shared.hasStory(idiom.name) {
                         Text("故事")
                             .font(.system(size: 8, weight: .heavy, design: .rounded))
@@ -143,7 +135,7 @@ struct IdiomEncyclopediaView: View {
                 }
                 Text(idiom.meaning)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(2)
             }
             Spacer()
@@ -156,7 +148,7 @@ struct IdiomEncyclopediaView: View {
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color.white.opacity(0.9))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5))
         )
     }
 
@@ -182,13 +174,13 @@ private struct IdiomEncyclopediaDetailSheet: View {
                 HStack {
                     Text(idiom.name)
                         .font(.system(size: 28, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .tracking(2)
                     Spacer()
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                             .frame(width: 30, height: 30)
                             .background(Color(red: 240/255, green: 238/255, blue: 232/255), in: Circle())
                     }
@@ -199,7 +191,7 @@ private struct IdiomEncyclopediaDetailSheet: View {
                 if let pinyin = rich.pinyin, !pinyin.isEmpty {
                     Text(pinyin)
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                 }
 
                 // 释义
@@ -228,7 +220,7 @@ private struct IdiomEncyclopediaDetailSheet: View {
                         }
                         Text(story)
                             .font(.system(size: 13.5, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                             .lineSpacing(5)
                     }
                     .padding(14)
@@ -249,10 +241,10 @@ private struct IdiomEncyclopediaDetailSheet: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.system(size: 11, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
             Text(content)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
                 .lineSpacing(4)
         }
     }
@@ -370,9 +362,9 @@ private struct SideIndexBar: View {
             ForEach(letters, id: \.self) { letter in
                 Text(letter)
                     .font(.system(size: 10, weight: .heavy, design: .rounded))
-                    .foregroundStyle(selected == letter ? Color.white : Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(selected == letter ? Color.white : AppTheme.fieldMint)
                     .frame(width: 18, height: 18)
-                    .background(selected == letter ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color.clear, in: Circle())
+                    .background(selected == letter ? AppTheme.fieldMint : Color.clear, in: Circle())
             }
         }
         .padding(.vertical, 4)

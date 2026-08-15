@@ -406,7 +406,7 @@ struct PoetryCompleteGameView: View {
     private let kind: GameKind = .poetryComplete
     /// 竹青主色（书野营地竹青风，替代墨紫 palette）
     private let bamboo: (Color, Color) = (
-        Color(red: 76/255, green: 175/255, blue: 125/255),
+        AppTheme.fieldMint,
         Color(red: 126/255, green: 211/255, blue: 160/255)
     )
 
@@ -418,15 +418,7 @@ struct PoetryCompleteGameView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             bambooSun
             bambooCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -442,10 +434,10 @@ struct PoetryCompleteGameView: View {
                     VStack(spacing: 2) {
                         Text(kind.title)
                             .font(.system(size: 16, weight: .heavy, design: .serif))
-                            .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                            .foregroundStyle(AppTheme.fieldInk)
                         Text("第 \(min(currentIndex + 1, totalQuestions)) / \(totalQuestions) 题 · 答对 \(correctCount)")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
                 }
                 .padding(.horizontal, 18)

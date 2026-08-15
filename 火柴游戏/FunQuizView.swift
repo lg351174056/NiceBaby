@@ -452,15 +452,7 @@ struct FunQuizHomeView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             homeSun
             homeCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -475,7 +467,7 @@ struct FunQuizHomeView: View {
                     }
                     Text("趣味答题")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -539,7 +531,7 @@ struct FunQuizHomeView: View {
     private var heroCard: some View {
         ZStack(alignment: .bottomTrailing) {
             LinearGradient(
-                colors: [Color(red: 143/255, green: 227/255, blue: 192/255), Color(red: 76/255, green: 175/255, blue: 125/255), Color(red: 46/255, green: 125/255, blue: 91/255)],
+                colors: [Color(red: 143/255, green: 227/255, blue: 192/255), AppTheme.fieldMint, Color(red: 46/255, green: 125/255, blue: 91/255)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -657,9 +649,9 @@ struct FunQuizHomeView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 6, y: 3)
         )
     }
 
@@ -775,15 +767,7 @@ struct FunQuizPlayView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             playSun
             playCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -800,16 +784,16 @@ struct FunQuizPlayView: View {
                         } label: {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                                .foregroundStyle(AppTheme.fieldMint)
                                 .frame(width: 36, height: 36)
                                 .background(Color.white.opacity(0.9), in: Circle())
-                                .overlay(Circle().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), lineWidth: 2))
+                                .overlay(Circle().strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 2))
                         }
                         .buttonStyle(.plain)
                     }
                     Text(category.title)
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -931,9 +915,9 @@ struct FunQuizPlayView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 8, y: 4)
         )
     }
 
@@ -1029,9 +1013,9 @@ struct FunQuizPlayView: View {
                 .fill(Color.white.opacity(0.94))
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.28), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.28), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 8, y: 4)
         )
     }
 
@@ -1150,7 +1134,7 @@ struct FunQuizPlayView: View {
                 .padding(.vertical, 14)
                 .background(
                     LinearGradient(
-                        colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+                        colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint],
                         startPoint: .leading,
                         endPoint: .trailing
                     ),
@@ -1158,7 +1142,7 @@ struct FunQuizPlayView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldInk, lineWidth: 2)
                 )
             }
             .buttonStyle(.plain)

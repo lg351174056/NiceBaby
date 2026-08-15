@@ -194,15 +194,7 @@ struct DictionaryGameView: View {
     var body: some View {
         ZStack {
                 // 蓝天草地背景（书野营地竹青风）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 dictSun
                 dictCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -218,10 +210,10 @@ struct DictionaryGameView: View {
                         VStack(spacing: 2) {
                             Text("汉语词典")
                                 .font(.system(size: 16, weight: .heavy, design: .serif))
-                                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                                .foregroundStyle(AppTheme.fieldInk)
                             Text("\(store.entries.count) 个汉字")
                                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                .foregroundStyle(AppTheme.fieldMoss)
                         }
                     }
                     .padding(.horizontal, 18)
@@ -300,9 +292,9 @@ struct DictionaryGameView: View {
         .background(Color.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 2)
+                .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
         )
-        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 4, y: 2)
+        .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 4, y: 2)
     }
     
     // MARK: - 拼音索引条
@@ -328,13 +320,13 @@ struct DictionaryGameView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .fill(selectedLetter == letter
-                                      ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                      ? AnyShapeStyle(LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing))
                                       : AnyShapeStyle(Color.white.opacity(0.85)))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                         .strokeBorder(selectedLetter == letter
-                                            ? Color(red: 61/255, green: 74/255, blue: 54/255)
-                                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3),
+                                            ? AppTheme.fieldInk
+                                            : AppTheme.fieldOlive.opacity(0.3),
                                             lineWidth: 2)
                                 )
                         )
@@ -535,7 +527,7 @@ private struct DictEntryRow: View, Equatable {
                 HStack(spacing: 6) {
                     Text(entry.pinyin)
                         .font(.system(size: 15, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
 
                     if !entry.radicals.isEmpty {
                         HStack(spacing: 3) {
@@ -578,17 +570,17 @@ private struct DictEntryRow: View, Equatable {
                     .foregroundStyle(.white)
                     .frame(width: 36, height: 36)
                     .background(
-                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), Color(red: 76/255, green: 175/255, blue: 125/255)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        LinearGradient(colors: [Color(red: 126/255, green: 211/255, blue: 160/255), AppTheme.fieldMint], startPoint: .topLeading, endPoint: .bottomTrailing),
                         in: Circle()
                     )
-                    .overlay(Circle().strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 1.5))
-                    .shadow(color: Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.35), radius: 4, y: 2)
+                    .overlay(Circle().strokeBorder(AppTheme.fieldInk, lineWidth: 1.5))
+                    .shadow(color: AppTheme.fieldMint.opacity(0.35), radius: 4, y: 2)
             }
             .buttonStyle(.plain)
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(12)
         .background(
@@ -596,9 +588,9 @@ private struct DictEntryRow: View, Equatable {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.28), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.28), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
         .padding(.horizontal, 18)
         .padding(.vertical, 6)
@@ -616,15 +608,7 @@ struct DictDetailView: View {
         NavigationStack {
             ZStack {
                 // 蓝天草地背景（书野营地竹青风）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 detailSun
                 detailCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -669,9 +653,9 @@ struct DictDetailView: View {
                                 .fill(Color.white.opacity(0.92))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                                 )
-                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 8, y: 4)
+                                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 8, y: 4)
                         )
                         .padding(.horizontal, 18)
                         
@@ -717,9 +701,9 @@ struct DictDetailView: View {
                                 .fill(Color.white.opacity(0.92))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.28), lineWidth: 2)
+                                        .strokeBorder(AppTheme.fieldOlive.opacity(0.28), lineWidth: 2)
                                 )
-                                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
                         )
                         .padding(.horizontal, 18)
                         
@@ -766,7 +750,7 @@ struct DictDetailView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                 )
         )
     }

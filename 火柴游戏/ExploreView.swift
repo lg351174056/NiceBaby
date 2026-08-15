@@ -14,15 +14,7 @@ struct ExploreView: View {
         NavigationStack(path: $navPath) {
             ZStack {
                 // 蓝天草地背景（固定）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 // 太阳 + 白云 + 草地装饰
                 sunDecoration
@@ -73,7 +65,7 @@ struct ExploreView: View {
             Text("探索")
                 .font(.system(size: 32, weight: .black, design: .serif))
                 .tracking(5)
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
                 .padding(.top, 6)
 
             Text("背上小背包，向未知出发")
@@ -228,7 +220,7 @@ struct ExploreView: View {
             Text(label)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .tracking(1)
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -237,9 +229,9 @@ struct ExploreView: View {
                 .fill(Color.white.opacity(0.85))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.1), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.1), radius: 6, y: 3)
         )
     }
 
@@ -389,18 +381,18 @@ struct ExploreView: View {
                 Text(vol.name)
                     .font(.system(size: 15, weight: .heavy, design: .serif))
                     .tracking(2)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Rectangle()
                     .fill(
                         LinearGradient(colors: [
-                            Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            AppTheme.fieldOlive.opacity(0.35),
                             .clear
                         ], startPoint: .leading, endPoint: .trailing)
                     )
                     .frame(height: 2)
                 Text("\(vol.items.count) 处探索")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
             .padding(.horizontal, horizontalPadding)
             .padding(.top, 18)
@@ -443,16 +435,16 @@ struct ExploreView: View {
             .frame(width: 46, height: 46)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                    .strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 2)
             )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
                     .font(.system(size: 14, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text(item.subtitle)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineLimit(1)
                 if !item.meta.isEmpty {
                     Text(item.meta)
@@ -479,9 +471,9 @@ struct ExploreView: View {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
         )
         .overlay(alignment: .topTrailing) {
             if !item.medal.isEmpty {
@@ -512,11 +504,11 @@ struct ExploreView: View {
                 Text("收集图鉴")
                     .font(.system(size: 15, weight: .heavy, design: .serif))
                     .tracking(2)
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Rectangle()
                     .fill(
                         LinearGradient(colors: [
-                            Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35),
+                            AppTheme.fieldOlive.opacity(0.35),
                             .clear
                         ], startPoint: .leading, endPoint: .trailing)
                     )
@@ -552,7 +544,7 @@ struct ExploreView: View {
                 Circle()
                     .strokeBorder(
                         got ? Color(red: 110/255, green: 138/255, blue: 62/255)
-                            : Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.45),
+                            : AppTheme.fieldOlive.opacity(0.45),
                         style: StrokeStyle(lineWidth: 2, dash: got ? [] : [4, 3])
                     )
             )

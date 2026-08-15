@@ -27,15 +27,7 @@ struct XiaoxueBibeiView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             VStack(spacing: 0) {
                 ZStack {
@@ -45,7 +37,7 @@ struct XiaoxueBibeiView: View {
                     }
                     Text("小学生必背")
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 6)
@@ -92,11 +84,11 @@ struct XiaoxueBibeiView: View {
         } label: {
             Text(label)
                 .font(.system(size: 11, weight: .heavy, design: .rounded))
-                .foregroundStyle(isSelected ? .white : Color(red: 76/255, green: 175/255, blue: 125/255))
+                .foregroundStyle(isSelected ? .white : AppTheme.fieldMint)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(isSelected ? Color(red: 76/255, green: 175/255, blue: 125/255) : Color.white.opacity(0.8), in: Capsule())
-                .overlay(Capsule().strokeBorder(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.4), lineWidth: 1))
+                .background(isSelected ? AppTheme.fieldMint : Color.white.opacity(0.8), in: Capsule())
+                .overlay(Capsule().strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
@@ -119,11 +111,11 @@ struct XiaoxueBibeiView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(poem.title)
                     .font(.system(size: 14, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                 HStack(spacing: 8) {
                     Text(poem.grade)
                         .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                     if !poem.video.isEmpty {
                         Label("视频", systemImage: "play.rectangle.fill")
                             .font(.system(size: 8, weight: .heavy, design: .rounded))
@@ -132,7 +124,7 @@ struct XiaoxueBibeiView: View {
                     if !poem.sounds.isEmpty {
                         Label("音频", systemImage: "speaker.wave.2.fill")
                             .font(.system(size: 8, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .foregroundStyle(AppTheme.fieldMint)
                     }
                 }
             }
@@ -145,7 +137,7 @@ struct XiaoxueBibeiView: View {
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color.white.opacity(0.92))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5))
         )
     }
 
@@ -173,12 +165,12 @@ private struct BibeiDetailSheet: View {
                 HStack {
                     Text(poem.title)
                         .font(.system(size: 26, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     Spacer()
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                             .frame(width: 30, height: 30)
                             .background(Color(red: 240/255, green: 238/255, blue: 232/255), in: Circle())
                     }
@@ -187,7 +179,7 @@ private struct BibeiDetailSheet: View {
 
                 Text(poem.grade)
                     .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                    .foregroundStyle(AppTheme.fieldMint)
 
                 // 配图
                 if let picURL = poem.pics.first, let url = URL(string: picURL) {
@@ -221,7 +213,7 @@ private struct BibeiDetailSheet: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 10)
-                                .background(Color(red: 76/255, green: 175/255, blue: 125/255), in: Capsule())
+                                .background(AppTheme.fieldMint, in: Capsule())
                         }
                         .buttonStyle(.plain)
                     }

@@ -3,18 +3,18 @@ import SwiftUI
 // MARK: - 书野竹青配色（AI 作文）
 
 fileprivate enum ZuowenStyle {
-    static let bambooGreen = Color(red: 76/255, green: 175/255, blue: 125/255)
+    static let bambooGreen = AppTheme.fieldMint
     static let bambooGreenLight = Color(red: 126/255, green: 211/255, blue: 160/255)
-    static let inkGreen = Color(red: 61/255, green: 74/255, blue: 54/255)
+    static let inkGreen = AppTheme.fieldInk
     static let deepGreen = Color(red: 46/255, green: 125/255, blue: 91/255)
-    static let sage = Color(red: 138/255, green: 154/255, blue: 122/255)
-    static let strokeGreen = Color(red: 110/255, green: 140/255, blue: 90/255)
-    static let chipText = Color(red: 74/255, green: 92/255, blue: 66/255)
+    static let sage = AppTheme.fieldMoss
+    static let strokeGreen = AppTheme.fieldOlive
+    static let chipText = AppTheme.fieldOliveDeep
     static let gold = Color(red: 176/255, green: 130/255, blue: 50/255)
     static let goldSoft = Color(red: 245/255, green: 200/255, blue: 107/255)
-    static let iceBlue = Color(red: 190/255, green: 227/255, blue: 245/255)
-    static let mint = Color(red: 220/255, green: 242/255, blue: 220/255)
-    static let grass = Color(red: 207/255, green: 235/255, blue: 196/255)
+    static let iceBlue = AppTheme.fieldSky
+    static let mint = AppTheme.fieldSkyMid
+    static let grass = AppTheme.fieldGrass
 
     static let skyGradient = LinearGradient(
         colors: [iceBlue, mint, grass],
@@ -148,7 +148,7 @@ struct AIZuowenView: View {
                         .strokeBorder(ZuowenStyle.bambooGreen.opacity(0.3), lineWidth: 2)
                 )
         )
-        .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 14, y: 5)
+        .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 14, y: 5)
         .padding(.horizontal, 18)
         .padding(.top, 10)
     }
@@ -404,7 +404,7 @@ struct AIZuowenView: View {
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(12)
         .background(
@@ -481,15 +481,16 @@ struct ZuowenDetailView: View {
     private let paperBg = Color(red: 251/255, green: 248/255, blue: 238/255)
 
     private let cols = 13
-    private var cellSize: CGFloat { (UIScreen.main.bounds.width - 36 - 24) / CGFloat(cols) }
 
     var body: some View {
-        ZStack {
-            ZuowenStyle.skyGradient.ignoresSafeArea()
+        GeometryReader { geo in
+            ZStack {
+                ZuowenStyle.skyGradient.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 10) {
                     // 方格纸
+                    let cellSize = (geo.size.width - 36 - 24) / CGFloat(cols)
                     let rows = buildRows(cols: cols)
                     VStack(spacing: 0) {
                         ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
@@ -532,6 +533,7 @@ struct ZuowenDetailView: View {
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
+        }
         }
     }
 

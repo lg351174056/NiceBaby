@@ -8,15 +8,7 @@ struct VideoSeriesListView: View {
     var body: some View {
         ZStack {
             // 蓝天草地背景（书野营地竹青风）
-            LinearGradient(
-                colors: [
-                    Color(red: 190/255, green: 227/255, blue: 245/255),
-                    Color(red: 220/255, green: 242/255, blue: 220/255),
-                    Color(red: 207/255, green: 235/255, blue: 196/255)
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            FieldBackground()
 
             seriesSun
             seriesCloud(x: 0.02, y: 0.12, scale: 1.0, delay: 0)
@@ -31,7 +23,7 @@ struct VideoSeriesListView: View {
                     }
                     Text(category.name)
                         .font(.system(size: 18, weight: .heavy, design: .serif))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                         .lineLimit(1)
                 }
                 .padding(.horizontal, 18)
@@ -41,7 +33,7 @@ struct VideoSeriesListView: View {
                 Group {
                     if isLoading {
                         ProgressView("正在加载...")
-                            .tint(Color(red: 76/255, green: 175/255, blue: 125/255))
+                            .tint(AppTheme.fieldMint)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if seriesList.isEmpty {
                         VStack(spacing: 12) {
@@ -49,7 +41,7 @@ struct VideoSeriesListView: View {
                                 .font(.system(size: 40))
                                 .foregroundStyle(Color(red: 168/255, green: 184/255, blue: 154/255))
                             Text("暂无系列")
-                                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                                .foregroundStyle(AppTheme.fieldMoss)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
@@ -126,17 +118,17 @@ struct VideoSeriesListView: View {
     private func sectionTitle(_ title: String, countText: String?) -> some View {
         HStack(spacing: 8) {
             Rectangle()
-                .fill(Color(red: 76/255, green: 175/255, blue: 125/255))
+                .fill(AppTheme.fieldMint)
                 .frame(width: 6, height: 20)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
             Text(title)
                 .font(.system(size: 15, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Spacer()
             if let countText {
                 Text(countText)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
         }
         .padding(.horizontal, 18)
@@ -215,7 +207,7 @@ private struct FeaturedSeriesCard: View, Equatable {
 
     private var placeholderGradient: LinearGradient {
         LinearGradient(
-            colors: [Color(red: 189/255, green: 232/255, blue: 211/255), Color(red: 76/255, green: 175/255, blue: 125/255)],
+            colors: [Color(red: 189/255, green: 232/255, blue: 211/255), AppTheme.fieldMint],
             startPoint: .topLeading, endPoint: .bottomTrailing
         )
     }
@@ -263,11 +255,11 @@ private struct FeaturedSeriesCard: View, Equatable {
             VStack(alignment: .leading, spacing: 2) {
                 Text(series.name)
                     .font(.system(size: 13, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
                 Text("\(series.episodeCount) 集")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                    .foregroundStyle(AppTheme.fieldMoss)
             }
         }
         .frame(width: 160)
@@ -294,7 +286,7 @@ private struct SeriesRowCard: View, Equatable {
                             .fill(Color(red: 189/255, green: 232/255, blue: 211/255))
                             .overlay(
                                 Image(systemName: "film")
-                                    .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.6))
+                                    .foregroundStyle(AppTheme.fieldMint.opacity(0.6))
                             )
                     }
                     .frame(width: 72, height: 48)
@@ -305,7 +297,7 @@ private struct SeriesRowCard: View, Equatable {
                         .frame(width: 72, height: 48)
                         .overlay(
                             Image(systemName: "play.rectangle.fill")
-                                .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255).opacity(0.6))
+                                .foregroundStyle(AppTheme.fieldMint.opacity(0.6))
                         )
                 }
             }
@@ -313,12 +305,12 @@ private struct SeriesRowCard: View, Equatable {
             VStack(alignment: .leading, spacing: 4) {
                 Text(series.name)
                     .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
                 HStack(spacing: 8) {
                     Label("\(series.episodeCount) 集", systemImage: "film.stack")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                        .foregroundStyle(AppTheme.fieldMoss)
                     if series.isVip {
                         Text("VIP")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -335,7 +327,7 @@ private struct SeriesRowCard: View, Equatable {
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
         .padding(12)
         .background(
@@ -343,9 +335,9 @@ private struct SeriesRowCard: View, Equatable {
                 .fill(Color.white.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.25), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 5, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 5, y: 3)
         )
     }
 }

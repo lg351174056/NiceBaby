@@ -78,15 +78,7 @@ struct HomeView: View {
         NavigationStack {
             ZStack {
                 // 蓝天草地背景（固定）
-                LinearGradient(
-                    colors: [
-                        Color(red: 190/255, green: 227/255, blue: 245/255),
-                        Color(red: 220/255, green: 242/255, blue: 220/255),
-                        Color(red: 207/255, green: 235/255, blue: 196/255)
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                FieldBackground()
 
                 // 太阳 + 彩虹 + 云朵 + 风筝（背景层装饰）
                 sunDecor
@@ -159,7 +151,7 @@ struct HomeView: View {
             Text("\(greeting)，小火柴！")
                 .font(.system(size: 30, weight: .heavy, design: .serif))
                 .tracking(1)
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
                 .padding(.top, 6)
 
             Text("彩虹桥搭好了，今天从哪边开始玩？")
@@ -172,7 +164,7 @@ struct HomeView: View {
                 Text("🪙")
                 Text("\(progress.streakDays > 0 ? progress.streakDays * 60 + 1280 : 1280)")
                     .font(.system(size: 12, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 176/255, green: 138/255, blue: 62/255))
+                    .foregroundStyle(AppTheme.fieldGold)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 5)
@@ -222,10 +214,10 @@ struct HomeView: View {
             Text(icon).font(.system(size: 16))
             Text(value)
                 .font(.system(size: 20, weight: .heavy, design: .serif))
-                .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(label)
                 .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                .foregroundStyle(AppTheme.fieldMoss)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -234,16 +226,16 @@ struct HomeView: View {
                 .fill(Color.white.opacity(0.85))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.08), radius: 6, y: 3)
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 6, y: 3)
         )
     }
 
     // MARK: - 背景装饰（太阳/彩虹/云/风筝）
 
     private var sunDecor: some View {
-        SunBreath()
+        FieldSun()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.trailing, 20)
             .padding(.top, 30)
@@ -256,7 +248,7 @@ struct HomeView: View {
             let colors: [(Color, CGFloat)] = [
                 (Color(red: 255/255, green: 107/255, blue: 107/255), 52),
                 (Color(red: 255/255, green: 201/255, blue: 61/255), 60),
-                (Color(red: 76/255, green: 175/255, blue: 125/255), 68),
+                (AppTheme.fieldMint, 68),
                 (Color(red: 125/255, green: 249/255, blue: 255/255), 76),
             ]
             for (color, radius) in colors {
@@ -278,7 +270,7 @@ struct HomeView: View {
     }
 
     private func cloudDecor(x: CGFloat, y: CGFloat, scale: CGFloat, delay: Double) -> some View {
-        CloudDrift(scale: scale, delay: delay)
+        FieldCloud(scale: scale, delay: delay)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.leading, 390 * x - 10)
             .padding(.top, 390 * y)
@@ -307,7 +299,7 @@ struct HomeView: View {
                 LinearGradient(
                     colors: [
                         Color(red: 143/255, green: 227/255, blue: 192/255),
-                        Color(red: 76/255, green: 175/255, blue: 125/255)
+                        AppTheme.fieldMint
                     ],
                     startPoint: .topLeading, endPoint: .bottomTrailing
                 )
@@ -324,19 +316,19 @@ struct HomeView: View {
                     Text(done ? "今日已完成" : "每日一题")
                         .font(.system(size: 10, weight: .heavy, design: .rounded))
                         .tracking(1)
-                        .foregroundStyle(Color(red: 76/255, green: 175/255, blue: 125/255))
+                        .foregroundStyle(AppTheme.fieldMint)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(Color.white, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2)
+                                .strokeBorder(AppTheme.fieldInk, lineWidth: 2)
                         )
 
                     Text(done ? "今天的等式已经解开啦" : "移动一根火柴\n让等式变对！")
                         .font(.system(size: 22, weight: .heavy, design: .serif))
                         .foregroundStyle(.white)
-                        .shadow(color: Color(red: 61/255, green: 74/255, blue: 54/255).opacity(0.25), radius: 2, y: 2)
+                        .shadow(color: AppTheme.fieldInk.opacity(0.25), radius: 2, y: 2)
                         .padding(.top, 10)
 
                     Text(done ? "明天再来挑战 · 奖励金币已到账" : "\(matchstickHeroSubtitle) · 答对得 50 金币")
@@ -357,7 +349,7 @@ struct HomeView: View {
                         .frame(height: 10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 2)
+                                .strokeBorder(AppTheme.fieldInk, lineWidth: 2)
                         )
                         Text("\(Int(matchProgress * 100))%")
                             .font(.system(size: 11, weight: .heavy, design: .rounded))
@@ -372,7 +364,7 @@ struct HomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(Color(red: 61/255, green: 74/255, blue: 54/255), lineWidth: 3)
+                    .strokeBorder(AppTheme.fieldInk, lineWidth: 3)
             )
             .shadow(color: Color(red: 60/255, green: 80/255, blue: 50/255).opacity(0.3), radius: 10, y: 5)
         }
@@ -418,17 +410,17 @@ struct HomeView: View {
                 .frame(width: 52, height: 52)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.35), lineWidth: 2)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.35), lineWidth: 2)
                 )
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("今日一诗 · \(dailyPoem?.title ?? "")")
                         .font(.system(size: 14, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 61/255, green: 74/255, blue: 54/255))
+                        .foregroundStyle(AppTheme.fieldInk)
                     if let p = dailyPoem {
                         Text(p.author)
                             .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 138/255, green: 154/255, blue: 122/255))
+                            .foregroundStyle(AppTheme.fieldMoss)
                         Text(dailyPoemFirstLines)
                             .font(.system(size: 11, weight: .bold, design: .serif))
                             .foregroundStyle(Color(red: 59/255, green: 142/255, blue: 165/255))
@@ -438,7 +430,7 @@ struct HomeView: View {
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color(red: 160/255, green: 176/255, blue: 152/255))
+                    .foregroundStyle(AppTheme.fieldMossLight)
             }
             .padding(14)
             .background(
@@ -446,9 +438,9 @@ struct HomeView: View {
                     .fill(Color.white.opacity(0.9))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .strokeBorder(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3), lineWidth: 2)
+                            .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 2)
                     )
-                    .shadow(color: Color(red: 60/255, green: 90/255, blue: 50/255).opacity(0.12), radius: 8, y: 4)
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.12), radius: 8, y: 4)
             )
         }
         .buttonStyle(.plain)
@@ -655,62 +647,12 @@ private struct MatchstickGameContainer: View {
 
 // MARK: - 轻量装饰动画组件（隐式动画，不用 TimelineView）
 
-private struct SunBreath: View {
-    @State private var breathing = false
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(colors: [
-                        Color(red: 255/255, green: 214/255, blue: 110/255).opacity(0.4),
-                        Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.14),
-                        .clear
-                    ], center: .center, startRadius: 10, endRadius: 50)
-                )
-                .frame(width: 100, height: 100)
-                .scaleEffect(breathing ? 1.03 : 0.97)
-            Circle()
-                .fill(
-                    RadialGradient(colors: [
-                        Color(red: 255/255, green: 246/255, blue: 205/255),
-                        Color(red: 255/255, green: 214/255, blue: 100/255),
-                        Color(red: 247/255, green: 188/255, blue: 55/255)
-                    ], center: .init(x: 0.38, y: 0.3), startRadius: 2, endRadius: 18)
-                )
-                .frame(width: 32, height: 32)
-                .scaleEffect(breathing ? 1.03 : 0.97)
-                .shadow(color: Color(red: 255/255, green: 201/255, blue: 61/255).opacity(0.8), radius: 12)
-        }
-        .animation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathing)
-        .onAppear { breathing = true }
-    }
-}
-
-private struct CloudDrift: View {
-    let scale: CGFloat
-    let delay: Double
-    @State private var drifting = false
-    var body: some View {
-        ZStack {
-            Capsule().fill(Color.white.opacity(0.95)).frame(width: 42, height: 15).offset(y: 4)
-            Circle().fill(Color.white.opacity(0.95)).frame(width: 25, height: 25).offset(x: -9, y: -6)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 21, height: 21).offset(x: 7, y: -4)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 15, height: 15).offset(x: 0, y: -10)
-        }
-        .frame(width: 52, height: 30)
-        .scaleEffect(scale)
-        .offset(x: drifting ? 14 : -14, y: drifting ? 3 : -3)
-        .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true).delay(delay), value: drifting)
-        .onAppear { drifting = true }
-    }
-}
-
 private struct KiteSway: View {
     @State private var swaying = false
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(Color(red: 110/255, green: 140/255, blue: 90/255).opacity(0.3))
+                .fill(AppTheme.fieldOlive.opacity(0.3))
                 .frame(width: 1.5, height: 130)
             Text("🪁")
                 .font(.system(size: 22))
