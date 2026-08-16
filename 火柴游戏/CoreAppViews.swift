@@ -92,6 +92,13 @@ struct DiscoverView: View {
                             .buttonStyle(.bouncy)
                             .padding(.top, 10)
 
+                            // 儿童故事集
+                            NavigationLink(value: StoryNavTarget.home) {
+                                storyBannerCard
+                            }
+                            .buttonStyle(.bouncy)
+                            .padding(.top, 10)
+
                             // 诗集书摊
                             fieldSectionTitle(seal: "摊", title: "诗集书摊")
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
@@ -123,6 +130,9 @@ struct DiscoverView: View {
             }
             .navigationDestination(for: BishenNavTarget.self) { _ in
                 BishenListView()
+            }
+            .navigationDestination(for: StoryNavTarget.self) { _ in
+                StoryBookHomeView()
             }
             .navigationDestination(for: AIZuowenNavTarget.self) { _ in
                 AIZuowenView()
@@ -380,6 +390,58 @@ struct DiscoverView: View {
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.fieldMoss)
                 Text("积累素材，让作文有话可说")
+                    .font(.system(size: 11, weight: .bold, design: .serif))
+                    .foregroundStyle(Color(red: 63/255, green: 143/255, blue: 104/255))
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(AppTheme.fieldMossLight)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 8, y: 4)
+        )
+        .padding(.horizontal, AppTheme.paddingScreen)
+    }
+
+    // MARK: - 儿童故事集横卡
+
+    private var storyBannerCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 227/255, green: 242/255, blue: 234/255),
+                            Color(red: 189/255, green: 232/255, blue: 211/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("📚")
+                    .font(.system(size: 24))
+                    .modifier(FieldBob(delay: 0.5))
+            }
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("儿童故事集")
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldInk)
+                Text("睡前故事 · 童话 · 寓言 · 绘本音频")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMoss)
+                Text("小朋友，来听一个故事吧")
                     .font(.system(size: 11, weight: .bold, design: .serif))
                     .foregroundStyle(Color(red: 63/255, green: 143/255, blue: 104/255))
                     .lineLimit(1)

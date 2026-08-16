@@ -13,6 +13,7 @@ struct XiaoxueBibeiView: View {
     @State private var poems: [BibeiPoem] = []
     @State private var selectedGrade: String?
     @State private var selectedPoem: BibeiPoem?
+    @State private var showGradePicker = false
 
     private var grades: [String] {
         var seen: [String] = []
@@ -43,24 +44,40 @@ struct XiaoxueBibeiView: View {
                 .padding(.top, 6)
                 .padding(.bottom, 6)
 
-                // 年级筛选
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        gradeChip(nil, label: "全部")
-                        ForEach(grades, id: \.self) { grade in
-                            gradeChip(grade, label: grade)
+                // 年级筛选（弹框）
+                HStack(spacing: 10) {
+                    Button {
+                        showGradePicker = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("📚 \(selectedGrade ?? "全部")")
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 9, weight: .black))
                         }
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldOliveDeep)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 9)
+                        .background(Color.white.opacity(0.9), in: Capsule())
+                        .overlay(Capsule().strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2))
                     }
-                    .padding(.horizontal, 18)
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Text("\(filteredPoems.count) 首")
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
+                .padding(.horizontal, 18)
                 .padding(.bottom, 10)
 
                 // 列表
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 10) {
-                        ForEach(filteredPoems) { poem in
+                        ForEach(Array(filteredPoems.enumerated()), id: \.element.id) { index, poem in
                             Button { selectedPoem = poem } label: {
-                                poemRow(poem)
+                                poemRow(poem, index: index)
                             }
                             .buttonStyle(.plain)
                         }
@@ -74,36 +91,77 @@ struct XiaoxueBibeiView: View {
         .sheet(item: $selectedPoem) { poem in
             BibeiDetailSheet(poem: poem)
         }
+        .sheet(isPresented: $showGradePicker) {
+            gradePickerSheet
+                .presentationDetents([.medium])
+        }
         .onAppear { loadPoems() }
     }
 
-    private func gradeChip(_ grade: String?, label: String) -> some View {
+    // MARK: - 年级选择弹框（网格）
+
+    private var gradePickerSheet: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 18) {
+                Text("选择年级")
+                    .font(.system(size: 18, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 24)
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    gradeGridItem(nil, label: "全部")
+                    ForEach(grades, id: \.self) { grade in
+                        gradeGridItem(grade, label: grade)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 30)
+        }
+        .background(Color(red: 247/255, green: 245/255, blue: 240/255).ignoresSafeArea())
+    }
+
+    private func gradeGridItem(_ grade: String?, label: String) -> some View {
         let isSelected = (grade == nil && selectedGrade == nil) || (grade == selectedGrade)
         return Button {
-            withAnimation(.easeOut(duration: 0.15)) { selectedGrade = grade }
+            selectedGrade = grade
+            showGradePicker = false
         } label: {
             Text(label)
-                .font(.system(size: 11, weight: .heavy, design: .rounded))
-                .foregroundStyle(isSelected ? .white : AppTheme.fieldMint)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(isSelected ? AppTheme.fieldMint : Color.white.opacity(0.8), in: Capsule())
-                .overlay(Capsule().strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 1))
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .foregroundStyle(isSelected ? .white : AppTheme.fieldOliveDeep)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 11)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(isSelected ? AppTheme.fieldMint : Color(red: 244/255, green: 248/255, blue: 238/255))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(isSelected ? AppTheme.fieldMint : AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
+                        )
+                )
         }
         .buttonStyle(.plain)
     }
 
-    private func poemRow(_ poem: BibeiPoem) -> some View {
-        HStack(spacing: 12) {
+    private func poemRow(_ poem: BibeiPoem, index: Int) -> some View {
+        // 差异化 icon：不同书叶 emoji + 不同底色
+        let icons = ["📜", "🏮", "🌸", "🌙", "🪷", "✨", "🏔", "🌊", "🦜", "🍂"]
+        let tints: [(Color, Color)] = [
+            (Color(red: 253/255, green: 240/255, blue: 220/255), Color(red: 245/255, green: 220/255, blue: 180/255)),  // 米金
+            (Color(red: 227/255, green: 242/255, blue: 234/255), Color(red: 189/255, green: 232/255, blue: 211/255)),  // 竹青
+            (Color(red: 245/255, green: 232/255, blue: 242/255), Color(red: 232/255, green: 200/255, blue: 226/255)),  // 藕粉
+            (Color(red: 232/255, green: 240/255, blue: 248/255), Color(red: 200/255, green: 226/255, blue: 245/255)),  // 月蓝
+        ]
+        let tint = tints[index % tints.count]
+        return HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(
-                        LinearGradient(colors: [
-                            Color(red: 253/255, green: 240/255, blue: 220/255),
-                            Color(red: 245/255, green: 220/255, blue: 180/255)
-                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        LinearGradient(colors: [tint.0, tint.1], startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
-                Text("📜")
+                Text(icons[index % icons.count])
                     .font(.system(size: 18))
             }
             .frame(width: 42, height: 42)
