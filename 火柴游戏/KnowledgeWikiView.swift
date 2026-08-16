@@ -66,6 +66,40 @@ struct KnowledgeWikiGroup: Identifiable, Hashable, Decodable {
     }
 }
 
+// MARK: - 田园风扩展（知识百科专属点缀）
+
+extension KnowledgeWikiGroup {
+    /// 分组 emoji 点缀
+    var wikiEmoji: String {
+        switch id {
+        case "13": return "🌐"
+        case "2": return "📜"
+        case "3": return "🎈"
+        case "16": return "🎋"
+        case "18": return "🎓"
+        default: return "🧠"
+        }
+    }
+
+    /// 分组淡彩底 + 深色（蓝天草地田园系）
+    var wikiTint: (Color, Color) {
+        switch id {
+        case "13":
+            return (AppTheme.fieldMint, Color(red: 227/255, green: 242/255, blue: 234/255))          // 薄荷
+        case "2":
+            return (Color(red: 194/255, green: 162/255, blue: 72/255), Color(red: 255/255, green: 243/255, blue: 214/255))  // 米金
+        case "3":
+            return (Color(red: 186/255, green: 80/255, blue: 100/255), Color(red: 253/255, green: 233/255, blue: 238/255))  // 绯粉
+        case "16":
+            return (Color(red: 59/255, green: 142/255, blue: 165/255), Color(red: 232/255, green: 244/255, blue: 247/255))  // 湖蓝
+        case "18":
+            return (Color(red: 92/255, green: 156/255, blue: 102/255), Color(red: 234/255, green: 245/255, blue: 228/255))  // 竹绿
+        default:
+            return (Color(red: 92/255, green: 75/255, blue: 138/255), Color(red: 240/255, green: 234/255, blue: 248/255))  // 墨紫
+        }
+    }
+}
+
 struct KnowledgeWikiCategory: Identifiable, Hashable, Decodable {
     let id: String
     let name: String
@@ -333,6 +367,14 @@ final class KnowledgeWikiQuizStore {
         answerSelections.count
     }
 
+    /// 答对数
+    var correctAnswerCount: Int {
+        answerSelections.reduce(0) { partial, entry in
+            guard let q = questions.first(where: { $0.id == entry.key }) else { return partial }
+            return partial + (entry.value == q.correctIndex ? 1 : 0)
+        }
+    }
+
     var currentSelection: Int? {
         guard let currentQuestion else { return nil }
         return answerSelections[currentQuestion.id]
@@ -435,6 +477,61 @@ private extension Array {
     }
 }
 
+// MARK: - 知识百科 · 田园风通用组件
+
+/// 顶部导航（田园风）
+private struct WikiNavBar: View {
+    let title: String
+    var trailing: (() -> AnyView)? = nil
+
+    var body: some View {
+        ZStack {
+            HStack {
+                GracefulBackButton()
+                Spacer()
+            }
+            Text(title)
+                .font(.system(size: 18, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.fieldInk)
+                .lineLimit(1)
+        }
+        .overlay(alignment: .trailing) {
+            if let trailing { trailing() }
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 6)
+        .padding(.bottom, 6)
+    }
+}
+
+/// 分区标题（绿条 + 楷体）
+private struct WikiSectionTitle: View {
+    let title: String
+    let sub: String
+    var showMore = false
+
+    var body: some View {
+        HStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(AppTheme.fieldMint)
+                .frame(width: 6, height: 20)
+            Text(title)
+                .font(.system(size: 15, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.fieldInk)
+                .tracking(1)
+            Text(sub)
+                .font(.system(size: 9, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.fieldMossLight)
+            Spacer()
+            if showMore {
+                Text("全部 ›")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMint)
+            }
+        }
+    }
+}
+
 // MARK: - 知识百科 · 首页
 
 struct KnowledgeWikiHomeView: View {
@@ -450,21 +547,40 @@ struct KnowledgeWikiHomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            UnifiedNavBar(title: "知识百科")
+        ZStack {
+            FieldBackground()
 
-            Group {
-                if store.isLoading && store.groups.isEmpty {
-                    loadingView
-                } else if let errorMessage = store.errorMessage, store.groups.isEmpty {
-                    errorView(message: errorMessage)
-                } else {
-                    contentView
+            // 田园点缀：太阳 + 云朵
+            FieldSun()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.trailing, 20)
+                .padding(.top, 30)
+                .allowsHitTesting(false)
+            FieldCloud(scale: 1.0, delay: 0)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.leading, 8)
+                .padding(.top, 52)
+                .allowsHitTesting(false)
+            FieldCloud(scale: 0.72, delay: 2.5)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.trailing, 20)
+                .padding(.top, 78)
+                .allowsHitTesting(false)
+
+            VStack(spacing: 0) {
+                WikiNavBar(title: "知识百科")
+
+                Group {
+                    if store.isLoading && store.groups.isEmpty {
+                        loadingView
+                    } else if let errorMessage = store.errorMessage, store.groups.isEmpty {
+                        errorView(message: errorMessage)
+                    } else {
+                        contentView
+                    }
                 }
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
-        .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .enableSwipeBack()
@@ -478,8 +594,9 @@ struct KnowledgeWikiHomeView: View {
 
     private var contentView: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 0) {
                 heroCard
+                statsRow
                 searchBar
 
                 if let errorMessage = store.errorMessage {
@@ -488,177 +605,169 @@ struct KnowledgeWikiHomeView: View {
 
                 if !searchText.isEmpty {
                     searchSection
+                        .padding(.top, 14)
                 } else {
                     featuredSection
+                        .padding(.top, 14)
 
-                    ForEach(store.groups) { group in
-                        groupSection(group)
+                    WikiSectionTitle(title: "漫游分组", sub: "GROUPS", showMore: true)
+                        .padding(.horizontal, AppTheme.paddingScreen)
+                        .padding(.top, 16)
+                        .padding(.bottom, 10)
+
+                    ForEach(Array(store.groups.enumerated()), id: \.element.id) { index, group in
+                        groupSection(group, index: index)
                     }
 
                     footerCard
+                        .padding(.top, 4)
                 }
             }
             .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 14)
-            .padding(.bottom, 32)
+            .padding(.top, 10)
+            .padding(.bottom, 40)
         }
     }
+
+    // MARK: Hero 卡（田园白卡）
 
     private var heroCard: some View {
-        let gold = Color(red: 184/255, green: 151/255, blue: 56/255)
-        let inkDeep2 = Color(red: 74/255, green: 61/255, blue: 116/255)
-        return ZStack(alignment: .topTrailing) {
-            LinearGradient(
-                colors: [inkDeep2, AppTheme.accentInkPurple, AppTheme.accentJade],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            RadialGradient(
-                colors: [AppTheme.accentIndigo.opacity(0.42), .clear],
-                center: .topLeading,
-                startRadius: 0,
-                endRadius: 200
-            )
-
-            RadialGradient(
-                colors: [gold.opacity(0.34), .clear],
-                center: .bottomTrailing,
-                startRadius: 0,
-                endRadius: 180
-            )
-
-            // 金色「典」印章
-            Text("典")
-                .font(.system(size: 32, weight: .black, design: .serif))
-                .foregroundStyle(gold)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(gold.opacity(0.10))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(gold.opacity(0.7), lineWidth: 1.5)
-                )
-                .rotationEffect(.degrees(4))
-                .padding(.top, 16)
-                .padding(.trailing, 16)
-
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(gold)
-                        .frame(width: 6, height: 6)
-                        .shadow(color: gold.opacity(0.9), radius: 4)
-                    Text("KNOWLEDGE · 漫游百科")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .tracking(2.8)
-                        .foregroundStyle(.white.opacity(0.86))
-                }
-
-                Text("知识百科")
-                    .font(.system(size: 44, weight: .black, design: .serif))
-                    .tracking(2.6)
-                    .foregroundStyle(Color(red: 255/255, green: 254/255, blue: 248/255))
-
-                Text("把海量题库做成一座可以漫游的知识花园，随手点开一个门类，就能开答。")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.82))
-                    .lineSpacing(4)
-                    .frame(maxWidth: 240, alignment: .leading)
-
-                HStack(spacing: 8) {
-                    heroStat(title: "百科", value: store.status.wiki)
-                    heroStat(title: "智力", value: store.status.iq)
-                    heroStat(title: "急转弯", value: store.status.brain)
-                }
-                .padding(.top, 4)
-
-                HStack(spacing: 4) {
-                    Text("\(KnowledgeWikiService.snapshotCategoryCount)")
-                        .font(.system(size: 13, weight: .black, design: .serif))
-                        .foregroundStyle(gold)
-                    Text(" 个入口 · ")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .tracking(2)
-                        .foregroundStyle(.white.opacity(0.7))
-                    Text("\(KnowledgeWikiService.snapshotQuestionCount)")
-                        .font(.system(size: 13, weight: .black, design: .serif))
-                        .foregroundStyle(gold)
-                    Text(" 道题")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .tracking(2)
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-                .padding(.top, 4)
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            Color(red: 227/255, green: 242/255, blue: 234/255),
+                            Color(red: 189/255, green: 232/255, blue: 211/255)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                Text("📚")
+                    .font(.system(size: 24))
+                    .modifier(FieldBob(delay: 0))
             }
-            .padding(22)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(width: 52, height: 52)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.4), lineWidth: 2)
+            )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("知识百科")
+                    .font(.system(size: 16, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
+                Text("把海量题库做成一座可以漫游的知识花园")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMoss)
+                HStack(spacing: 10) {
+                    Text("📖 百科")
+                        .font(.system(size: 9.5, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMint)
+                    Text("🧠 智力")
+                        .font(.system(size: 9.5, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMint)
+                    Text("🎢 急转弯")
+                        .font(.system(size: 9.5, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldGold)
+                }
+                .padding(.top, 2)
+            }
+            Spacer()
+            VStack(spacing: 6) {
+                Text("🍃")
+                    .font(.system(size: 15))
+                    .modifier(FieldFlutter(delay: 0.5))
+                Text("🦋")
+                    .font(.system(size: 15))
+                    .modifier(FieldFlutter(delay: 1.2, reverse: true))
+            }
         }
-        .frame(minHeight: 290)
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 8, y: 4)
         )
-        .shadow(color: inkDeep2.opacity(0.5), radius: 20, x: 0, y: 16)
     }
 
-    private func heroStat(title: String, value: Int) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("\(value)")
-                .font(.system(size: 21, weight: .black, design: .serif))
-                .foregroundStyle(.white)
-            Text(title)
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .tracking(2.2)
-                .foregroundStyle(.white.opacity(0.66))
+    // MARK: 三统计卡
+
+    private var statsRow: some View {
+        HStack(spacing: 10) {
+            wikiStat(emoji: "🌐", value: "\(store.status.wiki)", label: "百科题")
+            wikiStat(emoji: "🧠", value: "\(store.status.iq)", label: "智力题")
+            wikiStat(emoji: "🎢", value: "\(store.status.brain)", label: "急转弯")
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 13)
+        .padding(.top, 12)
+    }
+
+    private func wikiStat(emoji: String, value: String, label: String) -> some View {
+        VStack(spacing: 3) {
+            Text(emoji).font(.system(size: 15))
+            Text(value)
+                .font(.system(size: 17, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.fieldInk)
+            Text(label)
+                .font(.system(size: 9, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.fieldMoss)
+        }
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 11)
-        .background(.white.opacity(0.10), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
+        .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
+                )
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.06), radius: 5, y: 3)
         )
     }
+
+    // MARK: 搜索栏
 
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(AppTheme.fieldMoss)
 
             TextField("搜索分类，比如 国学 / 地理 / 经典题库", text: $searchText)
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.fieldInk)
 
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(AppTheme.textSecondary.opacity(0.72))
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.fieldMossLight)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(AppTheme.card)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
                 )
         )
+        .padding(.top, 12)
     }
 
+    // MARK: 热门先逛（1 大卡 + 2 小卡）
+
     private var featuredSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("热门先逛", sub: "CURATED")
+        VStack(alignment: .leading, spacing: 10) {
+            WikiSectionTitle(title: "热门先逛", sub: "CURATED")
 
             HStack(spacing: 10) {
                 if let big = store.topSelections.first {
@@ -681,51 +790,54 @@ struct KnowledgeWikiHomeView: View {
                     }
                 }
             }
-            .frame(height: 232)
+            .frame(height: 210)
         }
     }
 
     private func featuredBigCard(_ selection: KnowledgeWikiCategorySelection) -> some View {
-        let gold = Color(red: 184/255, green: 151/255, blue: 56/255)
+        let tint = selection.group.wikiTint
         return ZStack(alignment: .bottomTrailing) {
             Text(selection.group.shortMark)
-                .font(.system(size: 130, weight: .black, design: .serif))
-                .foregroundStyle(gold.opacity(0.1))
-                .offset(x: 18, y: 28)
+                .font(.system(size: 96, weight: .black, design: .serif))
+                .foregroundStyle(tint.0.opacity(0.12))
+                .offset(x: 14, y: 20)
                 .allowsHitTesting(false)
 
             VStack(alignment: .leading, spacing: 0) {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(gold.opacity(0.16))
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(tint.1)
                     .frame(width: 34, height: 34)
                     .overlay(
-                        Image(systemName: selection.group.symbolName)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(gold)
+                        Text(selection.group.wikiEmoji)
+                            .font(.system(size: 17))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(tint.0.opacity(0.4), lineWidth: 1.5)
                     )
 
                 Spacer(minLength: 12)
 
                 Text(selection.category.name)
-                    .font(.system(size: 16, weight: .heavy, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 15, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(2)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(selection.category.questionCount)")
-                        .font(.system(size: 18, weight: .black, design: .serif))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .font(.system(size: 17, weight: .black, design: .serif))
+                        .foregroundStyle(tint.0)
                     Text("题 · \(selection.group.name)")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMoss)
                     Spacer(minLength: 0)
                     Circle()
-                        .fill(gold.opacity(0.14))
+                        .fill(tint.1)
                         .frame(width: 24, height: 24)
                         .overlay(
                             Image(systemName: "arrow.up.right")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(gold)
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(tint.0)
                         )
                 }
                 .padding(.top, 6)
@@ -736,10 +848,7 @@ struct KnowledgeWikiHomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             LinearGradient(
-                colors: [
-                    Color(red: 251/255, green: 248/255, blue: 240/255),
-                    Color(red: 244/255, green: 238/255, blue: 224/255)
-                ],
+                colors: [Color.white.opacity(0.94), tint.1.opacity(0.7)],
                 startPoint: .topTrailing,
                 endPoint: .bottomLeading
             )
@@ -747,207 +856,176 @@ struct KnowledgeWikiHomeView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(gold.opacity(0.32), lineWidth: 1)
+                .strokeBorder(tint.0.opacity(0.32), lineWidth: 1.5)
         )
+        .shadow(color: AppTheme.fieldGrassShadow.opacity(0.06), radius: 5, y: 3)
     }
 
     private func featuredSmallCard(_ selection: KnowledgeWikiCategorySelection) -> some View {
-        let palette = selection.group.palette
+        let tint = selection.group.wikiTint
         return ZStack(alignment: .bottomTrailing) {
             Text(selection.group.shortMark)
-                .font(.system(size: 80, weight: .black, design: .serif))
-                .foregroundStyle(palette.0.opacity(0.08))
-                .offset(x: 10, y: 14)
+                .font(.system(size: 52, weight: .black, design: .serif))
+                .foregroundStyle(tint.0.opacity(0.10))
+                .offset(x: 8, y: 10)
                 .allowsHitTesting(false)
 
             VStack(alignment: .leading, spacing: 0) {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(palette.0.opacity(0.14))
-                    .frame(width: 30, height: 30)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(tint.1)
+                    .frame(width: 26, height: 26)
                     .overlay(
-                        Image(systemName: selection.group.symbolName)
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(palette.0)
+                        Text(selection.group.wikiEmoji)
+                            .font(.system(size: 13))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(tint.0.opacity(0.4), lineWidth: 1.5)
                     )
 
                 Spacer(minLength: 8)
 
                 Text(selection.category.name)
-                    .font(.system(size: 14.5, weight: .heavy, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 12.5, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .lineLimit(1)
 
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text("\(selection.category.questionCount)")
-                        .font(.system(size: 15, weight: .black, design: .serif))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .font(.system(size: 14, weight: .black, design: .serif))
+                        .foregroundStyle(tint.0)
                     Text("题")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMoss)
                     Spacer(minLength: 0)
                     Circle()
-                        .fill(palette.0.opacity(0.12))
+                        .fill(tint.1)
                         .frame(width: 20, height: 20)
                         .overlay(
                             Image(systemName: "arrow.up.right")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(palette.0)
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(tint.0)
                         )
                 }
                 .padding(.top, 4)
             }
-            .padding(13)
+            .padding(12)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(AppTheme.card)
+                .fill(Color.white.opacity(0.92))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(palette.0.opacity(0.22), lineWidth: 1)
+                .strokeBorder(tint.0.opacity(0.22), lineWidth: 1.5)
         )
     }
 
-    private func groupSection(_ group: KnowledgeWikiGroup) -> some View {
-        return ZStack(alignment: .topTrailing) {
-            // 大水印汉字
-            Text(group.shortMark)
-                .font(.system(size: 88, weight: .black, design: .serif))
-                .foregroundStyle(group.palette.0.opacity(0.09))
-                .offset(x: 14, y: -8)
-                .allowsHitTesting(false)
+    // MARK: 分组卡
 
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(alignment: .top, spacing: 12) {
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(group.palette.0.opacity(0.14))
-                        .frame(width: 44, height: 44)
-                        .overlay(
-                            Image(systemName: group.symbolName)
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(group.palette.0)
-                        )
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(group.name)
-                            .font(.system(size: 21, weight: .heavy, design: .serif))
-                            .tracking(0.6)
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text(group.intro)
-                            .font(.system(size: 12.5, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineSpacing(3)
-                            .frame(maxWidth: 230, alignment: .leading)
-                    }
-
-                    Spacer(minLength: 0)
+    private func groupSection(_ group: KnowledgeWikiGroup, index: Int) -> some View {
+        let tint = group.wikiTint
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(tint.1)
+                        .frame(width: 38, height: 38)
+                    Text(group.wikiEmoji)
+                        .font(.system(size: 18))
+                        .modifier(FieldBob(delay: Double(index % 5) * 0.2))
                 }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(tint.0.opacity(0.35), lineWidth: 1.5)
+                )
 
-                HStack(spacing: 8) {
-                    summaryPill("\(group.categories.count) 个门类", color: group.palette.0)
-                    summaryPill("\(group.totalQuestions) 题", color: group.palette.1)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(group.name)
+                        .font(.system(size: 14, weight: .heavy, design: .serif))
+                        .foregroundStyle(AppTheme.fieldInk)
+                    Text("\(group.categories.count) 个门类 · \(group.totalQuestions) 题")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMoss)
                 }
+                Spacer()
+                Text("›")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(AppTheme.fieldMossLight)
+            }
 
-                let columns = [GridItem(.flexible(), spacing: 9), GridItem(.flexible(), spacing: 9)]
-                LazyVGrid(columns: columns, spacing: 9) {
-                    ForEach(group.categories) { category in
-                        NavigationLink {
-                            KnowledgeWikiQuizView(group: group, category: category)
-                        } label: {
-                            categoryTile(category, palette: group.palette)
-                        }
-                        .buttonStyle(.plain)
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 9), GridItem(.flexible(), spacing: 9)], spacing: 9) {
+                ForEach(group.categories) { category in
+                    NavigationLink {
+                        KnowledgeWikiQuizView(group: group, category: category)
+                    } label: {
+                        categoryTile(category, tint: tint)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(18)
         }
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(AppTheme.card)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.92))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                 )
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.06), radius: 6, y: 3)
         )
+        .padding(.bottom, 12)
     }
 
-    private func summaryPill(_ title: String, color: Color) -> some View {
-        HStack(spacing: 5) {
-            Circle()
-                .fill(color)
-                .frame(width: 5, height: 5)
-            Text(title)
-                .font(.system(size: 11.5, weight: .bold, design: .rounded))
-                .tracking(0.2)
-                .foregroundStyle(color)
-        }
-        .padding(.horizontal, 11)
-        .padding(.vertical, 5)
-        .background(color.opacity(0.1), in: Capsule())
-    }
-
-    private func categoryTile(_ category: KnowledgeWikiCategory, palette: (Color, Color)) -> some View {
-        let paper = Color(red: 252/255, green: 251/255, blue: 247/255)
-        return VStack(alignment: .leading, spacing: 8) {
+    private func categoryTile(_ category: KnowledgeWikiCategory, tint: (Color, Color)) -> some View {
+        HStack(spacing: 8) {
             Text(category.name)
-                .font(.system(size: 14, weight: .heavy, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
-                .lineLimit(2)
+                .font(.system(size: 11.5, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.fieldOliveDeep)
+                .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer(minLength: 0)
+            Text("\(category.questionCount)")
+                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                .foregroundStyle(tint.0)
 
-            HStack(spacing: 4) {
-                Text("\(category.questionCount)")
-                    .font(.system(size: 16, weight: .black, design: .serif))
-                    .foregroundStyle(palette.0)
-                Text("题")
-                    .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
-                    .tracking(0.4)
-                    .foregroundStyle(AppTheme.textSecondary)
-                Spacer(minLength: 0)
-                Circle()
-                    .fill(palette.0.opacity(0.12))
-                    .frame(width: 22, height: 22)
-                    .overlay(
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(palette.0)
-                    )
-            }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(AppTheme.fieldMossLight)
         }
-        .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 13)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(paper)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(tint.1.opacity(0.6))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(tint.0.opacity(0.25), lineWidth: 1.5)
                 )
         )
     }
+
+    // MARK: 搜索结果
 
     private var searchSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("搜索结果", sub: "SEARCH")
+            WikiSectionTitle(title: "搜索结果", sub: "SEARCH")
 
             if searchResults.isEmpty {
                 Text("没有找到对应门类，换个关键词试试。")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .padding(18)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMoss)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(AppTheme.card)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.white.opacity(0.9))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                             )
                     )
             } else {
@@ -956,38 +1034,39 @@ struct KnowledgeWikiHomeView: View {
                         NavigationLink {
                             KnowledgeWikiQuizView(group: selection.group, category: selection.category)
                         } label: {
-                            HStack(spacing: 14) {
+                            HStack(spacing: 12) {
                                 ZStack {
-                                    Circle()
-                                        .fill(selection.group.palette.0.opacity(0.12))
-                                        .frame(width: 42, height: 42)
-                                    Image(systemName: selection.group.symbolName)
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundStyle(selection.group.palette.0)
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(selection.group.wikiTint.1)
+                                        .frame(width: 40, height: 40)
+                                    Text(selection.group.wikiEmoji)
+                                        .font(.system(size: 17))
                                 }
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .strokeBorder(selection.group.wikiTint.0.opacity(0.35), lineWidth: 1.5)
+                                )
 
-                                VStack(alignment: .leading, spacing: 4) {
+                                VStack(alignment: .leading, spacing: 3) {
                                     Text(selection.category.name)
-                                        .font(.system(size: 16, weight: .bold, design: .serif))
-                                        .foregroundStyle(AppTheme.textPrimary)
+                                        .font(.system(size: 14, weight: .bold, design: .serif))
+                                        .foregroundStyle(AppTheme.fieldInk)
                                     Text("\(selection.group.name) · \(selection.category.questionCount) 题")
-                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(AppTheme.textSecondary)
+                                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(AppTheme.fieldMoss)
                                 }
-
                                 Spacer()
-
                                 Image(systemName: "chevron.right")
                                     .font(.system(size: 12, weight: .bold))
-                                    .foregroundStyle(AppTheme.textSecondary.opacity(0.8))
+                                    .foregroundStyle(AppTheme.fieldMossLight)
                             }
-                            .padding(16)
+                            .padding(12)
                             .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(AppTheme.card)
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(Color.white.opacity(0.9))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                            .strokeBorder(AppTheme.separator, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                                     )
                             )
                         }
@@ -998,94 +1077,56 @@ struct KnowledgeWikiHomeView: View {
         }
     }
 
+    // MARK: 底部卡
+
     private var footerCard: some View {
-        HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(AppTheme.accentBamboo.opacity(0.14))
-                .frame(width: 42, height: 42)
-                .overlay(
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(AppTheme.accentBamboo)
-                )
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(red: 234/255, green: 245/255, blue: 228/255))
+                    .frame(width: 40, height: 40)
+                Text("🎉")
+                    .font(.system(size: 18))
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 1.5)
+            )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("入口已全量接入")
-                    .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .tracking(0.3)
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("共 \(KnowledgeWikiService.snapshotCategoryCount) 个门类，约 \(KnowledgeWikiService.snapshotQuestionCount) 道题，支持继续扩展与分页续拉。")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineSpacing(3)
             }
-
             Spacer(minLength: 0)
-
-            Text("已校验")
-                .font(.system(size: 9.5, weight: .bold, design: .monospaced))
-                .tracking(2)
-                .foregroundStyle(AppTheme.accentBamboo)
-                .padding(.horizontal, 9)
-                .padding(.vertical, 4)
-                .background(AppTheme.accentBamboo.opacity(0.12), in: Capsule())
-                .overlay(
-                    Capsule()
-                        .strokeBorder(AppTheme.accentBamboo.opacity(0.2), lineWidth: 1)
-                )
         }
-        .padding(18)
+        .padding(14)
         .background(
-            LinearGradient(
-                colors: [
-                    AppTheme.accentBamboo.opacity(0.1),
-                    AppTheme.accentJade.opacity(0.06)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(AppTheme.accentBamboo.opacity(0.18), lineWidth: 1)
-        )
-    }
-
-    private func sectionTitle(_ title: String, sub: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 9) {
-            Text(title)
-                .font(.system(size: 19, weight: .heavy, design: .serif))
-                .tracking(0.8)
-                .foregroundStyle(AppTheme.textPrimary)
-            Text(sub)
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .tracking(2.6)
-                .foregroundStyle(AppTheme.textSecondary.opacity(0.55))
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [AppTheme.separator, .clear],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(AppTheme.fieldMint.opacity(0.25), lineWidth: 1.5)
                 )
-                .frame(height: 1)
-            Spacer(minLength: 0)
-        }
+        )
     }
 
     private func inlineError(message: String) -> some View {
         Text(message)
-            .font(.system(size: 13, weight: .semibold, design: .rounded))
-            .foregroundStyle(AppTheme.accentCinnabar)
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .foregroundStyle(Color(red: 232/255, green: 106/255, blue: 82/255))
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(AppTheme.accentCinnabar.opacity(0.08))
+                    .fill(Color(red: 232/255, green: 106/255, blue: 82/255).opacity(0.08))
             )
+            .padding(.top, 12)
     }
 
     private var loadingView: some View {
@@ -1093,7 +1134,7 @@ struct KnowledgeWikiHomeView: View {
             Spacer(minLength: 80)
             ProgressView("正在整理百科入口...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(AppTheme.accentInkPurple)
+                .tint(AppTheme.fieldMint)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1102,15 +1143,14 @@ struct KnowledgeWikiHomeView: View {
     private func errorView(message: String) -> some View {
         VStack(spacing: 14) {
             Spacer(minLength: 80)
-            Image(systemName: "sparkles.rectangle.stack")
-                .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary)
+            Text("🌱")
+                .font(.system(size: 34))
             Text("知识百科加载失败")
-                .font(.system(size: 22, weight: .bold, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(.system(size: 20, weight: .bold, design: .serif))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(message)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .multilineTextAlignment(.center)
             Spacer()
         }
@@ -1132,44 +1172,51 @@ struct KnowledgeWikiQuizView: View {
         _store = State(initialValue: KnowledgeWikiQuizStore(group: group, category: category))
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            UnifiedNavBar(
-                title: category.name,
-                trailing: AnyView(
-                    Button {
-                        Task { await store.reload() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                            .frame(width: 36, height: 36)
-                            .background(AppTheme.card, in: Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-                    }
-                    .buttonStyle(.plain)
-                )
-            )
+    private var tint: (Color, Color) { group.wikiTint }
 
-            Group {
-                if store.isLoading && store.questions.isEmpty {
-                    loadingView
-                } else if let errorMessage = store.errorMessage, store.questions.isEmpty {
-                    errorView(message: errorMessage)
-                } else {
-                    contentView
+    var body: some View {
+        ZStack {
+            FieldBackground()
+
+            FieldSun()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.trailing, 20)
+                .padding(.top, 30)
+                .allowsHitTesting(false)
+            FieldCloud(scale: 0.72, delay: 2.5)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.trailing, 20)
+                .padding(.top, 76)
+                .allowsHitTesting(false)
+
+            VStack(spacing: 0) {
+                WikiNavBar(title: category.name) {
+                    AnyView(
+                        Button {
+                            Task { await store.reload() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(AppTheme.fieldMint)
+                                .frame(width: 34, height: 34)
+                                .background(Color.white.opacity(0.9), in: Circle())
+                                .overlay(Circle().strokeBorder(AppTheme.fieldMint.opacity(0.35), lineWidth: 1.5))
+                        }
+                        .buttonStyle(.plain)
+                    )
+                }
+
+                Group {
+                    if store.isLoading && store.questions.isEmpty {
+                        loadingView
+                    } else if let errorMessage = store.errorMessage, store.questions.isEmpty {
+                        errorView(message: errorMessage)
+                    } else {
+                        contentView
+                    }
                 }
             }
         }
-        .background(
-            LinearGradient(
-                colors: [group.palette.0.opacity(0.1), AppTheme.background, AppTheme.background],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
-        .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .enableSwipeBack()
@@ -1186,169 +1233,103 @@ struct KnowledgeWikiQuizView: View {
 
     private var contentView: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 16) {
-                quizHero
+            VStack(alignment: .leading, spacing: 12) {
+                // 题号行：胶囊 + 进度信息
+                HStack(spacing: 10) {
+                    Text("第 \(store.currentIndex + 1) 题")
+                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(AppTheme.fieldMint, in: Capsule())
+                        .overlay(Capsule().strokeBorder(AppTheme.fieldInk, lineWidth: 1.5))
+
+                    Text("共 \(category.questionCount) 题 · 已答对 \(store.correctAnswerCount)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.fieldMoss)
+
+                    Spacer()
+
+                    Text(group.wikiEmoji)
+                        .font(.system(size: 16))
+                        .modifier(FieldBob(delay: 0))
+                }
 
                 if let errorMessage = store.errorMessage {
                     Text(errorMessage)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.accentCinnabar)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(red: 232/255, green: 106/255, blue: 82/255))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 9)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(AppTheme.accentCinnabar.opacity(0.08))
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color(red: 232/255, green: 106/255, blue: 82/255).opacity(0.08))
                         )
                 }
 
                 if let question = store.currentQuestion {
                     questionCard(question)
+                        .id(question.id)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
                 }
 
                 if store.isLoadingMore {
                     HStack(spacing: 8) {
                         ProgressView()
-                            .tint(group.palette.0)
+                            .tint(AppTheme.fieldMint)
                         Text("正在为你续拉更多题目...")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary)
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.fieldMoss)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 11)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(AppTheme.card)
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.white.opacity(0.9))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .strokeBorder(AppTheme.separator, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(AppTheme.fieldOlive.opacity(0.25), lineWidth: 1.5)
                             )
                     )
                 }
 
-                Spacer(minLength: 36)
+                Spacer(minLength: 24)
             }
             .padding(.horizontal, AppTheme.paddingScreen)
-            .padding(.top, 14)
+            .padding(.top, 10)
             .padding(.bottom, 20)
+            .animation(.easeOut(duration: 0.3), value: store.currentIndex)
         }
     }
 
-    private var quizHero: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(group.name)
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .tracking(1.6)
-                        .foregroundStyle(group.palette.0)
-                    Text(category.name)
-                        .font(.system(size: 26, weight: .heavy, design: .serif))
-                        .foregroundStyle(AppTheme.textPrimary)
-                }
-                Spacer()
-                ZStack {
-                    Circle()
-                        .fill(group.palette.0.opacity(0.14))
-                        .frame(width: 56, height: 56)
-                    Image(systemName: group.symbolName)
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(group.palette.0)
-                }
-            }
-
-            Text("当前已载入 \(store.questions.count) / \(category.questionCount) 题，支持边答边续拉，不用等整库全量下载。")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-                .lineSpacing(3)
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("答题进度")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.textSecondary)
-                    Spacer()
-                    Text("\(min(store.currentIndex + 1, category.questionCount)) / \(category.questionCount)")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(group.palette.0)
-                }
-
-                GeometryReader { proxy in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(group.palette.0.opacity(0.12))
-                            .frame(height: 8)
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [group.palette.0, group.palette.1],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: proxy.size.width * store.progress, height: 8)
-                    }
-                }
-                .frame(height: 8)
-            }
-
-            HStack(spacing: 10) {
-                quizMetric(title: "已作答", value: "\(store.answeredCount)")
-                quizMetric(title: "题量", value: "\(category.questionCount)")
-                quizMetric(title: "门类", value: "\(group.categories.count)")
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(AppTheme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(group.palette.0.opacity(0.14), lineWidth: 1)
-                )
-        )
-    }
-
-    private func quizMetric(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(value)
-                .font(.system(size: 18, weight: .heavy, design: .rounded))
-                .foregroundStyle(AppTheme.textPrimary)
-            Text(title)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(group.palette.0.opacity(0.06))
-        )
-    }
+    // MARK: 题目卡
 
     private func questionCard(_ question: KnowledgeWikiQuestion) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("第 \(store.currentIndex + 1) 题")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(group.palette.0, in: Capsule())
-
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 6) {
+                Text("\(group.wikiEmoji) \(category.name)")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .foregroundStyle(tint.0)
+                Text("· \(group.name)")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMoss)
                 Spacer()
-
                 Text("#\(question.remoteID)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMossLight)
             }
 
             Text(question.content)
-                .font(.system(size: 24, weight: .heavy, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(.system(size: 19, weight: .heavy, design: .serif))
+                .foregroundStyle(AppTheme.fieldInk)
                 .lineSpacing(6)
 
-            VStack(spacing: 10) {
+            VStack(spacing: 9) {
                 ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
                     optionButton(
                         label: optionLabel(for: index),
@@ -1358,88 +1339,103 @@ struct KnowledgeWikiQuizView: View {
                     )
                 }
             }
+            .padding(.top, 2)
 
             if let selection = store.currentSelection {
                 answerResultView(question: question, selection: selection)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
         }
-        .padding(20)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(AppTheme.card)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(0.95))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .strokeBorder(AppTheme.separator, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(AppTheme.fieldOlive.opacity(0.3), lineWidth: 1.5)
                 )
+                .shadow(color: AppTheme.fieldGrassShadow.opacity(0.08), radius: 8, y: 4)
         )
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: store.currentSelection)
     }
 
     private func optionButton(label: String, text: String, index: Int, question: KnowledgeWikiQuestion) -> some View {
         Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 store.selectOption(index)
             }
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 ZStack {
-                    Circle()
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
                         .fill(optionBadgeFill(index: index, question: question))
-                        .frame(width: 34, height: 34)
+                        .frame(width: 30, height: 30)
                     Text(label)
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
                         .foregroundStyle(optionBadgeTextColor(index: index, question: question))
                 }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .strokeBorder(optionBadgeBorder(index: index, question: question), lineWidth: 1.5)
+                )
 
                 Text(text)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldInk)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 if let symbol = optionSymbol(index: index, question: question) {
                     Image(systemName: symbol)
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(optionHighlightColor(index: index, question: question))
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 13)
+            .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
                     .fill(optionBackground(index: index, question: question))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .strokeBorder(optionBorder(index: index, question: question), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 15, style: .continuous)
+                            .strokeBorder(optionBorder(index: index, question: question), lineWidth: 1.5)
                     )
             )
         }
         .buttonStyle(.plain)
+        .scaleEffect(store.currentSelection == index ? 0.985 : 1)
     }
 
     private func answerResultView(question: KnowledgeWikiQuestion, selection: Int) -> some View {
         let correct = selection == question.correctIndex
-        return HStack(alignment: .top, spacing: 12) {
-            Image(systemName: correct ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(correct ? AppTheme.accentBamboo : AppTheme.accentCinnabar)
+        return HStack(alignment: .top, spacing: 10) {
+            Text(correct ? "🎉" : "💡")
+                .font(.system(size: 20))
+                .modifier(FieldBob(delay: 0))
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(correct ? "答对了，继续向前。" : "这题拐了个弯。")
-                    .font(.system(size: 15, weight: .heavy, design: .serif))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .font(.system(size: 14, weight: .heavy, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
                 Text("正确答案：\(question.correctLetter) · \(question.correctAnswerText)")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.fieldMoss)
                     .lineSpacing(3)
             }
-
             Spacer(minLength: 0)
         }
-        .padding(16)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill((correct ? AppTheme.accentBamboo : AppTheme.accentCinnabar).opacity(0.08))
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                .fill((correct ? AppTheme.fieldMint : AppTheme.fieldGold).opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 15, style: .continuous)
+                        .strokeBorder((correct ? AppTheme.fieldMint : AppTheme.fieldGold).opacity(0.3), lineWidth: 1.5)
+                )
         )
     }
+
+    // MARK: 底部操作栏
 
     private var bottomBar: some View {
         HStack(spacing: 12) {
@@ -1450,16 +1446,16 @@ struct KnowledgeWikiQuizView: View {
                     Image(systemName: "chevron.left")
                     Text("上一题")
                 }
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(store.currentIndex == 0 ? AppTheme.textSecondary : AppTheme.textPrimary)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(store.currentIndex == 0 ? AppTheme.fieldMossLight : AppTheme.fieldOliveDeep)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 13)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(AppTheme.card)
+                    RoundedRectangle(cornerRadius: 15, style: .continuous)
+                        .fill(Color.white.opacity(0.94))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .strokeBorder(AppTheme.separator, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                .strokeBorder(AppTheme.fieldInk, lineWidth: 2)
                         )
                 )
             }
@@ -1473,17 +1469,17 @@ struct KnowledgeWikiQuizView: View {
                     Text(store.currentIndex + 1 >= category.questionCount ? "已到末题" : "下一题")
                     Image(systemName: "chevron.right")
                 }
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 13)
                 .background(
-                    LinearGradient(
-                        colors: [group.palette.0, group.palette.1],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 15, style: .continuous)
+                        .fill(AppTheme.fieldMint)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                .strokeBorder(AppTheme.fieldInk, lineWidth: 2)
+                        )
                 )
             }
             .buttonStyle(.plain)
@@ -1496,63 +1492,73 @@ struct KnowledgeWikiQuizView: View {
         .background(.ultraThinMaterial)
     }
 
+    // MARK: 选项样式辅助
+
     private func optionLabel(for index: Int) -> String {
         let letters = ["A", "B", "C", "D", "E", "F"]
         return letters[safe: index] ?? "?"
     }
 
     private func optionBackground(index: Int, question: KnowledgeWikiQuestion) -> Color {
-        guard let selected = store.currentSelection else { return AppTheme.card }
+        guard let selected = store.currentSelection else { return Color.white.opacity(0.5) }
         if question.correctIndex == index {
-            return AppTheme.accentBamboo.opacity(0.1)
+            return AppTheme.fieldMint.opacity(0.12)
         }
         if selected == index {
-            return AppTheme.accentCinnabar.opacity(0.08)
+            return AppTheme.fieldMint.opacity(0.18)
         }
-        return AppTheme.card
+        return Color.white.opacity(0.5)
     }
 
     private func optionBorder(index: Int, question: KnowledgeWikiQuestion) -> Color {
-        guard let selected = store.currentSelection else { return AppTheme.separator }
+        guard let selected = store.currentSelection else { return AppTheme.fieldOlive.opacity(0.3) }
         if question.correctIndex == index {
-            return AppTheme.accentBamboo.opacity(0.35)
+            return AppTheme.fieldMint.opacity(0.6)
         }
         if selected == index {
-            return AppTheme.accentCinnabar.opacity(0.28)
+            return AppTheme.fieldMint
         }
-        return AppTheme.separator
+        return AppTheme.fieldOlive.opacity(0.3)
     }
 
     private func optionBadgeFill(index: Int, question: KnowledgeWikiQuestion) -> Color {
-        guard let selected = store.currentSelection else { return group.palette.0.opacity(0.12) }
+        guard let selected = store.currentSelection else { return tint.1 }
         if question.correctIndex == index {
-            return AppTheme.accentBamboo
+            return AppTheme.fieldMint
         }
         if selected == index {
-            return AppTheme.accentCinnabar
+            return AppTheme.fieldMint
         }
-        return group.palette.0.opacity(0.12)
+        return tint.1
+    }
+
+    private func optionBadgeBorder(index: Int, question: KnowledgeWikiQuestion) -> Color {
+        guard let selected = store.currentSelection else { return tint.0.opacity(0.35) }
+        if question.correctIndex == index || selected == index {
+            return AppTheme.fieldMint
+        }
+        return tint.0.opacity(0.35)
     }
 
     private func optionBadgeTextColor(index: Int, question: KnowledgeWikiQuestion) -> Color {
-        guard store.currentSelection != nil else { return group.palette.0 }
+        guard store.currentSelection != nil else { return tint.0 }
         if question.correctIndex == index {
             return .white
         }
         if store.currentSelection == index {
             return .white
         }
-        return group.palette.0
+        return tint.0
     }
 
     private func optionHighlightColor(index: Int, question: KnowledgeWikiQuestion) -> Color {
         if question.correctIndex == index {
-            return AppTheme.accentBamboo
+            return AppTheme.fieldMint
         }
         if store.currentSelection == index {
-            return AppTheme.accentCinnabar
+            return AppTheme.fieldMint
         }
-        return AppTheme.textSecondary
+        return AppTheme.fieldMossLight
     }
 
     private func optionSymbol(index: Int, question: KnowledgeWikiQuestion) -> String? {
@@ -1571,7 +1577,7 @@ struct KnowledgeWikiQuizView: View {
             Spacer(minLength: 80)
             ProgressView("正在装载题库...")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .tint(group.palette.0)
+                .tint(AppTheme.fieldMint)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1580,15 +1586,14 @@ struct KnowledgeWikiQuizView: View {
     private func errorView(message: String) -> some View {
         VStack(spacing: 14) {
             Spacer(minLength: 80)
-            Image(systemName: "questionmark.folder")
-                .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary)
+            Text("📭")
+                .font(.system(size: 34))
             Text("题库加载失败")
-                .font(.system(size: 22, weight: .bold, design: .serif))
-                .foregroundStyle(AppTheme.textPrimary)
+                .font(.system(size: 20, weight: .bold, design: .serif))
+                .foregroundStyle(AppTheme.fieldInk)
             Text(message)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.fieldMoss)
                 .multilineTextAlignment(.center)
             Spacer()
         }
