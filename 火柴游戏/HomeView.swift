@@ -509,15 +509,6 @@ struct HomeView: View {
                 .padding(.horizontal, AppTheme.paddingScreen)
 
             DiscoverySuggestionCard(
-                icon: "play.tv.fill",
-                title: "视频乐园",
-                subtitle: "海量英语动画、科学百科，随时播放",
-                colors: (AppTheme.accentInkPurple, AppTheme.accentPink)
-            ) {
-                progress.selectedTab = 2
-            }
-
-            DiscoverySuggestionCard(
                 icon: "books.vertical.fill",
                 title: "学习资料",
                 subtitle: "课程笔记、单元练习，全科覆盖",

@@ -36,8 +36,6 @@ struct ExploreView: View {
                 switch dest {
                 case .geography:
                     ChinaGeographyView()
-                case .video:
-                    VideoCategoryListView()
                 case .bilibili:
                     BilibiliColumnView()
                 case .tutu:
@@ -595,11 +593,7 @@ struct ExploreVolume: Identifiable {
             ExploreItem(id: "i8", seal: "贰", title: "B站专栏",
                         subtitle: "数学思维 · 趣味百科 · 国学语文",
                         icon: "📺", meta: "精选 · 持续更新", medal: "",
-                        destination: .bilibili, isLast: false),
-            ExploreItem(id: "i3", seal: "叁", title: "视频乐园",
-                        subtitle: "86 个视频 · 动画与百科",
-                        icon: "🎬", meta: "▶ 12 集", medal: "",
-                        destination: .video, isLast: true),
+                        destination: .bilibili, isLast: true),
         ]),
         ExploreVolume(id: "v3", numLabel: "卷三", name: "学问营地", icon: "📚", items: [
             ExploreItem(id: "i4", seal: "肆", title: "成语接龙",
@@ -638,7 +632,6 @@ struct ExploreItem: Identifiable {
 
 enum ExploreDestination: Hashable {
     case geography
-    case video
     case bilibili
     case tutu
     case idiomSolitaire
