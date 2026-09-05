@@ -600,6 +600,8 @@ struct HomeView: View {
             PatternFindHomeView(onExit: { presentedGame = nil })
         case .multiplicationPlanet:
             MultiplicationPlanetView(onExit: { presentedGame = nil })
+        case .schulte:
+            SchulteGridView(onExit: { presentedGame = nil })
         }
     }
 }

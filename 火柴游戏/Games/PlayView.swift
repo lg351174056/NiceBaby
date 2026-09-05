@@ -472,6 +472,7 @@ struct PlayView: View {
                 Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
                 Lesson(kind: .arithmetic,     name: "口算摩天轮", sub: "1-6 年级 · 看谁算得快", icon: "🎡"),
                 Lesson(kind: .multiplicationPlanet, name: "乘法星球", sub: "气球答题 · 2~12 乘法", icon: "🎈"),
+                Lesson(kind: .schulte,         name: "舒尔特方格", sub: "按 1→N 依次点击 · 练专注", icon: "🔢"),
                 Lesson(kind: .mathHomework,   name: "数学批改", sub: "红笔圈错 · 1-6 年级", icon: "📖"),
             ]),
             Subject(seal: "文", icon: "🎨", name: "文学杂技团", lessons: [
@@ -615,6 +616,7 @@ struct PlayView: View {
         case "📖": return Color(red: 255/255, green: 240/255, blue: 216/255)
         case "🧩", "🍊": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "🎈": return Color(red: 232/255, green: 245/255, blue: 224/255)
+        case "🔢": return Color(red: 231/255, green: 243/255, blue: 252/255)
         case "✍️", "🏫": return Color(red: 231/255, green: 243/255, blue: 252/255)
         case "🔍": return Color(red: 238/255, green: 233/255, blue: 248/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
@@ -654,6 +656,10 @@ struct PlayView: View {
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .mathHomework:
             let done = GameBestScoreStore.best(for: kind) > 0
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .schulte:
+            let done = SchulteBestStore.hasAny()
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         default:
@@ -819,6 +825,8 @@ struct PlayView: View {
                 PatternFindHomeView(onExit: { popToRoot() })
             case .multiplicationPlanet:
                 MultiplicationPlanetView(onExit: { popToRoot() })
+            case .schulte:
+                SchulteGridView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)
