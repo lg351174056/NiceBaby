@@ -24,6 +24,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case mathHomework       // 数学作业（红笔圈错）
     case idiomEncyclopedia  // 成语百科（释义+故事+分类）
     case patternFind        // 找规律（看图 · 数字，本地题库闯关）
+    case multiplicationPlanet // 乘法星球（气球答题）
 
     var id: String { rawValue }
 
@@ -49,6 +50,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .mathHomework:   return "数学批改"
         case .idiomEncyclopedia: return "成语百科"
         case .patternFind:    return "找规律"
+        case .multiplicationPlanet: return "乘法星球"
         }
     }
 
@@ -74,6 +76,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .mathHomework:   return "红笔圈错 · 1-6 年级 15 题"
         case .idiomEncyclopedia: return "29499条 · 释义+故事+分类"
         case .patternFind:    return "看图 200 关 · 数字 300 关 · 规律闯关"
+        case .multiplicationPlanet: return "气球答题 · 三种难度 · 限时挑战"
         }
     }
 
@@ -99,6 +102,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .mathHomework:   return "number.circle.fill"
         case .idiomEncyclopedia: return "book.pages.fill"
         case .patternFind:    return "sparkle.magnifyingglass"
+        case .multiplicationPlanet: return "balloon.fill"
         }
     }
 
@@ -124,6 +128,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .mathHomework:   return (Color(red: 232/255, green: 106/255, blue: 158/255), Color(red: 245/255, green: 166/255, blue: 35/255))
         case .idiomEncyclopedia: return (AppTheme.accentCinnabar, AppTheme.accentYellow)
         case .patternFind:    return (AppTheme.accentSage, AppTheme.accentBamboo)
+        case .multiplicationPlanet: return (Color(red: 1.0, green: 0.55, blue: 0.45), Color(red: 0.35, green: 0.62, blue: 0.98))
         }
     }
 

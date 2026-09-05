@@ -598,6 +598,8 @@ struct HomeView: View {
             IdiomEncyclopediaView(onExit: { presentedGame = nil })
         case .patternFind:
             PatternFindHomeView(onExit: { presentedGame = nil })
+        case .multiplicationPlanet:
+            MultiplicationPlanetView(onExit: { presentedGame = nil })
         }
     }
 }
