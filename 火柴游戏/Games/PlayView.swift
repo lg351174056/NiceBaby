@@ -485,6 +485,7 @@ struct PlayView: View {
                 Lesson(kind: .brainTeaser,    name: "脑筋急转弯", sub: "绕一绕，想一想", icon: "🤔"),
                 Lesson(kind: .surnameMatch,   name: "百家姓闯关", sub: "看字选音 · 听音选字", icon: "👪"),
                 Lesson(kind: .funQuiz,        name: "趣味答题", sub: "多主题 · 图片题与冷知识", icon: "🎯"),
+                Lesson(kind: .patternFind,    name: "找规律", sub: "看图 200 关 · 数字 300 关", icon: "🔍"),
             ]),
         ]
     }
@@ -613,6 +614,7 @@ struct PlayView: View {
         case "📖": return Color(red: 255/255, green: 240/255, blue: 216/255)
         case "🧩", "🍊": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "✍️", "🏫": return Color(red: 231/255, green: 243/255, blue: 252/255)
+        case "🔍": return Color(red: 238/255, green: 233/255, blue: 248/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
         default: return Color(red: 227/255, green: 240/255, blue: 248/255)
         }
@@ -811,6 +813,8 @@ struct PlayView: View {
                 MathHomeworkView(onExit: { popToRoot() })
             case .idiomEncyclopedia:
                 IdiomEncyclopediaView(onExit: { popToRoot() })
+            case .patternFind:
+                PatternFindHomeView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

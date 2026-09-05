@@ -611,7 +611,6 @@ struct KnowledgeWikiHomeView: View {
                         .padding(.top, 14)
 
                     WikiSectionTitle(title: "漫游分组", sub: "GROUPS", showMore: true)
-                        .padding(.horizontal, AppTheme.paddingScreen)
                         .padding(.top, 16)
                         .padding(.bottom, 10)
 

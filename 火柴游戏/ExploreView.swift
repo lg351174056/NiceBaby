@@ -38,6 +38,8 @@ struct ExploreView: View {
                     ChinaGeographyView()
                 case .video:
                     VideoCategoryListView()
+                case .bilibili:
+                    BilibiliColumnView()
                 case .tutu:
                     TutuHomeView()
                 case .idiomSolitaire:
@@ -489,6 +491,7 @@ struct ExploreView: View {
         case "🏔": return Color(red: 255/255, green: 238/255, blue: 216/255)
         case "🖼": return Color(red: 227/255, green: 240/255, blue: 248/255)
         case "🎬": return Color(red: 232/255, green: 245/255, blue: 224/255)
+        case "📺": return Color(red: 255/255, green: 240/255, blue: 246/255)
         case "🔗": return Color(red: 245/255, green: 232/255, blue: 245/255)
         case "📜": return Color(red: 248/255, green: 240/255, blue: 216/255)
         default: return Color(red: 240/255, green: 234/255, blue: 224/255)
@@ -589,6 +592,10 @@ struct ExploreVolume: Identifiable {
                         destination: .wallpaper, isLast: true),
         ]),
         ExploreVolume(id: "v2", numLabel: "卷二", name: "声影营地", icon: "📻", items: [
+            ExploreItem(id: "i8", seal: "贰", title: "B站专栏",
+                        subtitle: "数学思维 · 趣味百科 · 国学语文",
+                        icon: "📺", meta: "精选 · 持续更新", medal: "",
+                        destination: .bilibili, isLast: false),
             ExploreItem(id: "i3", seal: "叁", title: "视频乐园",
                         subtitle: "86 个视频 · 动画与百科",
                         icon: "🎬", meta: "▶ 12 集", medal: "",
@@ -632,6 +639,7 @@ struct ExploreItem: Identifiable {
 enum ExploreDestination: Hashable {
     case geography
     case video
+    case bilibili
     case tutu
     case idiomSolitaire
     case wallpaper
