@@ -467,27 +467,33 @@ struct PlayView: View {
     private var subjects: [Subject] {
         [
             Subject(seal: "数", icon: "🎪", name: "数理马戏团", lessons: [
-                Lesson(kind: .matchstick,     name: "火柴推理", sub: "移一根火柴，让等式成立", icon: "🧡"),
-                Lesson(kind: .sudoku,         name: "星云数独", sub: "4×4 · 6×6 · 9×9 宫格", icon: "🪐"),
-                Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
                 Lesson(kind: .arithmetic,     name: "口算摩天轮", sub: "1-6 年级 · 看谁算得快", icon: "🎡"),
                 Lesson(kind: .multiplicationPlanet, name: "乘法星球", sub: "气球答题 · 2~12 乘法", icon: "🎈"),
-                Lesson(kind: .schulte,         name: "舒尔特方格", sub: "按 1→N 依次点击 · 练专注", icon: "🔢"),
-                Lesson(kind: .mathHomework,   name: "数学批改", sub: "红笔圈错 · 1-6 年级", icon: "📖"),
+                Lesson(kind: .game24,          name: "24点速算", sub: "两两合并 · 加减乘除凑 24", icon: "🧮"),
+                Lesson(kind: .matchstick,     name: "火柴推理", sub: "移一根火柴，让等式成立", icon: "🧡"),
+                Lesson(kind: .sudoku,         name: "星云数独", sub: "4×4 · 6×6 · 9×9 宫格", icon: "🪐"),
             ]),
             Subject(seal: "文", icon: "🎨", name: "文学杂技团", lessons: [
                 Lesson(kind: .poetryComplete, name: "诗词补全", sub: "古诗少一句 · 四选一", icon: "🍊"),
-                Lesson(kind: .chineseHomework, name: "作文批改王", sub: "田字格找错别字", icon: "✍️"),
                 Lesson(kind: .idiomFillBlank, name: "成语填空", sub: "缺个字，你来填", icon: "📝"),
+                Lesson(kind: .idiomFillLevel, name: "成语填字", sub: "500 关 · 看提示选对字", icon: "🀄"),
                 Lesson(kind: .antonymMatch,   name: "反义对对碰", sub: "找相反的好朋友", icon: "⚖️"),
                 Lesson(kind: .sanzijing,      name: "三字经", sub: "人之初，性本善", icon: "📖"),
-                Lesson(kind: .idiomFillLevel, name: "成语填字", sub: "500 关 · 看提示选对字", icon: "🀄"),
+                Lesson(kind: .surnameMatch,   name: "百家姓闯关", sub: "看字选音 · 听音选字", icon: "👪"),
             ]),
             Subject(seal: "智", icon: "🎡", name: "脑力摩天轮", lessons: [
                 Lesson(kind: .brainTeaser,    name: "脑筋急转弯", sub: "绕一绕，想一想", icon: "🤔"),
-                Lesson(kind: .surnameMatch,   name: "百家姓闯关", sub: "看字选音 · 听音选字", icon: "👪"),
-                Lesson(kind: .funQuiz,        name: "趣味答题", sub: "多主题 · 图片题与冷知识", icon: "🎯"),
                 Lesson(kind: .patternFind,    name: "找规律", sub: "看图 200 关 · 数字 300 关", icon: "🔍"),
+                Lesson(kind: .funQuiz,        name: "趣味答题", sub: "多主题 · 图片题与冷知识", icon: "🎯"),
+                Lesson(kind: .knowledgeWiki,  name: "知识百科", sub: "海量百科题库 · 随点随答", icon: "📚"),
+            ]),
+            Subject(seal: "专", icon: "👀", name: "专注力乐园", lessons: [
+                Lesson(kind: .schulte,         name: "舒尔特方格", sub: "按 1→N 依次点击 · 练专注", icon: "🔢"),
+                Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
+            ]),
+            Subject(seal: "师", icon: "✏️", name: "小老师批改屋", lessons: [
+                Lesson(kind: .mathHomework,   name: "数学批改", sub: "红笔圈错 · 1-6 年级", icon: "📖"),
+                Lesson(kind: .chineseHomework, name: "作文批改王", sub: "田字格找错别字", icon: "✍️"),
             ]),
         ]
     }
@@ -617,9 +623,11 @@ struct PlayView: View {
         case "🧩", "🍊": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "🎈": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "🔢": return Color(red: 231/255, green: 243/255, blue: 252/255)
+        case "🧮": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "✍️", "🏫": return Color(red: 231/255, green: 243/255, blue: 252/255)
         case "🔍": return Color(red: 238/255, green: 233/255, blue: 248/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
+        case "🤔", "🎯", "📚", "👪": return Color(red: 236/255, green: 240/255, blue: 252/255)
         default: return Color(red: 227/255, green: 240/255, blue: 248/255)
         }
     }
@@ -660,6 +668,10 @@ struct PlayView: View {
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .schulte:
             let done = SchulteBestStore.hasAny()
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .game24:
+            let done = ["easy", "normal", "hard"].contains { Game24PointStore.bestScore(for: $0) > 0 }
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         default:
@@ -827,6 +839,8 @@ struct PlayView: View {
                 MultiplicationPlanetView(onExit: { popToRoot() })
             case .schulte:
                 SchulteGridView(onExit: { popToRoot() })
+            case .game24:
+                Game24PointView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

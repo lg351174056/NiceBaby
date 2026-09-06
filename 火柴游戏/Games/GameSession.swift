@@ -26,6 +26,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case patternFind        // 找规律（看图 · 数字，本地题库闯关）
     case multiplicationPlanet // 乘法星球（气球答题）
     case schulte            // 舒尔特方格（专注力训练）
+    case game24             // 24点速算（加减乘除凑24）
 
     var id: String { rawValue }
 
@@ -53,6 +54,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .patternFind:    return "找规律"
         case .multiplicationPlanet: return "乘法星球"
         case .schulte:        return "舒尔特方格"
+        case .game24:         return "24点速算"
         }
     }
 
@@ -80,6 +82,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .patternFind:    return "看图 200 关 · 数字 300 关 · 规律闯关"
         case .multiplicationPlanet: return "气球答题 · 三种难度 · 限时挑战"
         case .schulte:        return "3×3 / 4×4 / 5×5 / 6×6 · 按序点击练专注"
+        case .game24:         return "两两合并 · 加减乘除凑 24"
         }
     }
 
@@ -107,6 +110,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .patternFind:    return "sparkle.magnifyingglass"
         case .multiplicationPlanet: return "balloon.fill"
         case .schulte:        return "number.square.fill"
+        case .game24:         return "plus.minus"
         }
     }
 
@@ -134,6 +138,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .patternFind:    return (AppTheme.accentSage, AppTheme.accentBamboo)
         case .multiplicationPlanet: return (Color(red: 1.0, green: 0.55, blue: 0.45), Color(red: 0.35, green: 0.62, blue: 0.98))
         case .schulte:        return (Color(red: 0.35, green: 0.62, blue: 0.98), Color(red: 0.68, green: 0.55, blue: 0.98))
+        case .game24:         return (Color(red: 0.28, green: 0.79, blue: 0.52), Color(red: 0.85, green: 0.60, blue: 0.15))
         }
     }
 

@@ -602,6 +602,8 @@ struct HomeView: View {
             MultiplicationPlanetView(onExit: { presentedGame = nil })
         case .schulte:
             SchulteGridView(onExit: { presentedGame = nil })
+        case .game24:
+            Game24PointView(onExit: { presentedGame = nil })
         }
     }
 }
