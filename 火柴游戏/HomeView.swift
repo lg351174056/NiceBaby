@@ -606,6 +606,8 @@ struct HomeView: View {
             Game24PointView(onExit: { presentedGame = nil })
         case .memoryNumber:
             MemoryNumberView(onExit: { presentedGame = nil })
+        case .nBack:
+            NBackView(onExit: { presentedGame = nil })
         }
     }
 }

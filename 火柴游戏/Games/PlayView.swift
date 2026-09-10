@@ -489,6 +489,7 @@ struct PlayView: View {
             ]),
             Subject(seal: "专", icon: "👀", name: "专注力乐园", lessons: [
                 Lesson(kind: .schulte,         name: "舒尔特方格", sub: "按 1→N 依次点击 · 练专注", icon: "🔢"),
+                Lesson(kind: .nBack,           name: "N-Back 训练", sub: "工作记忆 · 一样/不一样", icon: "🔁"),
                 Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
                 Lesson(kind: .memoryNumber,   name: "记数训练", sub: "记忆随机数 · 倒计时默写", icon: "🧠"),
             ]),
@@ -513,30 +514,7 @@ struct PlayView: View {
     }
 
     private func subjectCard(_ subject: Subject) -> some View {
-        let doneCount = subject.lessons.filter { lessonState($0.kind).done }.count
-        return VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Text(subject.icon).font(.system(size: 20))
-                Text(subject.name)
-                    .font(.system(size: 14, weight: .heavy, design: .serif))
-                    .tracking(1)
-                    .foregroundStyle(AppTheme.fieldInk)
-                Rectangle()
-                    .fill(
-                        LinearGradient(colors: [
-                            AppTheme.fieldOlive.opacity(0.35),
-                            .clear
-                        ], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .frame(height: 2)
-                Text("\(doneCount) / \(subject.lessons.count) 项")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.fieldMoss)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 12)
-            .padding(.bottom, 4)
-
+        VStack(spacing: 0) {
             ForEach(Array(subject.lessons.enumerated()), id: \.offset) { index, lesson in
                 Button {
                     pushGame(lesson.kind)
@@ -551,6 +529,7 @@ struct PlayView: View {
                         .padding(.horizontal, 24)
                 }
             }
+            .padding(.top, 4)
             .padding(.bottom, 6)
         }
         .background(
@@ -627,6 +606,7 @@ struct PlayView: View {
         case "🧮": return Color(red: 232/255, green: 245/255, blue: 224/255)
         case "✍️", "🏫": return Color(red: 231/255, green: 243/255, blue: 252/255)
         case "🔍": return Color(red: 238/255, green: 233/255, blue: 248/255)
+        case "🔁": return Color(red: 234/255, green: 231/255, blue: 250/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
         case "🤔", "🎯", "📚", "👪", "🧠": return Color(red: 236/255, green: 240/255, blue: 252/255)
         default: return Color(red: 227/255, green: 240/255, blue: 248/255)
@@ -677,6 +657,10 @@ struct PlayView: View {
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .memoryNumber:
             let done = ["easy", "normal", "hard", "hell"].contains { MemoryNumberStore.bestScore(for: $0) > 0 }
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .nBack:
+            let done = NBackStore.hasAny()
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         default:
@@ -848,6 +832,8 @@ struct PlayView: View {
                 Game24PointView(onExit: { popToRoot() })
             case .memoryNumber:
                 MemoryNumberView(onExit: { popToRoot() })
+            case .nBack:
+                NBackView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)

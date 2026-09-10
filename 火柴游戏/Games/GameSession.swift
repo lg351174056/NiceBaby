@@ -28,6 +28,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case schulte            // 舒尔特方格（专注力训练）
     case game24             // 24点速算（加减乘除凑24）
     case memoryNumber       // 记数训练（记忆随机数）
+    case nBack              // N-Back 工作记忆训练
 
     var id: String { rawValue }
 
@@ -57,6 +58,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .schulte:        return "舒尔特方格"
         case .game24:         return "24点速算"
         case .memoryNumber:   return "记数训练"
+        case .nBack:          return "N-Back 训练"
         }
     }
 
@@ -86,6 +88,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .schulte:        return "3×3 / 4×4 / 5×5 / 6×6 · 按序点击练专注"
         case .game24:         return "两两合并 · 加减乘除凑 24"
         case .memoryNumber:   return "记忆随机数 · 倒计时默写"
+        case .nBack:          return "工作记忆 · 一样 / 忘记了 / 不一样"
         }
     }
 
@@ -115,6 +118,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .schulte:        return "number.square.fill"
         case .game24:         return "plus.minus"
         case .memoryNumber:   return "memorychip.fill"
+        case .nBack:          return "arrow.triangle.2.circlepath"
         }
     }
 
@@ -144,6 +148,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .schulte:        return (Color(red: 0.35, green: 0.62, blue: 0.98), Color(red: 0.68, green: 0.55, blue: 0.98))
         case .game24:         return (Color(red: 0.28, green: 0.79, blue: 0.52), Color(red: 0.85, green: 0.60, blue: 0.15))
         case .memoryNumber:   return (Color(red: 0.55, green: 0.40, blue: 0.85), Color(red: 0.20, green: 0.60, blue: 0.70))
+        case .nBack:          return (Color(red: 0.62, green: 0.45, blue: 0.90), Color(red: 0.35, green: 0.68, blue: 0.82))
         }
     }
 
