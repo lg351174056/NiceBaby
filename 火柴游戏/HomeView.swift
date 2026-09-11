@@ -608,6 +608,10 @@ struct HomeView: View {
             MemoryNumberView(onExit: { presentedGame = nil })
         case .nBack:
             NBackView(onExit: { presentedGame = nil })
+        case .magicTriangle:
+            MagicTriangleView(onExit: { presentedGame = nil })
+        case .numberArk:
+            NumberArkView(onExit: { presentedGame = nil })
         }
     }
 }

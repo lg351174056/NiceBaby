@@ -29,6 +29,8 @@ enum GameKind: String, CaseIterable, Identifiable {
     case game24             // 24点速算（加减乘除凑24）
     case memoryNumber       // 记数训练（记忆随机数）
     case nBack              // N-Back 工作记忆训练
+    case magicTriangle      // 魔三角（三条边和相同）
+    case numberArk          // 数阵方舟（行列不重复）
 
     var id: String { rawValue }
 
@@ -59,6 +61,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .game24:         return "24点速算"
         case .memoryNumber:   return "记数训练"
         case .nBack:          return "N-Back 训练"
+        case .magicTriangle:  return "魔三角"
+        case .numberArk:      return "数阵方舟"
         }
     }
 
@@ -89,6 +93,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .game24:         return "两两合并 · 加减乘除凑 24"
         case .memoryNumber:   return "记忆随机数 · 倒计时默写"
         case .nBack:          return "工作记忆 · 一样 / 忘记了 / 不一样"
+        case .magicTriangle:  return "让三条边的和相同"
+        case .numberArk:      return "行列不重复 · 补全数阵"
         }
     }
 
@@ -119,6 +125,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .game24:         return "plus.minus"
         case .memoryNumber:   return "memorychip.fill"
         case .nBack:          return "arrow.triangle.2.circlepath"
+        case .magicTriangle:  return "triangle.fill"
+        case .numberArk:      return "tablecells.fill"
         }
     }
 
@@ -149,6 +157,8 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .game24:         return (Color(red: 0.28, green: 0.79, blue: 0.52), Color(red: 0.85, green: 0.60, blue: 0.15))
         case .memoryNumber:   return (Color(red: 0.55, green: 0.40, blue: 0.85), Color(red: 0.20, green: 0.60, blue: 0.70))
         case .nBack:          return (Color(red: 0.62, green: 0.45, blue: 0.90), Color(red: 0.35, green: 0.68, blue: 0.82))
+        case .magicTriangle:  return (Color(red: 0.93, green: 0.44, blue: 0.20), Color(red: 0.98, green: 0.63, blue: 0.28))
+        case .numberArk:      return (Color(red: 0.13, green: 0.57, blue: 0.58), Color(red: 0.30, green: 0.72, blue: 0.66))
         }
     }
 
