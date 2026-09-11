@@ -495,6 +495,7 @@ struct PlayView: View {
                 Lesson(kind: .nBack,           name: "N-Back 训练", sub: "工作记忆 · 一样/不一样", icon: "🔁"),
                 Lesson(kind: .maze,           name: "迷宫乐园", sub: "走出迷宫，找到草莓熊", icon: "🧩"),
                 Lesson(kind: .memoryNumber,   name: "记数训练", sub: "记忆随机数 · 倒计时默写", icon: "🧠"),
+                Lesson(kind: .memoryCards,    name: "记忆翻牌", sub: "配对算式与结果", icon: "🃏"),
             ]),
             Subject(seal: "师", icon: "✏️", name: "小老师批改屋", lessons: [
                 Lesson(kind: .mathHomework,   name: "数学批改", sub: "红笔圈错 · 1-6 年级", icon: "📖"),
@@ -613,6 +614,7 @@ struct PlayView: View {
         case "🔺": return Color(red: 255/255, green: 236/255, blue: 224/255)
         case "⛵": return Color(red: 226/255, green: 240/255, blue: 250/255)
         case "🗼": return Color(red: 238/255, green: 232/255, blue: 252/255)
+        case "🃏": return Color(red: 226/255, green: 236/255, blue: 252/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
         case "🤔", "🎯", "📚", "👪", "🧠": return Color(red: 236/255, green: 240/255, blue: 252/255)
         default: return Color(red: 227/255, green: 240/255, blue: 248/255)
@@ -679,6 +681,10 @@ struct PlayView: View {
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .hanoi:
             let done = HanoiStore.hasAny()
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .memoryCards:
+            let done = MemoryCardsStore.hasAny()
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         default:
@@ -858,6 +864,8 @@ struct PlayView: View {
                 NumberArkView(onExit: { popToRoot() })
             case .hanoi:
                 HanoiTowerView(onExit: { popToRoot() })
+            case .memoryCards:
+                MemoryCardsView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)
