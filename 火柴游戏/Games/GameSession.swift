@@ -31,6 +31,7 @@ enum GameKind: String, CaseIterable, Identifiable {
     case nBack              // N-Back 工作记忆训练
     case magicTriangle      // 魔三角（三条边和相同）
     case numberArk          // 数阵方舟（行列不重复）
+    case hanoi              // 汉诺塔（经典递归）
 
     var id: String { rawValue }
 
@@ -63,6 +64,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .nBack:          return "N-Back 训练"
         case .magicTriangle:  return "魔三角"
         case .numberArk:      return "数阵方舟"
+        case .hanoi:          return "汉诺塔"
         }
     }
 
@@ -95,6 +97,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .nBack:          return "工作记忆 · 一样 / 忘记了 / 不一样"
         case .magicTriangle:  return "让三条边的和相同"
         case .numberArk:      return "行列不重复 · 补全数阵"
+        case .hanoi:          return "经典递归 · 把所有盘搬到目标柱"
         }
     }
 
@@ -127,6 +130,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .nBack:          return "arrow.triangle.2.circlepath"
         case .magicTriangle:  return "triangle.fill"
         case .numberArk:      return "tablecells.fill"
+        case .hanoi:          return "square.stack.3d.up.fill"
         }
     }
 
@@ -159,6 +163,7 @@ enum GameKind: String, CaseIterable, Identifiable {
         case .nBack:          return (Color(red: 0.62, green: 0.45, blue: 0.90), Color(red: 0.35, green: 0.68, blue: 0.82))
         case .magicTriangle:  return (Color(red: 0.93, green: 0.44, blue: 0.20), Color(red: 0.98, green: 0.63, blue: 0.28))
         case .numberArk:      return (Color(red: 0.13, green: 0.57, blue: 0.58), Color(red: 0.30, green: 0.72, blue: 0.66))
+        case .hanoi:          return (Color(red: 0.48, green: 0.36, blue: 0.88), Color(red: 0.62, green: 0.45, blue: 0.92))
         }
     }
 

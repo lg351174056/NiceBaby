@@ -91,22 +91,6 @@ struct NumberArkView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                VStack {
-                    Spacer()
-                    HStack {
-                        Button { showHelp = true } label: {
-                            Text("?").font(.system(size: 22, weight: .black))
-                                .foregroundStyle(.white)
-                                .frame(width: 46, height: 46)
-                                .background(Circle().fill(accent).shadow(color: accent.opacity(0.4), radius: 8, y: 4))
-                        }
-                        .buttonStyle(.plain)
-                        Spacer()
-                    }
-                    .padding(.leading, 18)
-                    .padding(.bottom, 18)
-                }
-
                 if let toast {
                     VStack {
                         Spacer()
@@ -131,17 +115,32 @@ struct NumberArkView: View {
     // MARK: 顶栏
 
     private var navBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             GracefulBackButton(action: onExit)
             Text("数阵方舟")
                 .font(.system(size: 16, weight: .heavy, design: .serif))
                 .foregroundStyle(AppTheme.fieldInk)
                 .frame(maxWidth: .infinity)
-            bestChip
+            HStack(spacing: 8) {
+                bestChip
+                helpButton
+            }
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
         .padding(.bottom, 2)
+    }
+
+    private var helpButton: some View {
+        Button { showHelp = true } label: {
+            Text("?")
+                .font(.system(size: 15, weight: .black))
+                .foregroundStyle(accent)
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(accentSoft))
+                .overlay(Circle().strokeBorder(accent.opacity(0.35), lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
     }
 
     private var bestChip: some View {

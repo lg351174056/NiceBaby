@@ -612,6 +612,8 @@ struct HomeView: View {
             MagicTriangleView(onExit: { presentedGame = nil })
         case .numberArk:
             NumberArkView(onExit: { presentedGame = nil })
+        case .hanoi:
+            HanoiTowerView(onExit: { presentedGame = nil })
         }
     }
 }

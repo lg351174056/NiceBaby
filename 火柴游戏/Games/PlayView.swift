@@ -474,6 +474,7 @@ struct PlayView: View {
                 Lesson(kind: .sudoku,         name: "星云数独", sub: "4×4 · 6×6 · 9×9 宫格", icon: "🪐"),
                 Lesson(kind: .magicTriangle,  name: "魔三角", sub: "三条边的和相同", icon: "🔺"),
                 Lesson(kind: .numberArk,      name: "数阵方舟", sub: "行列不重复 · 补全数阵", icon: "⛵"),
+                Lesson(kind: .hanoi,          name: "汉诺塔", sub: "经典递归 · 搬到目标柱", icon: "🗼"),
             ]),
             Subject(seal: "文", icon: "🎨", name: "文学杂技团", lessons: [
                 Lesson(kind: .poetryComplete, name: "诗词补全", sub: "古诗少一句 · 四选一", icon: "🍊"),
@@ -611,6 +612,7 @@ struct PlayView: View {
         case "🔁": return Color(red: 234/255, green: 231/255, blue: 250/255)
         case "🔺": return Color(red: 255/255, green: 236/255, blue: 224/255)
         case "⛵": return Color(red: 226/255, green: 240/255, blue: 250/255)
+        case "🗼": return Color(red: 238/255, green: 232/255, blue: 252/255)
         case "📝", "⚖️", "🀄": return Color(red: 245/255, green: 232/255, blue: 245/255)
         case "🤔", "🎯", "📚", "👪", "🧠": return Color(red: 236/255, green: 240/255, blue: 252/255)
         default: return Color(red: 227/255, green: 240/255, blue: 248/255)
@@ -673,6 +675,10 @@ struct PlayView: View {
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         case .numberArk:
             let done = NumberArkStore.hasAny()
+            let stars = done ? "⭐" : ""
+            return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
+        case .hanoi:
+            let done = HanoiStore.hasAny()
             let stars = done ? "⭐" : ""
             return LessonState(done: done, now: !done, stars: stars, label: done ? "已修" : "修习中")
         default:
@@ -850,6 +856,8 @@ struct PlayView: View {
                 MagicTriangleView(onExit: { popToRoot() })
             case .numberArk:
                 NumberArkView(onExit: { popToRoot() })
+            case .hanoi:
+                HanoiTowerView(onExit: { popToRoot() })
             }
         }
         .toolbar(.hidden, for: .navigationBar)
