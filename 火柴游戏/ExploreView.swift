@@ -46,6 +46,10 @@ struct ExploreView: View {
                     WallpaperGalleryView()
                 case .poetry:
                     PMMainView()
+                case .clock:
+                    ClockLearningView()
+                case .rmb:
+                    RmbBasicsView()
                 }
             }
         }
@@ -603,7 +607,15 @@ struct ExploreVolume: Identifiable {
             ExploreItem(id: "i5", seal: "伍", title: "诗词文学",
                         subtitle: "311 首 · 唐宋元明清",
                         icon: "📜", meta: "", medal: "",
-                        destination: .poetry, isLast: true),
+                        destination: .poetry, isLast: false),
+            ExploreItem(id: "i9", seal: "陆", title: "钟表乐园",
+                        subtitle: "看时间 · 读时间 · 调指针",
+                        icon: "🕐", meta: "", medal: "",
+                        destination: .clock, isLast: false),
+            ExploreItem(id: "i10", seal: "柒", title: "人民币初步",
+                        subtitle: "数钱 · 付钱 · 找零",
+                        icon: "🪙", meta: "", medal: "",
+                        destination: .rmb, isLast: true),
         ]),
         ExploreVolume(id: "v4", numLabel: "续卷", name: "迷雾之地", icon: "🌫", items: [
             ExploreItem(id: "i6", seal: "疑", title: "奇妙科学",
@@ -637,6 +649,8 @@ enum ExploreDestination: Hashable {
     case idiomSolitaire
     case wallpaper
     case poetry
+    case clock
+    case rmb
 }
 
 private struct ExploreBounceButtonStyle: ButtonStyle {
