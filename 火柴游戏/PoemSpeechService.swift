@@ -62,6 +62,25 @@ final class PoemSpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDe
         synthesizer.speak(utterance)
     }
 
+    /// 通用朗读（非诗词）：优先腾讯 TTS，失败回退系统语音。用于生僻字等。
+    func speak(text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        stop()
+        lastTencentErrorMessage = nil
+        if tencentSettings.enabled && tencentSettings.hasCredentials {
+            let configuration = tencentSettings.snapshot
+            tencentTTSService.speak(
+                text: trimmed,
+                configuration: configuration,
+                onFinish: {},
+                onError: { [weak self] _ in self?.speakWithSystemVoice(text: trimmed) }
+            )
+            return
+        }
+        speakWithSystemVoice(text: trimmed)
+    }
+
     func stop() {
         tencentTTSService.stop()
         if synthesizer.isSpeaking {
