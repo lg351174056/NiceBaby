@@ -50,6 +50,8 @@ struct ExploreView: View {
                     ClockLearningView()
                 case .rmb:
                     RmbBasicsView()
+                case .units:
+                    UnitsChallengeView()
                 }
             }
         }
@@ -615,7 +617,11 @@ struct ExploreVolume: Identifiable {
             ExploreItem(id: "i10", seal: "柒", title: "人民币初步",
                         subtitle: "数钱 · 付钱 · 找零",
                         icon: "🪙", meta: "", medal: "",
-                        destination: .rmb, isLast: true),
+                        destination: .rmb, isLast: false),
+            ExploreItem(id: "i11", seal: "捌", title: "单位大闯关",
+                        subtitle: "长度·质量·时间·钱币·容量·面积",
+                        icon: "📏", meta: "", medal: "",
+                        destination: .units, isLast: true),
         ]),
         ExploreVolume(id: "v4", numLabel: "续卷", name: "迷雾之地", icon: "🌫", items: [
             ExploreItem(id: "i6", seal: "疑", title: "奇妙科学",
@@ -651,6 +657,7 @@ enum ExploreDestination: Hashable {
     case poetry
     case clock
     case rmb
+    case units
 }
 
 private struct ExploreBounceButtonStyle: ButtonStyle {
