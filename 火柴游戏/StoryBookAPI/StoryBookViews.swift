@@ -665,17 +665,40 @@ private struct StoryHTMLView: UIViewRepresentable {
     }
 
     private static func buildHTML(from raw: String) -> String {
-        let body = raw.replacingOccurrences(of: "<img ", with: "<img style=\"max-width:100%;border-radius:12px;\" ")
+        var body = raw.replacingOccurrences(of: "<img ", with: "<img style=\"max-width:100%;border-radius:12px;\" ")
+        // 部分故事正文的 <span> 带 `text-wrap-mode: nowrap` / `white-space: nowrap`，
+        // 会强制整段不换行导致右侧被裁——这里剥离这些声明。
+        body = body.replacingOccurrences(
+            of: #"(white-space|text-wrap-mode)\s*:\s*nowrap\s*;?"#,
+            with: "",
+            options: [.regularExpression, .caseInsensitive]
+        )
         return """
         <html><head><meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
+          html { -webkit-text-size-adjust:100%; }
           body { margin:0; padding:0; font-family:-apple-system,"PingFang SC",sans-serif;
                  font-size:17px; line-height:1.95; color:#3D4A36; font-weight:600;
                  -webkit-user-select:none; }
           p { margin:0 0 1em; }
-          img { max-width:100%; border-radius:12px; }
+          img { max-width:100%; height:auto; border-radius:12px; }
+          /* 兜底：强制正常换行，防止个别标签自带 nowrap */
+          * { white-space:normal !important; text-wrap-mode:wrap !important;
+              overflow-wrap:break-word; word-break:break-word; }
         </style></head>
-        <body>\(body)</body></html>
+        <body>\(body)
+        <script>
+          function reportH(){ try{ window.webkit.messageHandlers.storyContentSize.postMessage(document.body.scrollHeight); }catch(e){} }
+          window.addEventListener('load', reportH);
+          window.addEventListener('resize', reportH);
+          document.addEventListener('DOMContentLoaded', reportH);
+          Array.prototype.forEach.call(document.images, function(img){
+            img.addEventListener('load', reportH);
+            img.addEventListener('error', reportH);
+          });
+          setTimeout(reportH, 300); setTimeout(reportH, 1200);
+        </script>
+        </body></html>
         """
     }
 
@@ -691,7 +714,12 @@ private struct StoryHTMLView: UIViewRepresentable {
             }
         }
 
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {}
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            // 图片/页面加载完成后重新上报高度，避免图片因初次测高偏小被裁
+            if let h = (message.body as? NSNumber)?.doubleValue {
+                DispatchQueue.main.async { self.height.wrappedValue = max(CGFloat(h), 60) }
+            }
+        }
     }
 }
 
