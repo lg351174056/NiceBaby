@@ -362,7 +362,7 @@ struct RareCharView: View {
             }
             VStack { HStack { Spacer(); speakerButton() }; Spacer() }.padding(10)
         }
-        .frame(width: min(UIScreen.main.bounds.width - 120, 240), height: min(UIScreen.main.bounds.width - 120, 240))
+        .frame(width: min(UIScreen.currentBounds.width - 120, 240), height: min(UIScreen.currentBounds.width - 120, 240))
     }
 
     private func speakerButton() -> some View {

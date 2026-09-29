@@ -244,8 +244,8 @@ struct ClockLearningView: View {
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(AppTheme.fieldOlive.opacity(0.22), lineWidth: 2)))
     }
 
-    private var bigSide: CGFloat { min(UIScreen.main.bounds.width - 90, 246) }
-    private var smallSide: CGFloat { min((UIScreen.main.bounds.width - 90) / 2, 132) }
+    private var bigSide: CGFloat { min(UIScreen.currentBounds.width - 90, 246) }
+    private var smallSide: CGFloat { min((UIScreen.currentBounds.width - 90) / 2, 132) }
 
     @ViewBuilder
     private var clockSection: some View {
@@ -515,7 +515,7 @@ struct ClockLearningView: View {
 
     // 比谁晚
     private func buildCompareLater() {
-        var hh = Int.random(in: 1...12), mm = diff.minutes.randomElement() ?? 0
+        let hh = Int.random(in: 1...12), mm = diff.minutes.randomElement() ?? 0
         let delta = [5, 10, 15, 20, 25].randomElement() ?? 10
         var tm = mm + delta, th = hh + tm / 60
         tm %= 60; th = ((th - 1) % 12) + 1

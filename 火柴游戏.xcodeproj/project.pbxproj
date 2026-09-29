@@ -41,6 +41,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				ThirdParty/TencentCloudTTS/QCloudStreamTTS.xcframework,
+				ThirdParty/TencentCloudTTS/VoiceCommon.xcframework,
 			);
 			target = 4EBA08812F77BBB200DD79E9 /* 火柴游戏 */;
 		};
@@ -195,7 +197,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2630;
-				LastUpgradeCheck = 2640;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					4EBA08812F77BBB200DD79E9 = {
 						CreatedOnToolsVersion = 26.3;

@@ -444,7 +444,7 @@ struct UnitsChallengeView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .frame(minHeight: UIScreen.main.bounds.height - 300)
+            .frame(minHeight: UIScreen.currentBounds.height - 300)
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
         }

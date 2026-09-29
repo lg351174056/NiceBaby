@@ -1,4 +1,16 @@
 import SwiftUI
+import UIKit
+
+// MARK: - 屏幕尺寸（替代 iOS 26 起弃用的 UIScreen.main）
+
+extension UIScreen {
+    /// 当前活动窗口所在屏幕的 bounds；取不到时回退到常见手机尺寸。
+    static var currentBounds: CGRect {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+        return scene?.screen.bounds ?? CGRect(x: 0, y: 0, width: 393, height: 852)
+    }
+}
 
 // MARK: - 统一导航栏（二级页）
 
