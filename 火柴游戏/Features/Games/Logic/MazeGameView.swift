@@ -33,38 +33,85 @@ private struct MazeLevelConfig {
     let threeStarRatio: Double
     let twoStarRatio: Double
     let usesDynamicGoal: Bool
+    /// 生成时的转弯偏置：越大通道越爱拐弯、越蜿蜒（0 = 原始均匀随机）
+    let turnBias: Double
+    /// 关卡要求的最短路最少拐弯次数（越往后越绕）
+    let minTurns: Int
+    /// 墙体波浪幅度（相对格子尺寸的比例，0 = 直墙；波浪迷宫章节 > 0）
+    let waveAmp: Double
+    /// 分支因子 0~1：0 = 长走廊少岔路(DFS)，越大岔路口/死胡同越多(Prim 式)
+    let branching: Double
 
     var sizeText: String { "\(w)×\(h)" }
     var minPathLength: Int { Int(Double(w + h) * minPathRatio) }
 }
 
+private let MazeChapterStages = 10   // 每章阶段数
+
 private let MazeStageDefs: [(name: String, icon: String)] = [
+    // 第 1 章 · 经典迷宫（直墙）
     ("糖果花园", "🍬"), ("气球乐园", "🎈"), ("旋转木马", "🎠"),
     ("冰淇淋镇", "🍦"), ("星星剧场", "⭐"), ("彩虹小镇", "🌈"),
     ("月亮港湾", "🌙"), ("云朵森林", "☁️"), ("宝石山谷", "💎"),
     ("梦境城堡", "🏰"),
+    // 第 2 章 · 波浪迷宫（波浪墙，第 51 关起）
+    ("海浪湾", "🌊"), ("涟漪湖", "💧"), ("风铃谷", "🎐"),
+    ("漩涡洞", "🌀"), ("海螺宫", "🐚"), ("泡泡海", "🫧"),
+    ("缠绕林", "🪢"), ("摇曳竹", "🎋"), ("游龙涧", "🐉"),
+    ("波光殿", "🌌"),
 ]
 private let MazeStageSizes: [(w: Int, h: Int)] = [
     (9, 13), (10, 14), (11, 15), (12, 16), (13, 17),
     (14, 18), (15, 19), (16, 20), (17, 20), (17, 21),
+    // 第 2 章尺寸
+    (14, 18), (15, 18), (15, 19), (16, 19), (16, 20),
+    (17, 20), (17, 21), (18, 21), (18, 22), (18, 22),
 ]
 private let MazeLevelsPerStage = 5
 
 private func makeMazeLevels() -> [MazeLevelConfig] {
     var out: [MazeLevelConfig] = []
     for (si, stage) in MazeStageDefs.enumerated() {
+        let isWavy = si >= MazeChapterStages          // 第 2 章 = 波浪迷宫
+        let localStage = si % MazeChapterStages        // 本章内的阶段序号 0..9
+        let progress = Double(localStage) / Double(max(MazeChapterStages - 1, 1))
         for li in 0..<MazeLevelsPerStage {
-            let progress = Double(si) / Double(max(MazeStageDefs.count - 1, 1))
             let withinStage = Double(li) * 0.05
+            let w = MazeStageSizes[si].w, h = MazeStageSizes[si].h
+            let minPathRatio = 1.35 + progress * 1.15 + withinStage
+            let minPathLen = Int(Double(w + h) * minPathRatio)
+
+            let turnBias: Double
+            let turnRatio: Double
+            let waveAmp: Double
+            let branching: Double
+            if isWavy {
+                // 波浪迷宫：整体更绕 + 墙体波浪 + 更多岔路，随本章递增
+                turnBias = 1.5 + progress * 2.0        // 1.5 → 3.5
+                turnRatio = 0.30 + progress * 0.20     // 30% → 50%
+                waveAmp = 0.10 + progress * 0.14       // 波幅(相对cell) 0.10 → 0.24
+                branching = 0.45 + progress * 0.45     // 岔路密度 0.45 → 0.90
+            } else {
+                // 经典迷宫：早关偏好直行(更简单) → 末关强烈拐弯；岔路随关卡增多
+                turnBias = -0.5 + progress * 3.5
+                turnRatio = 0.10 + progress * 0.32
+                waveAmp = 0
+                branching = 0.25 + progress * 0.5      // 岔路密度 0.25 → 0.75
+            }
+            let minTurns = Int(Double(minPathLen) * turnRatio) + li
             out.append(MazeLevelConfig(
                 stageIndex: si,
                 levelInStage: li,
                 stageName: stage.name, icon: stage.icon,
-                w: MazeStageSizes[si].w, h: MazeStageSizes[si].h,
-                minPathRatio: 1.35 + progress * 1.15 + withinStage,
+                w: w, h: h,
+                minPathRatio: minPathRatio,
                 threeStarRatio: max(1.18, 1.55 - progress * 0.25),
                 twoStarRatio: max(1.7, 2.25 - progress * 0.25),
-                usesDynamicGoal: si >= 2
+                usesDynamicGoal: isWavy || si >= 2,
+                turnBias: turnBias,
+                minTurns: minTurns,
+                waveAmp: waveAmp,
+                branching: branching
             ))
         }
     }
@@ -87,15 +134,25 @@ private struct MazeGrid {
 
     func idx(_ x: Int, _ y: Int) -> Int { y * cols + x }
 
-    mutating func generate() {
+    /// Growing Tree 生成。
+    /// - turnBias > 0：挑邻居时倾向转弯，路径更蜿蜒。
+    /// - branching 0~1：每步从活动列表里取格子的方式——0 总取最新(=递归回溯，长走廊少岔路)，
+    ///   越大越倾向随机取(=Prim 式，岔路口与死胡同更多，玩家要多次选择/回头)。
+    mutating func generate(turnBias: Double = 0, branching: Double = 0) {
         var visited = [Bool](repeating: false, count: cols * rows)
+        var enterDir = [Int](repeating: -1, count: cols * rows)  // 进入每个格子时的方向
         visited[0] = true
-        var stack = [0]
+        var active = [0]
+        let dirs: [(dx: Int, dy: Int, dir: Int)] = [(0, -1, 0), (1, 0, 1), (0, 1, 2), (-1, 0, 3)]
 
-        while let cur = stack.last {
+        while !active.isEmpty {
+            // 分支因子：按概率决定取"随机活动格"(制造岔路) 还是"最新格"(拉长走廊)
+            let ai = (branching > 0 && Double.random(in: 0..<1) < branching)
+                ? Int.random(in: 0..<active.count)
+                : active.count - 1
+            let cur = active[ai]
             let cx = cur % cols, cy = cur / cols
             var opts: [(n: Int, dir: Int)] = []
-            let dirs: [(dx: Int, dy: Int, dir: Int)] = [(0, -1, 0), (1, 0, 1), (0, 1, 2), (-1, 0, 3)]
             for d in dirs {
                 let nx = cx + d.dx, ny = cy + d.dy
                 guard nx >= 0, nx < cols, ny >= 0, ny < rows else { continue }
@@ -103,17 +160,32 @@ private struct MazeGrid {
                 if !visited[ni] { opts.append((ni, d.dir)) }
             }
             if opts.isEmpty {
-                stack.removeLast()
+                active.remove(at: ai)
             } else {
-                let pick = opts.randomElement()!
+                let pick = Self.weightedPick(opts, straightDir: enterDir[cur], turnBias: turnBias)
                 walls[idx(cx, cy) * 4 + pick.dir] = false
                 let nx = cx + (pick.dir == 1 ? 1 : pick.dir == 3 ? -1 : 0)
                 let ny = cy + (pick.dir == 0 ? -1 : pick.dir == 2 ? 1 : 0)
                 walls[idx(nx, ny) * 4 + (pick.dir + 2) % 4] = false
                 visited[pick.n] = true
-                stack.append(pick.n)
+                enterDir[pick.n] = pick.dir
+                active.append(pick.n)
             }
         }
+    }
+
+    /// 加权挑选：与来向相同(直行)权重 1，转弯权重 1 + turnBias。
+    private static func weightedPick(_ opts: [(n: Int, dir: Int)], straightDir: Int, turnBias: Double)
+        -> (n: Int, dir: Int) {
+        if turnBias <= 0 || straightDir < 0 { return opts.randomElement()! }
+        let weights = opts.map { $0.dir == straightDir ? 1.0 : 1.0 + turnBias }
+        let total = weights.reduce(0, +)
+        var r = Double.random(in: 0..<total)
+        for (i, w) in weights.enumerated() {
+            if r < w { return opts[i] }
+            r -= w
+        }
+        return opts.last!
     }
 
     /// BFS 距离表：用于挑选更绕的终点与星级评级。
@@ -143,6 +215,46 @@ private struct MazeGrid {
         distances(from: sx, sy)[idx(gx, gy)]
     }
 
+    /// 最短路的长度与拐弯次数（拐弯 = 相邻两步方向不同）。
+    func pathInfo(from sx: Int, _ sy: Int, to gx: Int, _ gy: Int) -> (dist: Int, turns: Int) {
+        let n = cols * rows
+        var dist = [Int](repeating: -1, count: n)
+        var prev = [Int](repeating: -1, count: n)
+        var prevDir = [Int](repeating: -1, count: n)
+        let start = idx(sx, sy), goal = idx(gx, gy)
+        dist[start] = 0
+        var q = [start]; var head = 0
+        let dirs: [(dx: Int, dy: Int, dir: Int)] = [(0, -1, 0), (1, 0, 1), (0, 1, 2), (-1, 0, 3)]
+        while head < q.count {
+            let c = q[head]; head += 1
+            let cx = c % cols, cy = c / cols
+            for d in dirs {
+                if walls[c * 4 + d.dir] { continue }
+                let ni = idx(cx + d.dx, cy + d.dy)
+                if dist[ni] < 0 {
+                    dist[ni] = dist[c] + 1
+                    prev[ni] = c
+                    prevDir[ni] = d.dir
+                    q.append(ni)
+                }
+            }
+        }
+        guard dist[goal] >= 0 else { return (-1, 0) }
+        // 从终点回溯方向序列，统计方向变化次数
+        var seq: [Int] = []
+        var cur = goal
+        while cur != start, prev[cur] >= 0 {
+            seq.append(prevDir[cur])
+            cur = prev[cur]
+        }
+        seq.reverse()
+        var turns = 0
+        if seq.count > 1 {
+            for i in 1..<seq.count where seq[i] != seq[i - 1] { turns += 1 }
+        }
+        return (dist[goal], turns)
+    }
+
     func farGoal(from sx: Int, _ sy: Int, dynamic: Bool) -> (x: Int, y: Int, distance: Int) {
         let dist = distances(from: sx, sy)
         if !dynamic {
@@ -168,15 +280,25 @@ private struct MazeGrid {
     }
 }
 
-// MARK: - 方向键按压样式（点击下沉 + 阴影收缩）
+// MARK: - 波浪墙路径（amp = 0 时退化为直线）
 
-private struct DPadButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1)
-            .offset(x: configuration.isPressed ? 3 : 0, y: configuration.isPressed ? 4 : 0)
-            .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
+private func mazeWavePath(from a: CGPoint, to b: CGPoint, amp: CGFloat) -> Path {
+    var p = Path()
+    guard amp > 0.3 else {
+        p.move(to: a); p.addLine(to: b); return p
     }
+    let steps = 12
+    let dx = b.x - a.x, dy = b.y - a.y
+    let len = max((dx * dx + dy * dy).squareRoot(), 0.0001)
+    // 单位法向量，波浪沿墙的垂直方向摆动；两端偏移为 0（sin 0 与 sin 2π），保证接头对齐
+    let nx = -dy / len, ny = dx / len
+    for i in 0...steps {
+        let t = CGFloat(i) / CGFloat(steps)
+        let off = amp * sin(t * .pi * 2)
+        let pt = CGPoint(x: a.x + dx * t + nx * off, y: a.y + dy * t + ny * off)
+        if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
+    }
+    return p
 }
 
 // MARK: - 主视图
@@ -199,8 +321,9 @@ struct MazeGameView: View {
     @State private var showWin = false
     @State private var showSheet = false
     @State private var confetti: [(CGFloat, CGFloat, String, Int)] = []
-    @State private var lastDrag = CGSize.zero
+    @State private var didMoveThisDrag = false   // 一次拖拽只移动 1 格
     @State private var showLockedHint = false
+    @State private var showIntro = false
 
     private let mazeInk = Color(red: 184/255, green: 90/255, blue: 126/255)
     private let floorColor = Color(red: 255/255, green: 233/255, blue: 242/255)
@@ -229,12 +352,16 @@ struct MazeGameView: View {
             VStack(spacing: 0) {
                 topBar
                 mazeStage
-                dpad
                 bottomBar
             }
 
             if showWin {
                 winOverlay
+                    .transition(.opacity)
+            }
+
+            if showIntro {
+                introOverlay
                     .transition(.opacity)
             }
 
@@ -253,12 +380,52 @@ struct MazeGameView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear { startLevel(0) }
+        .onAppear {
+            startLevel(0)
+            showIntro = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                withAnimation(.easeOut(duration: 0.3)) { showIntro = false }
+            }
+        }
         .onReceive(timer) { _ in
             guard !won else { return }
             elapsed += 1
         }
         .sheet(isPresented: $showSheet) { levelSheet }
+    }
+
+    // MARK: - 进入提示（温馨小提示）
+
+    private var introOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.28).ignoresSafeArea()
+            VStack(spacing: 12) {
+                Text("🍓").font(.system(size: 46))
+                Text("怎么玩")
+                    .font(.system(size: 19, weight: .heavy, design: .serif))
+                    .foregroundStyle(Color(red: 138/255, green: 74/255, blue: 94/255))
+                Text("用手指在迷宫里往上下左右滑动，\n带着 66 找到草莓熊就通关啦！\n路越走越绕，慢慢来别着急～")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(mazeInk.opacity(0.85))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                Text("👆 点击任意处开始")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(mazeInk.opacity(0.55))
+                    .padding(.top, 2)
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 26)
+            .frame(maxWidth: 300)
+            .background(.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(mazeInk, lineWidth: 3))
+            .shadow(color: mazeInk.opacity(0.35), radius: 8, y: 6)
+            .padding(.horizontal, 40)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.easeOut(duration: 0.25)) { showIntro = false }
+        }
     }
 
     // MARK: - 漂浮装饰
@@ -357,14 +524,17 @@ struct MazeGameView: View {
             let mh = cell * CGFloat(grid.rows)
             let ox = (geo.size.width - mw) / 2
             let oy = (geo.size.height - mh) / 2
+            let waveAmp = currentLevel < levels.count ? levels[currentLevel].waveAmp : 0
+            let amp = waveAmp * cell
 
             ZStack {
                 let frameW: CGFloat = cell >= 30 ? 3 : cell >= 22 ? 2 : 1.5
+                // 白色卡片贴合迷宫大小（外留 8pt 白边）。不描边——外墙统一由内部的圆角外框画，避免双线
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color.white)
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(mazeInk, lineWidth: 3))
                     .shadow(color: mazeInk.opacity(0.3), radius: 5, y: 5)
-                    .padding(4)
+                    .frame(width: mw + 16, height: mh + 16)
+                    .position(x: ox + mw / 2, y: oy + mh / 2)
 
                 Canvas { ctx, _ in
                     let wallW: CGFloat = cell >= 30 ? 3 : cell >= 22 ? 2 : 1.5
@@ -378,30 +548,27 @@ struct MazeGameView: View {
                             let wx = ox + cell * CGFloat(x)
                             let wy = oy + cell * CGFloat(y)
                             let base = (y * grid.cols + x) * 4
-                            // 边界墙由圆角外框统一绘制，这里只画内部墙
+                            let style = StrokeStyle(lineWidth: wallW, lineCap: .round, lineJoin: .round)
+                            // 边界墙由圆角外框统一绘制，这里只画内部墙（波浪章节 amp>0 时画成波浪墙）
                             if grid.walls[base + 0] && y > 0 {
-                                var p = Path()
-                                p.move(to: CGPoint(x: wx, y: wy))
-                                p.addLine(to: CGPoint(x: wx + cell, y: wy))
-                                ctx.stroke(p, with: .color(mazeInk), lineWidth: wallW)
+                                ctx.stroke(mazeWavePath(from: CGPoint(x: wx, y: wy),
+                                                        to: CGPoint(x: wx + cell, y: wy), amp: amp),
+                                           with: .color(mazeInk), style: style)
                             }
                             if grid.walls[base + 1] && x < grid.cols - 1 {
-                                var p = Path()
-                                p.move(to: CGPoint(x: wx + cell, y: wy))
-                                p.addLine(to: CGPoint(x: wx + cell, y: wy + cell))
-                                ctx.stroke(p, with: .color(mazeInk), lineWidth: wallW)
+                                ctx.stroke(mazeWavePath(from: CGPoint(x: wx + cell, y: wy),
+                                                        to: CGPoint(x: wx + cell, y: wy + cell), amp: amp),
+                                           with: .color(mazeInk), style: style)
                             }
                             if grid.walls[base + 2] && y < grid.rows - 1 {
-                                var p = Path()
-                                p.move(to: CGPoint(x: wx + cell, y: wy + cell))
-                                p.addLine(to: CGPoint(x: wx, y: wy + cell))
-                                ctx.stroke(p, with: .color(mazeInk), lineWidth: wallW)
+                                ctx.stroke(mazeWavePath(from: CGPoint(x: wx + cell, y: wy + cell),
+                                                        to: CGPoint(x: wx, y: wy + cell), amp: amp),
+                                           with: .color(mazeInk), style: style)
                             }
                             if grid.walls[base + 3] && x > 0 {
-                                var p = Path()
-                                p.move(to: CGPoint(x: wx, y: wy + cell))
-                                p.addLine(to: CGPoint(x: wx, y: wy))
-                                ctx.stroke(p, with: .color(mazeInk), lineWidth: wallW)
+                                ctx.stroke(mazeWavePath(from: CGPoint(x: wx, y: wy + cell),
+                                                        to: CGPoint(x: wx, y: wy), amp: amp),
+                                           with: .color(mazeInk), style: style)
                             }
                         }
                     }
@@ -442,10 +609,10 @@ struct MazeGameView: View {
                     .onChanged { value in
                         swipeOnChanged(value, cell: cell)
                     }
-                    .onEnded { _ in lastDrag = .zero }
+                    .onEnded { _ in didMoveThisDrag = false }
             )
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 6)
         .padding(.top, 2)
         .padding(.bottom, 4)
     }
@@ -453,50 +620,18 @@ struct MazeGameView: View {
     // MARK: - 滑动控制（增量判定，避免一次滑动触发多次）
 
     private func swipeOnChanged(_ value: DragGesture.Value, cell: CGFloat) {
-        let dx = value.translation.width - lastDrag.width
-        let dy = value.translation.height - lastDrag.height
-        lastDrag = value.translation
+        // 一次拖拽只走 1 格：首次越过阈值即移动一格，之后忽略，直到手指抬起
+        guard !didMoveThisDrag else { return }
+        let dx = value.translation.width
+        let dy = value.translation.height
         let th = max(16, cell * 0.35)
-        if abs(dx) > th || abs(dy) > th {
-            if abs(dx) > abs(dy) {
-                move(dx: dx > 0 ? 1 : -1, dy: 0)
-            } else {
-                move(dx: 0, dy: dy > 0 ? 1 : -1)
-            }
+        guard abs(dx) > th || abs(dy) > th else { return }
+        if abs(dx) > abs(dy) {
+            move(dx: dx > 0 ? 1 : -1, dy: 0)
+        } else {
+            move(dx: 0, dy: dy > 0 ? 1 : -1)
         }
-    }
-
-    // MARK: - 方向杆
-
-    private var dpad: some View {
-        HStack(spacing: 8) {
-            dpadKey("◀", dx: -1, dy: 0).frame(width: 76, height: 128)
-            VStack(spacing: 8) {
-                dpadKey("▲", dx: 0, dy: -1).frame(width: 76, height: 60)
-                dpadKey("▼", dx: 0, dy: 1).frame(width: 76, height: 60)
-            }
-            dpadKey("▶", dx: 1, dy: 0).frame(width: 76, height: 128)
-        }
-        .padding(.vertical, 4)
-    }
-
-    private func dpadKey(_ label: String, dx: Int, dy: Int) -> some View {
-        Button {
-            move(dx: dx, dy: dy)
-        } label: {
-            Text(label)
-                .font(.system(size: 26, weight: .heavy))
-                .foregroundStyle(Color(red: 232/255, green: 106/255, blue: 158/255))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    LinearGradient(colors: [.white, Color(red: 255/255, green: 233/255, blue: 242/255)],
-                                   startPoint: .top, endPoint: .bottom),
-                    in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-                )
-                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(mazeInk, lineWidth: 3))
-                .shadow(color: mazeInk.opacity(0.35), radius: 0, x: 4, y: 5)
-        }
-        .buttonStyle(DPadButtonStyle())
+        didMoveThisDrag = true
     }
 
     // MARK: - 底部（弱化）
@@ -505,7 +640,7 @@ struct MazeGameView: View {
         HStack {
             miniBtn("↺") { startLevel(currentLevel) }
             Spacer()
-            Text("滑动迷宫或按方向键")
+            Text("用手指滑动迷宫，带 66 找到草莓熊")
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundStyle(mazeInk.opacity(0.55))
             Spacer()
@@ -607,29 +742,40 @@ struct MazeGameView: View {
         confetti = []
 
         let cfg = levels[lv]
+        // 选关时对"拐弯"的看重程度也随阶段递增（按章计算）：波浪章基线更高
+        let localStage = cfg.stageIndex % MazeChapterStages
+        let stageProgress = Double(localStage) / Double(max(MazeChapterStages - 1, 1))
+        let turnWeight = (cfg.waveAmp > 0 ? 2.0 : 0.5) + stageProgress * 3.0
         var selectedGrid = MazeGrid(cols: cfg.w, rows: cfg.h)
-        var selectedGoal = (x: cfg.w - 1, y: cfg.h - 1, distance: 0)
-        var selectedBest = 0
+        var selectedGX = cfg.w - 1, selectedGY = cfg.h - 1
+        var selectedDist = 0
+        var selectedTurns = 0
+        var selectedScore = -1.0
         var tries = 0
-        let maxTries = cfg.usesDynamicGoal ? 70 : 40
+        let maxTries = cfg.usesDynamicGoal ? 90 : 50
         repeat {
             var g = MazeGrid(cols: cfg.w, rows: cfg.h)
-            g.generate()
+            g.generate(turnBias: cfg.turnBias, branching: cfg.branching)
             let goal = g.farGoal(from: 0, 0, dynamic: cfg.usesDynamicGoal)
-            if goal.distance > selectedBest {
+            let info = g.pathInfo(from: 0, 0, to: goal.x, goal.y)
+            let score = Double(info.dist) + turnWeight * Double(info.turns)
+            if score > selectedScore {
                 selectedGrid = g
-                selectedGoal = goal
-                selectedBest = goal.distance
+                selectedGX = goal.x
+                selectedGY = goal.y
+                selectedDist = info.dist
+                selectedTurns = info.turns
+                selectedScore = score
             }
             tries += 1
-        } while selectedBest < cfg.minPathLength && tries < maxTries
+        } while (selectedDist < cfg.minPathLength || selectedTurns < cfg.minTurns) && tries < maxTries
 
         grid = selectedGrid
         px = 0
         py = 0
-        gx = selectedGoal.x
-        gy = selectedGoal.y
-        bestPathLen = selectedBest
+        gx = selectedGX
+        gy = selectedGY
+        bestPathLen = selectedDist
     }
 
     // MARK: - 过关弹窗
