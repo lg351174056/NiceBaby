@@ -536,7 +536,24 @@ struct SchulteGameView: View {
     @State private var bestTime: Double? = nil
     @State private var newRecord = false
 
+    // 成语/唐诗：记忆期 + 偷看
+    @State private var memorizing = false
+    @State private var memorizeEndDate: Date? = nil
+    @State private var memorizeRemaining = 0
+    @State private var peeking = false
+    @State private var peekCount = 0
+    @State private var peekEndDate: Date? = nil
+    @State private var peekRemaining = 0
+
     private let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect()
+
+    /// 记忆期时长（秒）：按格子数递增
+    private var previewSeconds: Int { max(3, Int(ceil(Double(size * size) / 8.0))) }
+    /// 每局偷看次数上限
+    private let maxPeeks = 3
+    /// 单次偷看显示时长（秒）
+    private let peekDuration = 3
+    private var peeksLeft: Int { max(0, maxPeeks - peekCount) }
 
     init(mode: SchulteMode, size: Int) {
         self.mode = mode
@@ -584,15 +601,35 @@ struct SchulteGameView: View {
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
         .overlay {
-            if !started && !finished {
+            if memorizing {
+                memorizeOverlay
+            } else if !started && !finished {
                 startOverlay
             } else if finished {
                 resultOverlay
             }
         }
+        .overlay {
+            if peeking && started && !finished {
+                peekOverlay
+            }
+        }
         .onReceive(timer) { _ in
-            guard started, !finished, let start = startDate else { return }
-            elapsed = Date().timeIntervalSince(start)
+            if memorizing {
+                guard let end = memorizeEndDate else { return }
+                let rem = end.timeIntervalSinceNow
+                if rem <= 0 { beginPlay() }
+                else { memorizeRemaining = Int(ceil(rem)) }
+                return
+            }
+            if started, !finished, let start = startDate {
+                elapsed = Date().timeIntervalSince(start)
+            }
+            if peeking, let end = peekEndDate {
+                let rem = end.timeIntervalSinceNow
+                if rem <= 0 { endPeek() }
+                else { peekRemaining = Int(ceil(rem)) }
+            }
         }
     }
 
@@ -678,22 +715,24 @@ struct SchulteGameView: View {
         }
     }
 
-    // 词句提示：单个可换行 Text（完成的字着色、待点的字高亮），不再溢出
+    // 词句提示：只显示「已点亮」的进度（○ 占位未点，不预告下一个字）+ 按住偷看
     @ViewBuilder
     private var phrasePrompt: some View {
         let seg = board.segments.first(where: { currentGroup >= $0.start && currentGroup < $0.start + $0.length })
             ?? board.segments.last
         if let seg {
             VStack(spacing: 6) {
-                Text(mode == .idiom ? "凑成成语（按顺序点字）" : "《\(seg.title)》")
+                Text(mode == .idiom ? phraseIdiomTitle : "《\(seg.title)》")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(AppTheme.fieldMoss)
-                Text(phraseAttributed(seg))
+                Text(phraseProgressAttributed(seg))
                     .font(.system(size: 19, weight: .heavy, design: .serif))
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .frame(maxWidth: .infinity)
                     .fixedSize(horizontal: false, vertical: true)
+
+                peekButton
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
@@ -702,20 +741,47 @@ struct SchulteGameView: View {
         }
     }
 
-    private func phraseAttributed(_ seg: PhraseSegment) -> AttributedString {
+    private var phraseIdiomTitle: String {
+        let idx = board.segments.firstIndex(where: { currentGroup >= $0.start && currentGroup < $0.start + $0.length })
+        let n = (idx ?? board.segments.count - 1) + 1
+        return "第 \(n) / \(board.segments.count) 个成语"
+    }
+
+    // 已点亮的字显示出来，未点的用 ○ 占位（不泄露下一个字）
+    private func phraseProgressAttributed(_ seg: PhraseSegment) -> AttributedString {
         var out = AttributedString()
         for step in seg.start..<(seg.start + seg.length) {
-            var piece = AttributedString(cellText(board.groups[step].first ?? 0))
             if step < currentGroup {
-                piece.foregroundColor = mode.accent.opacity(0.45)          // 已点
-            } else if step == currentGroup {
-                piece.foregroundColor = mode.accent                        // 待点（高亮）
+                var piece = AttributedString(cellText(board.groups[step].first ?? 0))
+                piece.foregroundColor = mode.accent
+                out += piece
             } else {
-                piece.foregroundColor = AppTheme.fieldInk.opacity(0.8)     // 未点
+                var piece = AttributedString("○")
+                piece.foregroundColor = AppTheme.fieldMossLight
+                out += piece
             }
-            out += piece
         }
         return out
+    }
+
+    // 点一下偷看（限次，用完禁用）
+    private var peekButton: some View {
+        let usable = peeksLeft > 0 && !peeking
+        return Button { triggerPeek() } label: {
+            HStack(spacing: 6) {
+                Image(systemName: peeksLeft > 0 ? "eye.fill" : "eye.slash.fill")
+                    .font(.system(size: 11, weight: .bold))
+                Text(peeksLeft > 0 ? "看提示（剩 \(peeksLeft) 次）" : "偷看次数已用完")
+                    .font(.system(size: 12, weight: .bold))
+            }
+            .foregroundStyle(usable ? mode.accent : AppTheme.fieldMossLight)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(Capsule().fill((usable ? mode.accent : AppTheme.fieldMossLight).opacity(0.12)))
+            .overlay(Capsule().strokeBorder((usable ? mode.accent : AppTheme.fieldMossLight).opacity(0.35), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .disabled(!usable)
     }
 
     // MARK: - 棋盘
@@ -818,6 +884,12 @@ struct SchulteGameView: View {
                     .foregroundStyle(AppTheme.fieldInk)
             }
 
+            if mode.isPhrase {
+                Text(peekCount == 0 ? "全程未偷看，厉害！👏" : "偷看 \(peekCount) 次")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(peekCount == 0 ? mode.accent : AppTheme.fieldMoss)
+            }
+
             HStack(spacing: 12) {
                 Button { newGame() } label: {
                     Text("再来一局")
@@ -851,6 +923,110 @@ struct SchulteGameView: View {
         )
     }
 
+    // MARK: - 记忆期 / 偷看
+
+    private var memorizeOverlay: some View {
+        ZStack {
+            Color.white.opacity(0.72).ignoresSafeArea()
+            VStack(spacing: 16) {
+                Text("记住顺序！")
+                    .font(.system(size: 24, weight: .black, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
+
+                answerCard
+
+                Text("\(memorizeRemaining)")
+                    .font(.system(size: 40, weight: .black, design: .rounded))
+                    .foregroundStyle(mode.accent)
+                    .contentTransition(.numericText())
+
+                Button { beginPlay() } label: {
+                    Text("记好了，开始")
+                        .font(.system(size: 16, weight: .heavy)).foregroundStyle(.white)
+                        .padding(.horizontal, 40).padding(.vertical, 13)
+                        .background(Capsule().fill(mode.accent))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(28)
+            .frame(maxWidth: 360)
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(Color.white.opacity(0.96))
+                    .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .strokeBorder(mode.accent.opacity(0.35), lineWidth: 2))
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.16), radius: 18, y: 8)
+            )
+        }
+        .transition(.opacity)
+    }
+
+    private var peekOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3).ignoresSafeArea()
+                .onTapGesture { endPeek() }
+
+            VStack(spacing: 12) {
+                HStack(spacing: 6) {
+                    Image(systemName: "eye.fill").font(.system(size: 13, weight: .bold))
+                    Text("偷看中").font(.system(size: 14, weight: .heavy))
+                    Spacer()
+                    Text("\(peekRemaining)s")
+                        .font(.system(size: 15, weight: .black, design: .rounded))
+                        .contentTransition(.numericText())
+                }
+                .foregroundStyle(mode.accent)
+
+                answerCard
+
+                Text("点击任意处提前收起 · 本局剩 \(peeksLeft) 次")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(AppTheme.fieldMoss)
+            }
+            .padding(20)
+            .frame(maxWidth: 340)
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.white.opacity(0.98))
+                    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(mode.accent.opacity(0.4), lineWidth: 2))
+                    .shadow(color: AppTheme.fieldGrassShadow.opacity(0.2), radius: 16, y: 8)
+            )
+            .padding(.horizontal, 30)
+            .transition(.scale(scale: 0.9).combined(with: .opacity))
+        }
+    }
+
+    // 完整答案卡（记忆期 + 偷看共用）
+    private var answerCard: some View {
+        VStack(spacing: 8) {
+            if mode == .poem, let title = board.segments.first?.title {
+                Text("《\(title)》")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.fieldMoss)
+            }
+            ForEach(board.segments.indices, id: \.self) { i in
+                Text(segmentString(board.segments[i]))
+                    .font(.system(size: 22, weight: .black, design: .serif))
+                    .foregroundStyle(AppTheme.fieldInk)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .background(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(mode.accent.opacity(0.10)))
+    }
+
+    private func segmentString(_ seg: PhraseSegment) -> String {
+        (seg.start..<(seg.start + seg.length))
+            .map { cellText(board.groups[$0].first ?? 0) }
+            .joined()
+    }
+
     // MARK: - 开始遮罩
 
     private var startOverlay: some View {
@@ -866,8 +1042,8 @@ struct SchulteGameView: View {
                     .foregroundStyle(AppTheme.fieldMoss)
                     .multilineTextAlignment(.center).lineSpacing(4)
 
-                Button { startPlaying() } label: {
-                    Text("开始训练")
+                Button { beginRound() } label: {
+                    Text(mode.isPhrase ? "开始（先记住答案）" : "开始训练")
                         .font(.system(size: 19, weight: .heavy)).foregroundStyle(.white)
                         .padding(.horizontal, 50).padding(.vertical, 16)
                         .background(Capsule().fill(
@@ -900,8 +1076,8 @@ struct SchulteGameView: View {
         case .letter: return "点击「开始」后计时启动\n按 A 到 Z 依次点击"
         case .color:  return "点击「开始」后计时启动\n按提示先点完一种颜色，再换下一种"
         case .shape:  return "点击「开始」后计时启动\n按提示先点完一种图案，再换下一种"
-        case .idiom:  return "点击「开始」后计时启动\n按顺序点出每个成语的字"
-        case .poem:   return "点击「开始」后计时启动\n按顺序点出诗句的每个字"
+        case .idiom:  return "先花几秒记住成语顺序\n收起后按记忆依次点字，卡住可按住偷看"
+        case .poem:   return "先花几秒记住诗句顺序\n收起后按记忆依次点字，卡住可按住偷看"
         }
     }
 
@@ -917,13 +1093,51 @@ struct SchulteGameView: View {
         finished = false
         wrongIndex = nil
         newRecord = false
+        memorizing = false
+        memorizeEndDate = nil
+        peeking = false
+        peekCount = 0
+        peekEndDate = nil
+        peekRemaining = 0
         bestTime = SchulteBestStore.best(mode: mode, size: size)
+    }
+
+    /// 点「开始」：词句模式先进记忆期，其它模式直接开玩
+    private func beginRound() {
+        if mode.isPhrase {
+            memorizeRemaining = previewSeconds
+            memorizeEndDate = Date().addingTimeInterval(Double(previewSeconds))
+            withAnimation(.easeInOut(duration: 0.2)) { memorizing = true }
+        } else {
+            startPlaying()
+        }
+    }
+
+    /// 记忆期结束（自动或手动跳过）→ 收起答案，开始盲玩计时
+    private func beginPlay() {
+        withAnimation(.easeInOut(duration: 0.2)) { memorizing = false }
+        memorizeEndDate = nil
+        startPlaying()
     }
 
     private func startPlaying() {
         started = true
         startDate = Date()
         elapsed = 0
+    }
+
+    private func triggerPeek() {
+        guard peeksLeft > 0, !peeking else { return }
+        peekCount += 1
+        peekRemaining = peekDuration
+        peekEndDate = Date().addingTimeInterval(Double(peekDuration))
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { peeking = true }
+    }
+
+    private func endPeek() {
+        peekEndDate = nil
+        withAnimation(.easeOut(duration: 0.2)) { peeking = false }
     }
 
     private func tap(pos: Int) {
